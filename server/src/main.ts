@@ -1,0 +1,24 @@
+import "dotenv/config";
+import { ValidationPipe } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { json } from "body-parser";
+import { AppModule } from "./app/app.module";
+import { validationExceptionFactory } from "./app/util/validation.exception-factory";
+
+async function start() {
+  const app = await NestFactory.create(AppModule);
+  app.use(json({ limit: "500kb" }));
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: validationExceptionFactory,
+    }),
+  );
+  await app.listen(process.env.PORT);
+  console.log(`Application is running on: ${await app.getUrl()}`);
+}
+
+start();

@@ -1,0 +1,57 @@
+enum UserRole {
+  Employee
+  Admin
+}
+
+type User {
+  id: ID!
+  created_at: String!
+  email: String!
+  is_verified: Boolean!
+  profile: Profile!
+  role: UserRole!
+  department: Department
+  position: Position
+  cvs: [Cv!]
+}
+
+type PaginatedUsers {
+  items: [User!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+  total_pages: Int!
+}
+
+type Query {
+  users(params: SearchPaginationInput): PaginatedUsers!
+  user(userId: ID!): User!
+}
+
+input CreateUserInput {
+  auth: AuthInput!
+  profile: CreateProfileInput!
+  departmentId: ID
+  positionId: ID
+  role: UserRole!
+}
+
+input UpdateUserInput {
+  userId: ID!
+  departmentId: ID!
+  positionId: ID!
+  role: UserRole!
+}
+
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+  confirmPassword: String!
+}
+
+type Mutation {
+  createUser(user: CreateUserInput!): User!
+  updateUser(user: UpdateUserInput!): User!
+  deleteUser(userId: ID!): DeleteResult!
+  changePassword(args: ChangePasswordInput!): User!
+}

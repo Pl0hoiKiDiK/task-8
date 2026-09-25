@@ -1,0 +1,571 @@
+
+/*
+ * -------------------------------------------------------
+ * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+ * -------------------------------------------------------
+ */
+
+/* tslint:disable */
+/* eslint-disable */
+
+export enum Proficiency {
+    A1 = "A1",
+    A2 = "A2",
+    B1 = "B1",
+    B2 = "B2",
+    C1 = "C1",
+    C2 = "C2",
+    Native = "Native"
+}
+
+export enum Mastery {
+    Novice = "Novice",
+    Advanced = "Advanced",
+    Competent = "Competent",
+    Proficient = "Proficient",
+    Expert = "Expert"
+}
+
+export enum UserRole {
+    Employee = "Employee",
+    Admin = "Admin"
+}
+
+export interface SearchPaginationInput {
+    search?: Nullable<string>;
+    sort_order?: Nullable<string>;
+    sort_by?: Nullable<string>;
+    page?: Nullable<number>;
+    limit?: Nullable<number>;
+}
+
+export interface AuthInput {
+    email: string;
+    password: string;
+}
+
+export interface SignupInput {
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export interface ForgotPasswordInput {
+    email: string;
+}
+
+export interface ResetPasswordInput {
+    newPassword: string;
+    confirmPassword: string;
+}
+
+export interface AddCvProjectInput {
+    cvId: string;
+    projectId: string;
+    start_date: string;
+    end_date?: Nullable<string>;
+    roles: string[];
+    responsibilities: string[];
+}
+
+export interface UpdateCvProjectInput {
+    cvId: string;
+    projectId: string;
+    start_date: string;
+    end_date?: Nullable<string>;
+    roles: string[];
+    responsibilities: string[];
+}
+
+export interface RemoveCvProjectInput {
+    cvId: string;
+    projectId: string;
+}
+
+export interface AddCvSkillInput {
+    cvId: string;
+    name: string;
+    categoryId?: Nullable<string>;
+    mastery: Mastery;
+}
+
+export interface UpdateCvSkillInput {
+    cvId: string;
+    name: string;
+    categoryId?: Nullable<string>;
+    mastery: Mastery;
+}
+
+export interface DeleteCvSkillInput {
+    cvId: string;
+    name: string[];
+}
+
+export interface CreateCvInput {
+    name: string;
+    education?: Nullable<string>;
+    description: string;
+    userId?: Nullable<string>;
+}
+
+export interface UpdateCvInput {
+    cvId: string;
+    name: string;
+    education?: Nullable<string>;
+    description: string;
+}
+
+export interface DeleteCvInput {
+    cvId: string;
+}
+
+export interface MarginInput {
+    top: string;
+    bottom: string;
+    left: string;
+    right: string;
+}
+
+export interface ExportPdfInput {
+    html: string;
+    margin?: Nullable<MarginInput>;
+}
+
+export interface CreateDepartmentInput {
+    name: string;
+}
+
+export interface UpdateDepartmentInput {
+    departmentId: string;
+    name: string;
+}
+
+export interface DeleteDepartmentInput {
+    departmentId: string;
+}
+
+export interface CreateLanguageInput {
+    iso2: string;
+    name: string;
+    native_name?: Nullable<string>;
+}
+
+export interface UpdateLanguageInput {
+    languageId: string;
+    iso2: string;
+    name: string;
+    native_name?: Nullable<string>;
+}
+
+export interface DeleteLanguageInput {
+    languageId: string;
+}
+
+export interface LanguageProficiencyInput {
+    name: string;
+    proficiency: Proficiency;
+}
+
+export interface VerifyMailInput {
+    otp: string;
+}
+
+export interface CreatePositionInput {
+    name: string;
+}
+
+export interface UpdatePositionInput {
+    positionId: string;
+    name: string;
+}
+
+export interface DeletePositionInput {
+    positionId: string;
+}
+
+export interface CreateProfileInput {
+    first_name?: Nullable<string>;
+    last_name?: Nullable<string>;
+}
+
+export interface UpdateProfileInput {
+    userId: string;
+    first_name?: Nullable<string>;
+    last_name?: Nullable<string>;
+}
+
+export interface DeleteProfileInput {
+    userId: string;
+}
+
+export interface UploadAvatarInput {
+    userId: string;
+    base64: string;
+    size: number;
+    type: string;
+}
+
+export interface DeleteAvatarInput {
+    userId: string;
+}
+
+export interface AddProfileLanguageInput {
+    userId: string;
+    name: string;
+    proficiency: Proficiency;
+}
+
+export interface UpdateProfileLanguageInput {
+    userId: string;
+    name: string;
+    proficiency: Proficiency;
+}
+
+export interface DeleteProfileLanguageInput {
+    userId: string;
+    name: string[];
+}
+
+export interface AddProfileSkillInput {
+    userId: string;
+    name: string;
+    categoryId?: Nullable<string>;
+    mastery: Mastery;
+}
+
+export interface UpdateProfileSkillInput {
+    userId: string;
+    name: string;
+    categoryId?: Nullable<string>;
+    mastery: Mastery;
+}
+
+export interface DeleteProfileSkillInput {
+    userId: string;
+    name: string[];
+}
+
+export interface CreateProjectInput {
+    name: string;
+    domain: string;
+    start_date: string;
+    end_date?: Nullable<string>;
+    description: string;
+    environment: string[];
+}
+
+export interface UpdateProjectInput {
+    projectId: string;
+    name: string;
+    domain: string;
+    start_date: string;
+    end_date?: Nullable<string>;
+    description: string;
+    environment: string[];
+}
+
+export interface DeleteProjectInput {
+    projectId: string;
+}
+
+export interface SkillMasteryInput {
+    name: string;
+    categoryId?: Nullable<string>;
+    mastery: Mastery;
+}
+
+export interface CreateSkillInput {
+    name: string;
+    categoryId: string;
+}
+
+export interface UpdateSkillInput {
+    skillId: string;
+    name: string;
+    categoryId: string;
+}
+
+export interface DeleteSkillInput {
+    skillId: string;
+}
+
+export interface CreateUserInput {
+    auth: AuthInput;
+    profile: CreateProfileInput;
+    departmentId?: Nullable<string>;
+    positionId?: Nullable<string>;
+    role: UserRole;
+}
+
+export interface UpdateUserInput {
+    userId: string;
+    departmentId: string;
+    positionId: string;
+    role: UserRole;
+}
+
+export interface ChangePasswordInput {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
+export interface DeleteResult {
+    affected: number;
+}
+
+export interface AuthResult {
+    user: User;
+    access_token: string;
+    refresh_token: string;
+}
+
+export interface UpdateTokenResult {
+    access_token: string;
+    refresh_token: string;
+}
+
+export interface IMutation {
+    login(auth: AuthInput): AuthResult | Promise<AuthResult>;
+    signup(auth: SignupInput): AuthResult | Promise<AuthResult>;
+    forgotPassword(auth: ForgotPasswordInput): Nullable<Void> | Promise<Nullable<Void>>;
+    resetPassword(auth: ResetPasswordInput): Nullable<Void> | Promise<Nullable<Void>>;
+    updateToken(): UpdateTokenResult | Promise<UpdateTokenResult>;
+    addCvProject(project: AddCvProjectInput): Cv | Promise<Cv>;
+    updateCvProject(project: UpdateCvProjectInput): Cv | Promise<Cv>;
+    removeCvProject(project: RemoveCvProjectInput): Cv | Promise<Cv>;
+    addCvSkill(skill: AddCvSkillInput): Cv | Promise<Cv>;
+    updateCvSkill(skill: UpdateCvSkillInput): Cv | Promise<Cv>;
+    deleteCvSkill(skill: DeleteCvSkillInput): Cv | Promise<Cv>;
+    createCv(cv: CreateCvInput): Cv | Promise<Cv>;
+    updateCv(cv: UpdateCvInput): Cv | Promise<Cv>;
+    deleteCv(cv: DeleteCvInput): DeleteResult | Promise<DeleteResult>;
+    exportPdf(pdf: ExportPdfInput): string | Promise<string>;
+    createDepartment(department: CreateDepartmentInput): Department | Promise<Department>;
+    updateDepartment(department: UpdateDepartmentInput): Department | Promise<Department>;
+    deleteDepartment(department: DeleteDepartmentInput): DeleteResult | Promise<DeleteResult>;
+    createLanguage(language: CreateLanguageInput): Language | Promise<Language>;
+    updateLanguage(language: UpdateLanguageInput): Language | Promise<Language>;
+    deleteLanguage(language: DeleteLanguageInput): DeleteResult | Promise<DeleteResult>;
+    verifyMail(mail: VerifyMailInput): Nullable<Void> | Promise<Nullable<Void>>;
+    sendVerification(email: string): Nullable<Void> | Promise<Nullable<Void>>;
+    createPosition(position: CreatePositionInput): Position | Promise<Position>;
+    updatePosition(position: UpdatePositionInput): Position | Promise<Position>;
+    deletePosition(position: DeletePositionInput): DeleteResult | Promise<DeleteResult>;
+    updateProfile(profile: UpdateProfileInput): Profile | Promise<Profile>;
+    uploadAvatar(avatar: UploadAvatarInput): string | Promise<string>;
+    deleteAvatar(avatar: DeleteAvatarInput): Nullable<Void> | Promise<Nullable<Void>>;
+    addProfileLanguage(language: AddProfileLanguageInput): Profile | Promise<Profile>;
+    updateProfileLanguage(language: UpdateProfileLanguageInput): Profile | Promise<Profile>;
+    deleteProfileLanguage(language: DeleteProfileLanguageInput): Profile | Promise<Profile>;
+    addProfileSkill(skill: AddProfileSkillInput): Profile | Promise<Profile>;
+    updateProfileSkill(skill: UpdateProfileSkillInput): Profile | Promise<Profile>;
+    deleteProfileSkill(skill: DeleteProfileSkillInput): Profile | Promise<Profile>;
+    createProject(project: CreateProjectInput): Project | Promise<Project>;
+    updateProject(project: UpdateProjectInput): Project | Promise<Project>;
+    deleteProject(project: DeleteProjectInput): DeleteResult | Promise<DeleteResult>;
+    createSkill(skill: CreateSkillInput): Skill | Promise<Skill>;
+    updateSkill(skill: UpdateSkillInput): Skill | Promise<Skill>;
+    deleteSkill(skill: DeleteSkillInput): DeleteResult | Promise<DeleteResult>;
+    createUser(user: CreateUserInput): User | Promise<User>;
+    updateUser(user: UpdateUserInput): User | Promise<User>;
+    deleteUser(userId: string): DeleteResult | Promise<DeleteResult>;
+    changePassword(args: ChangePasswordInput): User | Promise<User>;
+}
+
+export interface CvProject {
+    id: string;
+    project: Project;
+    name: string;
+    internal_name: string;
+    description: string;
+    domain: string;
+    start_date: string;
+    end_date?: Nullable<string>;
+    environment: string[];
+    roles: string[];
+    responsibilities: string[];
+}
+
+export interface Cv {
+    id: string;
+    created_at: string;
+    name: string;
+    education?: Nullable<string>;
+    description: string;
+    user?: Nullable<User>;
+    projects?: Nullable<CvProject[]>;
+    skills: SkillMastery[];
+    languages: LanguageProficiency[];
+}
+
+export interface PaginatedCvs {
+    items: Cv[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export interface IQuery {
+    cvs(params?: Nullable<SearchPaginationInput>): PaginatedCvs | Promise<PaginatedCvs>;
+    cvsByUserId(userId: string, params?: Nullable<SearchPaginationInput>): PaginatedCvs | Promise<PaginatedCvs>;
+    cv(cvId: string): Cv | Promise<Cv>;
+    departments(params?: Nullable<SearchPaginationInput>): PaginatedDepartments | Promise<PaginatedDepartments>;
+    languages(params?: Nullable<SearchPaginationInput>): PaginatedLanguages | Promise<PaginatedLanguages>;
+    positions(params?: Nullable<SearchPaginationInput>): PaginatedPositions | Promise<PaginatedPositions>;
+    position(id: string): Position | Promise<Position>;
+    me(): Profile | Promise<Profile>;
+    profile(userId: string): Profile | Promise<Profile>;
+    projects(params?: Nullable<SearchPaginationInput>): PaginatedProjects | Promise<PaginatedProjects>;
+    projectsByUserId(userId: string, params?: Nullable<SearchPaginationInput>): PaginatedProjects | Promise<PaginatedProjects>;
+    project(projectId: string): Project | Promise<Project>;
+    skillCategories(): SkillCategory[] | Promise<SkillCategory[]>;
+    skills(params?: Nullable<SearchPaginationInput>): PaginatedSkills | Promise<PaginatedSkills>;
+    users(params?: Nullable<SearchPaginationInput>): PaginatedUsers | Promise<PaginatedUsers>;
+    user(userId: string): User | Promise<User>;
+}
+
+export interface Department {
+    id: string;
+    created_at: string;
+    name: string;
+}
+
+export interface PaginatedDepartments {
+    items: Department[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export interface Language {
+    id: string;
+    created_at: string;
+    iso2: string;
+    name: string;
+    native_name?: Nullable<string>;
+}
+
+export interface PaginatedLanguages {
+    items: Language[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export interface LanguageProficiency {
+    name: string;
+    proficiency: Proficiency;
+}
+
+export interface Mail {
+    id: string;
+    created_at: string;
+    email: string;
+    otp: string;
+}
+
+export interface Position {
+    id: string;
+    created_at: string;
+    name: string;
+}
+
+export interface PaginatedPositions {
+    items: Position[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export interface Profile {
+    id: string;
+    created_at: string;
+    first_name?: Nullable<string>;
+    last_name?: Nullable<string>;
+    full_name?: Nullable<string>;
+    avatar?: Nullable<string>;
+    skills: SkillMastery[];
+    languages: LanguageProficiency[];
+    email?: Nullable<string>;
+    is_verified?: Nullable<boolean>;
+    role?: Nullable<UserRole>;
+}
+
+export interface Project {
+    id: string;
+    created_at: string;
+    name: string;
+    internal_name: string;
+    domain: string;
+    start_date: string;
+    end_date?: Nullable<string>;
+    description: string;
+    environment: string[];
+}
+
+export interface PaginatedProjects {
+    items: Project[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export interface SkillCategory {
+    id: string;
+    name: string;
+    order: number;
+    parent?: Nullable<SkillCategory>;
+    children: SkillCategory[];
+}
+
+export interface SkillMastery {
+    name: string;
+    categoryId?: Nullable<string>;
+    mastery: Mastery;
+}
+
+export interface Skill {
+    id: string;
+    created_at: string;
+    name: string;
+    category: SkillCategory;
+    category_name?: Nullable<string>;
+    category_parent_name?: Nullable<string>;
+}
+
+export interface PaginatedSkills {
+    items: Skill[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export interface User {
+    id: string;
+    created_at: string;
+    email: string;
+    is_verified: boolean;
+    profile: Profile;
+    role: UserRole;
+    department?: Nullable<Department>;
+    position?: Nullable<Position>;
+    cvs?: Nullable<Cv[]>;
+}
+
+export interface PaginatedUsers {
+    items: User[];
+    total: number;
+    page: number;
+    limit: number;
+    total_pages: number;
+}
+
+export type Void = any;
+type Nullable<T> = T | null;

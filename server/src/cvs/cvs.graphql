@@ -1,0 +1,49 @@
+type Cv {
+  id: ID!
+  created_at: String!
+  name: String!
+  education: String
+  description: String!
+  user: User
+  projects: [CvProject!]
+  skills: [SkillMastery!]!
+  languages: [LanguageProficiency!]!
+}
+
+type PaginatedCvs {
+  items: [Cv!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+  total_pages: Int!
+}
+
+type Query {
+  cvs(params: SearchPaginationInput): PaginatedCvs!
+  cvsByUserId(userId: ID!, params: SearchPaginationInput): PaginatedCvs!
+  cv(cvId: ID!): Cv!
+}
+
+input CreateCvInput {
+  name: String!
+  education: String
+  description: String!
+  userId: ID
+}
+
+input UpdateCvInput {
+  cvId: ID!
+  name: String!
+  education: String
+  description: String!
+}
+
+input DeleteCvInput {
+  cvId: ID!
+}
+
+type Mutation {
+  createCv(cv: CreateCvInput!): Cv!
+  updateCv(cv: UpdateCvInput!): Cv!
+  deleteCv(cv: DeleteCvInput!): DeleteResult!
+}
