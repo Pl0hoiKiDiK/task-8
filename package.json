@@ -1,0 +1,42 @@
+{
+  "name": "task-8",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@apollo/client": "latest",
+    "@apollo/client-integration-nextjs": "latest",
+    "@reduxjs/toolkit": "latest",
+    "graphql": "latest",
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-redux": "latest",
+    "rxjs": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "latest",
+    "@vitest/coverage-v8": "latest",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "jsdom": "29.1.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "latest"
+  }
+}
