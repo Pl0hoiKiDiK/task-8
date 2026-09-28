@@ -7,7 +7,6 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY . ./
-COPY docker/.env.cv_backend .env
 RUN pnpm run build
 
 RUN corepack disable
