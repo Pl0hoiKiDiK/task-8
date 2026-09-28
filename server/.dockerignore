@@ -2,3 +2,6 @@
 /dist
 
 .env
+
+docker/.env.cv_backend
+docker/.env.cv_postgres
