@@ -1,43 +1,39 @@
-# CV Builder
+## Quick Start
 
-Frontend for creating and managing CVs. The application is at the initial setup stage; CV screens and GraphQL operations will be added as the team implements the requirements and reviews the design.
+Start the backend first, then the frontend.
 
-## Stack
+### 1. Run the backend
 
-- Next.js App Router and TypeScript
-- Tailwind CSS
-- Redux Toolkit and React Redux for shared mutable UI state
-- Apollo Client and GraphQL for backend data
-- Vitest and React Testing Library for unit and component tests
+Make sure Docker Desktop is running.
 
-## Requirements
+```sh
+cd server
+pnpm install
+```
 
-- Node.js 22.12 or newer
-- npm
-- Local [CV Builder API](https://github.com/innowise-frontend/cv-backend) for GraphQL features
+Create the two env files in `server/docker/` (`.env.cv_backend` and `.env.cv_postgres`). Their contents are listed in [server/README.md](server/README.md). Then start the containers and restore the database:
 
-## Local setup
+```sh
+pnpm run image:up
+pnpm run backup
+```
 
-1. Run `npm install`.
-2. Copy `.env.example` to `.env.local` and adjust `NEXT_PUBLIC_GRAPHQL_URL` if the API uses another address. The API README currently specifies `http://localhost:3001/api/graphql`.
-3. Run `npm run dev` and open `http://localhost:3000`.
+When it finishes, the GraphQL API is available at http://localhost:3001/api/graphql
 
-`.env.local` is ignored by Git. Do not place secrets in `NEXT_PUBLIC_` variables; those values are exposed to the browser.
+### 2. Run the frontend
 
-## Checks
+In a new terminal, from the repository root:
 
-- `npm run lint` checks the source with ESLint.
-- `npm run typecheck` checks TypeScript.
-- `npm run test` runs unit and component tests once.
-- `npm run test:coverage` produces the coverage report.
-- `npm run build` checks the production build.
+```sh
+cd client
+npm install
+copy .env.example .env.local   # macOS/Linux: cp .env.example .env.local
+npm run dev
+```
 
-## Project structure
+The application opens at http://localhost:3000. `NEXT_PUBLIC_GRAPHQL_URL` in `.env.local` should point to http://localhost:3001/api/graphql.
 
-- `src/app`: routes, layout and app providers
-- `src/lib`: Redux store and UI state
-- `vitest.config.mts`: test runner setup
+## More information
 
-## Current status
-
-The frontend scaffold and GraphQL client are configured. The backend connection, authorization flow, application screens, and API operations still need to be implemented and tested with the locally running API. A UI component library is still to be agreed with the mentor; Tailwind CSS supplies styling utilities rather than ready-made UI components.
+- Backend setup, env variables, and optional services (Cloudinary, Browserless, SMTP): [server/README.md](server/README.md)
+- Frontend scripts, checks, and project structure: [client/README.md](client/README.md)
