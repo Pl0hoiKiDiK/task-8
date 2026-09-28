@@ -2,3 +2,9 @@
 .env.*
 
 .npm-cache/
+
+# Artifacts left by the frontend before it moved to client/
+/node_modules/
+/.next/
+/next-env.d.ts
+/*.tsbuildinfo
