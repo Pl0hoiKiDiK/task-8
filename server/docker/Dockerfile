@@ -7,6 +7,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY . ./
+
 RUN pnpm run build
 
 RUN corepack disable
