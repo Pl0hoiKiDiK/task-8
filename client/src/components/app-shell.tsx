@@ -35,7 +35,7 @@ function SidebarLink({ item, active, onNavigate }: { item: NavItem; active: bool
   );
 }
 
-export function AppShell({ title, role = "user", initiallyCollapsed = false, children }: { title: string; role?: "user" | "admin"; initiallyCollapsed?: boolean; children: ReactNode }) {
+export function AppShell({ title, role = "user", initiallyCollapsed = false, activeSection, headerClassName = "", children }: { title: ReactNode; role?: "user" | "admin"; initiallyCollapsed?: boolean; activeSection?: string; headerClassName?: string; children: ReactNode }) {
   const pathname = usePathname();
   const [desktopExpanded, setDesktopExpanded] = useState(!initiallyCollapsed);
   const [tabletExpanded, setTabletExpanded] = useState(false);
@@ -71,7 +71,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, chi
 
         <nav className="sidebar-main" aria-label="Sections">
           {visibleMainItems.map((item) => (
-            <SidebarLink key={item.href} item={item} active={pathname === item.href} onNavigate={closeTablet} />
+            <SidebarLink key={item.href} item={item} active={(activeSection ?? pathname) === item.href} onNavigate={closeTablet} />
           ))}
           {role === "admin" && (
             <div className="sidebar-admin">
@@ -83,7 +83,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, chi
         <div className="sidebar-bottom">
           {profileOpen && (
             <nav className="profile-menu" aria-label="Account">
-              <SidebarLink item={{ label: "Profile", href: "/profile", icon: "profile" }} active={pathname === "/profile"} onNavigate={closeTablet} />
+              <SidebarLink item={{ label: "Profile", href: role === "admin" ? "/admin/profile" : "/profile", icon: "profile" }} active={pathname === "/profile" || pathname === "/admin/profile"} onNavigate={closeTablet} />
               <SidebarLink item={{ label: "Settings", href: "/settings", icon: "settings" }} active={pathname === "/settings"} onNavigate={closeTablet} />
               <button className="sidebar-link" type="button" disabled title="Sign out is not connected yet">
                 <AppIcon name="logout" /><span className="sidebar-label">Log out</span>
@@ -98,7 +98,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, chi
       </aside>
 
       <div className="app-content">
-        <header className="app-header">{title}</header>
+        <header className={`app-header ${headerClassName}`.trim()}>{title}</header>
         <main className="app-main">{children}</main>
       </div>
     </div>

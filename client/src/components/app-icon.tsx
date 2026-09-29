@@ -4,9 +4,10 @@ export type IconName =
   | "logo" | "employees" | "skills" | "languages" | "cvs"
   | "departments" | "positions" | "projects" | "profile"
   | "settings" | "logout" | "chevron" | "sort" | "search"
-  | "more" | "plus" | "eye";
+  | "more" | "plus" | "eye" | "download" | "arrow-nav"
+  | "person-red" | "cross-green";
 
-const iconFiles: Record<Exclude<IconName, "plus">, [string, string]> = {
+const iconFiles: Record<Exclude<IconName, "plus" | "arrow-nav" | "person-red" | "cross-green">, [string, string]> = {
   logo: ["logo-light.svg", "logo-dark.svg"],
   employees: ["nav-employees-active-light.svg", "nav-employees-active-dark.svg"],
   skills: ["nav-skills-inactive-light.svg", "nav-skills-inactive-dark.svg"],
@@ -23,13 +24,14 @@ const iconFiles: Record<Exclude<IconName, "plus">, [string, string]> = {
   search: ["search-light.svg", "search-dark.svg"],
   more: ["dots-light.svg", "dots-dark.svg"],
   eye: ["eye-light.svg", "eye-dark.svg"],
+  download: ["download-light.svg", "download-dark.svg"],
 };
 
 export function AppIcon({ name, className = "" }: { name: IconName; className?: string }) {
-  const size = name === "sort" ? 18 : 24;
+  const size = name === "sort" ? 18 : name === "arrow-nav" ? 20 : name === "download" ? 35 : 24;
   const classes = `app-icon ${className}`.trim();
-  if (name === "plus") {
-    return <Image src="/icons/plus.svg" alt="" aria-hidden="true" className={classes} width={size} height={size} unoptimized />;
+  if (name === "plus" || name === "arrow-nav" || name === "person-red" || name === "cross-green") {
+    return <Image src={`/icons/${name}.svg`} alt="" aria-hidden="true" className={classes} width={size} height={size} unoptimized />;
   }
 
   const [light, dark] = iconFiles[name];
