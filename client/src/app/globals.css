@@ -183,16 +183,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .my-profile-toast button .app-icon { width: 24px; height: 24px; }
 .user-skills-content { width: min(900px, 100%); margin: 32px 0 0 min(145px, max(0px, calc((100% - 900px) / 2))); padding: 0 24px; }
 .user-skills-page .my-profile-tab:last-child, .user-languages-page .my-profile-tab:last-child { display: none; }
-.user-languages-page--admin .my-profile-tab:last-child { display: grid; }
-.user-languages-content--empty { padding-top: 64px; }
-.admin-languages-empty { margin: 0; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; text-align: center; }
-.admin-languages-actions { display: flex; justify-content: flex-end; gap: 64px; margin-top: 16px; }
-.user-languages-content--empty .admin-languages-actions { margin-top: 48px; }
-.admin-languages-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0; border: 0; background: transparent; color: #626262; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
-.admin-languages-actions button:last-child { color: #c63031; }
-.admin-languages-actions button:disabled { cursor: default; opacity: 1; }
-:root[data-theme="dark"] .admin-languages-actions button:first-child { color: #c4c4c6; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .admin-languages-actions button:first-child { color: #c4c4c6; } }
+.user-skills-page--admin .my-profile-tab:last-child, .user-languages-page--admin .my-profile-tab:last-child { display: grid; }
+.admin-profile-content--empty { padding-top: 64px; }
+.admin-profile-empty { margin: 0; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; text-align: center; }
+.admin-profile-actions { display: flex; justify-content: flex-end; gap: 64px; margin-top: 16px; }
+.user-skills-page--admin .admin-profile-actions { gap: 112px; padding-right: 64px; }
+.user-skills-page--admin .user-skills-content:not(.admin-profile-content--empty) .admin-profile-actions { margin-top: 24px; }
+.admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
+.admin-profile-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0; border: 0; background: transparent; color: #626262; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
+.admin-profile-actions button:last-child { color: #c63031; }
+.admin-profile-actions button:disabled { cursor: default; opacity: 1; }
+:root[data-theme="dark"] .admin-profile-actions button:first-child { color: #c4c4c6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .admin-profile-actions button:first-child { color: #c4c4c6; } }
 .user-skills-group + .user-skills-group { margin-top: 32px; }
 .user-skills-group h1 { margin: 0; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
 .user-skills-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 48px; margin-top: 16px; }
@@ -251,13 +253,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .my-profile-form { grid-template-columns: minmax(0, 1fr); }
   .my-profile-toast { top: auto; bottom: 24px; right: 24px; width: min(360px, calc(100vw - 104px)); }
   .user-skills-content { width: 100%; margin-top: 26px; padding: 0 22px; }
+  .user-skills-page--admin .admin-profile-content--empty { margin-top: 32px; }
+  .user-skills-content.admin-profile-content--empty { padding-top: 64px; }
   .user-skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .user-skill { gap: 34px; color: #767676; }
   .user-languages-content { margin-top: 32px; padding-left: 25px; padding-right: 19px; }
-  .user-languages-content--empty { padding-top: 64px; }
   .user-languages-content .user-skill { padding-left: 8px; }
-  .admin-languages-actions { gap: 48px; margin-top: 16px; }
-  .user-languages-content--empty .admin-languages-actions { margin-top: 48px; }
+  .admin-profile-actions { gap: 48px; margin-top: 16px; }
+  .user-skills-page--admin .admin-profile-actions { gap: 112px; padding-right: 24px; }
+  .admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
   :root[data-theme="dark"] .user-skills-group h1 { color: #fff; }
   :root[data-theme="dark"] .my-profile-tab--active { color: var(--red); }
 }

@@ -1,5 +1,6 @@
 import { UserSkillsPreview } from "@/components/user-skills-preview";
 
-export default function AdminProfileSkillsPage() {
-  return <UserSkillsPreview role="admin" />;
+export default async function AdminProfileSkillsPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
+  const { preview } = await searchParams;
+  return <UserSkillsPreview role="admin" showExample={preview === "filled"} />;
 }

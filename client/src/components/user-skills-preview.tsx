@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminProfileActions } from "@/components/admin-profile-actions";
 import { ProfileBreadcrumbs, ProfileTabs } from "@/components/profile-navigation";
 import { ProfileProficiencyItem, type ProficiencyTone } from "@/components/profile-proficiency-item";
 
@@ -37,7 +38,9 @@ const skillGroups: { title: string; skills: Skill[] }[] = [
   },
 ];
 
-export function UserSkillsPreview({ role = "user" }: { role?: "user" | "admin" }) {
+export function UserSkillsPreview({ role = "user", showExample = false }: { role?: "user" | "admin"; showExample?: boolean }) {
+  const showSkills = role === "user" || showExample;
+
   return (
     <AppShell
       title={<ProfileBreadcrumbs role={role} section="Skills" />}
@@ -46,17 +49,18 @@ export function UserSkillsPreview({ role = "user" }: { role?: "user" | "admin" }
       headerClassName="profile-header"
       showSettingsLink={role === "user"}
     >
-      <div className="user-skills-page">
+      <div className={`user-skills-page${role === "admin" ? " user-skills-page--admin" : ""}`}>
         <ProfileTabs role={role} section="Skills" />
-        <div className="user-skills-content">
-          {skillGroups.map(({ title, skills }) => (
+        <div className={`user-skills-content${role === "admin" && !showSkills ? " admin-profile-content--empty" : ""}`}>
+          {showSkills ? skillGroups.map(({ title, skills }) => (
             <section className="user-skills-group" key={title} aria-label={title}>
               <h1>{title}</h1>
               <div className="user-skills-grid">
                 {skills.map((skill) => <ProfileProficiencyItem key={skill.name} {...skill} />)}
               </div>
             </section>
-          ))}
+          )) : <h1 className="admin-profile-empty">No skills here</h1>}
+          {role === "admin" && <AdminProfileActions item="skill" />}
         </div>
       </div>
     </AppShell>

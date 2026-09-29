@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/app-shell";
-import { AppIcon } from "@/components/app-icon";
+import { AdminProfileActions } from "@/components/admin-profile-actions";
 import { ProfileBreadcrumbs, ProfileTabs } from "@/components/profile-navigation";
 import { ProfileProficiencyItem } from "@/components/profile-proficiency-item";
 
@@ -16,7 +16,7 @@ export function UserLanguagesPreview({ role = "user", showExample = false }: { r
     >
       <div className={`user-languages-page${role === "admin" ? " user-languages-page--admin" : ""}`}>
         <ProfileTabs role={role} section="Languages" />
-        <section className={`user-skills-content user-languages-content${showLanguages ? "" : " user-languages-content--empty"}`} aria-label="Current languages">
+        <section className={`user-skills-content user-languages-content${showLanguages ? "" : " admin-profile-content--empty"}`} aria-label="Current languages">
           {showLanguages ? (
             <div className="user-skills-group">
               <h1>Current languages</h1>
@@ -25,13 +25,8 @@ export function UserLanguagesPreview({ role = "user", showExample = false }: { r
                 <ProfileProficiencyItem name="English" tone="green" level={60} />
               </div>
             </div>
-          ) : <h1 className="admin-languages-empty">No languages here</h1>}
-          {role === "admin" && (
-            <div className="admin-languages-actions">
-              <button type="button" disabled title="Language editing is not connected yet"><AppIcon name="add-language" />Add language</button>
-              <button type="button" disabled title="Language editing is not connected yet"><AppIcon name="delete" />Remove languages</button>
-            </div>
-          )}
+          ) : <h1 className="admin-profile-empty">No languages here</h1>}
+          {role === "admin" && <AdminProfileActions item="language" />}
         </section>
       </div>
     </AppShell>

@@ -4,7 +4,7 @@ export type IconName =
   | "logo" | "employees" | "skills" | "languages" | "cvs"
   | "departments" | "positions" | "projects" | "profile"
   | "settings" | "logout" | "chevron" | "sort" | "search"
-  | "more" | "plus" | "add-language" | "delete" | "eye" | "download" | "arrow-nav"
+  | "more" | "plus" | "add-profile-item" | "delete" | "eye" | "download" | "arrow-nav"
   | "person-red" | "cross-green";
 
 const iconFiles: Record<Exclude<IconName, "plus" | "delete" | "arrow-nav" | "person-red" | "cross-green">, [string, string]> = {
@@ -23,7 +23,7 @@ const iconFiles: Record<Exclude<IconName, "plus" | "delete" | "arrow-nav" | "per
   sort: ["arrow-up-light.svg", "arrow-up-dark.svg"],
   search: ["search-light.svg", "search-dark.svg"],
   more: ["dots-light.svg", "dots-dark.svg"],
-  "add-language": ["plus-light.svg", "plus-dark.svg"],
+  "add-profile-item": ["plus-light.svg", "plus-dark.svg"],
   eye: ["eye-light.svg", "eye-dark.svg"],
   download: ["download-light.svg", "download-dark.svg"],
 };
