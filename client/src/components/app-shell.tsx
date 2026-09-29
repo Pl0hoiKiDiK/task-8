@@ -35,11 +35,27 @@ function SidebarLink({ item, active, onNavigate }: { item: NavItem; active: bool
   );
 }
 
-export function AppShell({ title, role = "user", initiallyCollapsed = false, children }: { title: string; role?: "user" | "admin"; initiallyCollapsed?: boolean; children: ReactNode }) {
+const pageTitles: Record<string, string> = {
+  employees: "Employees",
+  skills: "Skills",
+  languages: "Languages",
+  cvs: "CVs",
+  profile: "Profile",
+  departments: "Departments",
+  positions: "Positions",
+  projects: "Projects",
+  settings: "Settings",
+};
+
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [desktopExpanded, setDesktopExpanded] = useState(!initiallyCollapsed);
+  const role = pathname.startsWith("/admin/") ? "admin" : "user";
+  const prefix = role === "admin" ? "/admin" : "";
+  const section = pathname.split("/").filter(Boolean).at(-1) ?? "";
+  const title = pageTitles[section] ?? "";
+  const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(pathname === "/settings");
+  const [profileOpen, setProfileOpen] = useState(pathname.endsWith("/settings"));
 
   const closeTablet = () => setTabletExpanded(false);
   const visibleMainItems = role === "admin"
@@ -60,7 +76,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, chi
           className="sidebar-collapse"
           type="button"
           aria-label="Toggle navigation"
-          aria-expanded={tabletExpanded}
+          aria-expanded={tabletExpanded || desktopExpanded}
           onClick={() => {
             if (window.matchMedia("(max-width: 900px)").matches) setTabletExpanded((open) => !open);
             else setDesktopExpanded((open) => !open);
@@ -83,8 +99,8 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, chi
         <div className="sidebar-bottom">
           {profileOpen && (
             <nav className="profile-menu" aria-label="Account">
-              <SidebarLink item={{ label: "Profile", href: "/profile", icon: "profile" }} active={pathname === "/profile"} onNavigate={closeTablet} />
-              <SidebarLink item={{ label: "Settings", href: "/settings", icon: "settings" }} active={pathname === "/settings"} onNavigate={closeTablet} />
+              <SidebarLink item={{ label: "Profile", href: `${prefix}/profile`, icon: "profile" }} active={pathname === `${prefix}/profile`} onNavigate={closeTablet} />
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
               <button className="sidebar-link" type="button" disabled title="Sign out is not connected yet">
                 <AppIcon name="logout" /><span className="sidebar-label">Log out</span>
               </button>

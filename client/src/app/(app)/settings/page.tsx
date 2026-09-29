@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { AppShell } from "@/components/app-shell";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { setTheme, type ThemePreference } from "@/lib/preferences-slice";
 
@@ -25,7 +24,7 @@ export default function SettingsPage() {
   const theme = useAppSelector((state) => state.preferences.theme);
 
   return (
-    <AppShell title="Settings">
+    <>
       <div className="settings-layout">
         <label className="settings-select">
           <span>Theme</span>
@@ -53,6 +52,6 @@ export default function SettingsPage() {
           <button className="settings-submit" type="button" disabled>Change</button>
         </section>
       </div>
-    </AppShell>
+    </>
   );
 }
