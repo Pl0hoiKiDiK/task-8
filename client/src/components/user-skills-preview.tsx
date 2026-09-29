@@ -1,8 +1,8 @@
 import { AppShell } from "@/components/app-shell";
 import { ProfileBreadcrumbs, ProfileTabs } from "@/components/profile-navigation";
+import { ProfileProficiencyItem, type ProficiencyTone } from "@/components/profile-proficiency-item";
 
-type SkillTone = "yellow" | "red" | "green" | "gray" | "blue";
-type Skill = { name: string; tone: SkillTone; level: number };
+type Skill = { name: string; tone: ProficiencyTone; level: number };
 
 const skillGroups: { title: string; skills: Skill[] }[] = [
   {
@@ -37,17 +37,6 @@ const skillGroups: { title: string; skills: Skill[] }[] = [
   },
 ];
 
-function SkillItem({ name, tone, level }: Skill) {
-  return (
-    <div className="user-skill">
-      <span className={`user-skill-bar user-skill-bar--${tone}`} aria-hidden="true">
-        <span style={{ width: `${level}%` }} />
-      </span>
-      <span>{name}</span>
-    </div>
-  );
-}
-
 export function UserSkillsPreview({ role = "user" }: { role?: "user" | "admin" }) {
   return (
     <AppShell
@@ -64,7 +53,7 @@ export function UserSkillsPreview({ role = "user" }: { role?: "user" | "admin" }
             <section className="user-skills-group" key={title} aria-label={title}>
               <h1>{title}</h1>
               <div className="user-skills-grid">
-                {skills.map((skill) => <SkillItem key={skill.name} {...skill} />)}
+                {skills.map((skill) => <ProfileProficiencyItem key={skill.name} {...skill} />)}
               </div>
             </section>
           ))}

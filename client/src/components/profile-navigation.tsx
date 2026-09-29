@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AppIcon } from "@/components/app-icon";
 
-type ProfileSection = "Profile" | "Skills";
+type ProfileSection = "Profile" | "Skills" | "Languages";
 type ProfileRole = "user" | "admin";
 
 export function ProfileBreadcrumbs({ role, section }: { role: ProfileRole; section: ProfileSection }) {
@@ -19,12 +19,13 @@ export function ProfileBreadcrumbs({ role, section }: { role: ProfileRole; secti
 export function ProfileTabs({ role, section }: { role: ProfileRole; section: ProfileSection }) {
   const profileHref = role === "admin" ? "/admin/profile" : "/profile";
   const skillsHref = `${profileHref}/skills`;
+  const languagesHref = `${profileHref}/languages`;
 
   return (
     <nav className="my-profile-tabs" aria-label="User details sections">
       <Link href={profileHref} className={`my-profile-tab${section === "Profile" ? " my-profile-tab--active" : ""}`} aria-current={section === "Profile" ? "page" : undefined}>Profile</Link>
       <Link href={skillsHref} className={`my-profile-tab${section === "Skills" ? " my-profile-tab--active" : ""}`} aria-current={section === "Skills" ? "page" : undefined}>Skills</Link>
-      <span className="my-profile-tab">Languages</span>
+      <Link href={languagesHref} className={`my-profile-tab${section === "Languages" ? " my-profile-tab--active" : ""}`} aria-current={section === "Languages" ? "page" : undefined}>Languages</Link>
       <span className="my-profile-tab">CVs</span>
     </nav>
   );

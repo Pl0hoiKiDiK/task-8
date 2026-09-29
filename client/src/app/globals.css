@@ -181,8 +181,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .my-profile-toast p { margin: 6px 0 0; font-size: 14px; font-weight: 400; line-height: 20.02px; letter-spacing: .15px; }
 .my-profile-toast button { align-self: flex-start; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; }
 .my-profile-toast button .app-icon { width: 24px; height: 24px; }
-.user-skills-content { width: min(852px, 100%); margin: 32px auto 0; }
-.user-skills-page .my-profile-tab:last-child { display: none; }
+.user-skills-content { width: min(900px, 100%); margin: 32px 0 0 min(145px, max(0px, calc((100% - 900px) / 2))); padding: 0 24px; }
+.user-skills-page .my-profile-tab:last-child, .user-languages-page .my-profile-tab:last-child { display: none; }
 .user-skills-group + .user-skills-group { margin-top: 32px; }
 .user-skills-group h1 { margin: 0; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
 .user-skills-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 48px; margin-top: 16px; }
@@ -243,6 +243,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .user-skills-content { width: 100%; margin-top: 26px; padding: 0 22px; }
   .user-skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .user-skill { gap: 34px; color: #767676; }
+  .user-languages-content { margin-top: 32px; padding-left: 25px; padding-right: 19px; }
+  .user-languages-content .user-skill { padding-left: 8px; }
   :root[data-theme="dark"] .user-skills-group h1 { color: #fff; }
   :root[data-theme="dark"] .my-profile-tab--active { color: var(--red); }
 }
