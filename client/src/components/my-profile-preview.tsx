@@ -1,21 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
 import { AppShell } from "@/components/app-shell";
-
-function ProfileBreadcrumbs({ role }: { role: "user" | "admin" }) {
-  return (
-    <nav className="profile-breadcrumbs" aria-label="Breadcrumb">
-      <Link href={role === "admin" ? "/admin/employees" : "/employees"}>Employees</Link>
-      <AppIcon name="arrow-nav" />
-      <span className="profile-breadcrumb-person"><AppIcon name="person-red" /> Rostislav Harlanov</span>
-      <AppIcon name="arrow-nav" />
-      <span aria-current="page">Profile</span>
-    </nav>
-  );
-}
+import { ProfileBreadcrumbs, ProfileTabs } from "@/components/profile-navigation";
 
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
@@ -42,14 +30,9 @@ export function MyProfilePreview({ role = "user" }: { role?: "user" | "admin" })
   const [toastVisible, setToastVisible] = useState(true);
 
   return (
-    <AppShell title={<ProfileBreadcrumbs role={role} />} role={role} activeSection={role === "admin" ? "/admin/employees" : "/employees"} headerClassName="profile-header">
+    <AppShell title={<ProfileBreadcrumbs role={role} section="Profile" />} role={role} activeSection={role === "admin" ? "/admin/employees" : "/employees"} headerClassName="profile-header" showSettingsLink={role === "user"}>
       <div className="my-profile-page">
-        <nav className="my-profile-tabs" aria-label="User details sections">
-          <span className="my-profile-tab my-profile-tab--active" aria-current="page">Profile</span>
-          <span className="my-profile-tab">Skills</span>
-          <span className="my-profile-tab">Languages</span>
-          <span className="my-profile-tab">CVs</span>
-        </nav>
+        <ProfileTabs role={role} section="Profile" />
 
         {toastVisible && (
           <div className="my-profile-toast" role="status">

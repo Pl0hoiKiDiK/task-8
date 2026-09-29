@@ -35,7 +35,7 @@ function SidebarLink({ item, active, onNavigate }: { item: NavItem; active: bool
   );
 }
 
-export function AppShell({ title, role = "user", initiallyCollapsed = false, activeSection, headerClassName = "", children }: { title: ReactNode; role?: "user" | "admin"; initiallyCollapsed?: boolean; activeSection?: string; headerClassName?: string; children: ReactNode }) {
+export function AppShell({ title, role = "user", initiallyCollapsed = false, activeSection, headerClassName = "", showSettingsLink = false, children }: { title: ReactNode; role?: "user" | "admin"; initiallyCollapsed?: boolean; activeSection?: string; headerClassName?: string; showSettingsLink?: boolean; children: ReactNode }) {
   const pathname = usePathname();
   const [desktopExpanded, setDesktopExpanded] = useState(!initiallyCollapsed);
   const [tabletExpanded, setTabletExpanded] = useState(false);
@@ -73,6 +73,11 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, act
           {visibleMainItems.map((item) => (
             <SidebarLink key={item.href} item={item} active={(activeSection ?? pathname) === item.href} onNavigate={closeTablet} />
           ))}
+          {showSettingsLink && role === "user" && (
+            <div className="sidebar-profile-settings">
+              <SidebarLink item={{ label: "Settings", href: "/settings", icon: "settings" }} active={pathname === "/settings"} onNavigate={closeTablet} />
+            </div>
+          )}
           {role === "admin" && (
             <div className="sidebar-admin">
               {adminItems.map((item) => <SidebarLink key={item.href} item={item} active={pathname === item.href} onNavigate={closeTablet} />)}
