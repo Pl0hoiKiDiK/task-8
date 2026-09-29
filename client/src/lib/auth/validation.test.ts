@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PASSWORD_MIN_LENGTH, validateSignup } from "@/lib/validation";
+import { PASSWORD_MIN_LENGTH, validateSignup } from "@/lib/auth/validation";
 
 const valid = {
     email: "user@example.com",
