@@ -4,8 +4,13 @@ const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 const NETWORK_MESSAGE = "Cannot reach the server. Check your connection and try again.";
 
 const MESSAGES: Record<string, string> = {
+    invalidEmail: "Enter a valid email",
+    passwordTooShort: "Password is too short",
+    confirmPasswordTooShort: "Password is too short",
+    confirmPasswordMismatch: "Passwords do not match",
+    userAlreadyExists: "An account with this email already exists",
     invalidCredentials: "Invalid email or password",
-    failedToSendEmail: "We could not send the confirmation email. Please try again later.",
+    failedToSendEmail: "Account created, but we could not send the confirmation email.",
 };
 
 export function getAuthErrorMessage(error: unknown): string {
