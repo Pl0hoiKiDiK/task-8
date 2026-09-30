@@ -7,8 +7,6 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    // я убрал nav. Теперь навигация через layout и AuthTabs в components\auth\auth-tabs.tsx
-    // Sign up, сам макет и вкладки теперь не перерисовываются
     <section className="auth-panel" aria-labelledby="sign-in-title">
         <h1 id="sign-in-title">Welcome back</h1>
         <p>Hello again! Sign in to continue</p>
