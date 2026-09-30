@@ -39,15 +39,11 @@
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body { margin: 0; background: var(--surface); color: var(--text); font-family: var(--font-roboto), Roboto, Arial, sans-serif; }
-.app-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; vertical-align: middle; }
-.app-icon img { display: block; width: 100%; height: 100%; }
-.app-icon .app-icon-dark { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .app-icon .app-icon-light { display: none; }
-  :root:not([data-theme="light"]) .app-icon .app-icon-dark { display: block; }
-}
-:root[data-theme="dark"] .app-icon .app-icon-light { display: none; }
-:root[data-theme="dark"] .app-icon .app-icon-dark { display: block; }
+.app-icon { display: inline-block; width: 24px; height: 24px; flex: none; vertical-align: middle; }
+.app-icon--eye, .app-icon--chevron, .app-icon--search, .app-icon--sort, .app-icon--more, .app-icon--add-profile-item { color: var(--muted); }
+.app-icon--plus, .app-icon--person-red, .app-icon--delete { color: var(--red); }
+.app-icon--arrow-nav { color: #aeaeae; }
+.app-icon--cross-green { color: #335d35; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
@@ -75,13 +71,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .sidebar-brand { height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px; white-space: nowrap; font-size: 16px; font-weight: 500; line-height: 24px; letter-spacing: .15px; }
 .sidebar-logo { width: 24px; height: 24px; flex: none; }
 .sidebar-collapse { position: absolute; top: 52px; right: -12px; z-index: 25; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: var(--surface); color: var(--muted); }
-.sidebar-collapse-icon .app-icon-light { transform: rotate(180deg); }
+.sidebar-collapse-icon { transform: none; }
 .sidebar-main { flex: 1; overflow-y: auto; padding-top: 14px; }
 .sidebar-link { width: 100%; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 16px; border: 0; border-radius: 0 28px 28px 0; text-decoration: none; color: var(--muted); white-space: nowrap; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
 .sidebar-link + .sidebar-link { margin-top: 14px; }
 .sidebar-link .app-icon { width: 24px; height: 24px; }
 .sidebar-link:hover, .sidebar-link--active { background: var(--sidebar-active); color: var(--text); }
-.sidebar-link--employees-inactive .app-icon { opacity: .7; }
 .sidebar-admin { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border); }
 .sidebar-admin .sidebar-link + .sidebar-link { margin-top: 14px; }
 .sidebar-profile-settings { margin-top: 14px; }
@@ -98,8 +93,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .app-shell--collapsed .sidebar-label { display: none; }
 .app-shell--collapsed .sidebar-brand { padding: 0 16px; }
 .app-shell--collapsed .sidebar-account { padding-left: 8px; }
-.app-shell--collapsed .sidebar-collapse-icon .app-icon-light { transform: none; }
-.app-shell--collapsed .sidebar-collapse-icon .app-icon-dark { transform: rotate(180deg); }
+.app-shell--collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
 
 .employees-toolbar { min-height: 56px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-left: 20px; }
 .search-field { width: 320px; height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid #aeaeae; border-radius: 40px; }
@@ -116,7 +110,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .employee-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--border); color: var(--surface); font-size: 20px; }
 .employee-row-action { display: inline-grid; place-items: center; width: 32px; height: 40px; padding: 0; border: 0; background: none; color: var(--muted); }
 .employee-row-action .app-icon { width: 24px; height: 24px; }
-.employee-row-action--arrow .app-icon-dark img { transform: rotate(180deg); }
+.employee-row-action--arrow .app-icon { transform: rotate(180deg); }
 .sort-indicator { width: 18px; height: 18px; margin-left: 6px; }
 .employee-actions { position: relative; z-index: 3; display: inline-block; }
 .employee-actions-menu { position: absolute; top: 32px; right: 0; z-index: 5; width: 90px; padding: 4px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--menu-surface); box-shadow: 0 4px 12px #0002; text-align: left; }
@@ -130,8 +124,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .settings-select > span { display: block; padding-left: 14px; color: var(--muted); font-size: 12px; line-height: 16px; }
 .settings-select select { width: 100%; height: 48px; padding: 0 40px 0 12px; border: 1px solid #aeaeae; border-radius: 0; appearance: none; background: var(--surface); color: var(--text); font-size: 16px; line-height: 24px; letter-spacing: .15px; }
 .settings-select-arrow { position: absolute; right: 12px; bottom: 12px; pointer-events: none; }
-.settings-select-arrow .app-icon-light { transform: rotate(90deg); }
-.settings-select-arrow .app-icon-dark { transform: rotate(-90deg); }
+.settings-select-arrow { transform: rotate(-90deg); }
 .settings-password-section { margin-top: 36px; }
 .settings-password-section h1 { margin: 0 0 26px; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
 .settings-password { position: relative; margin-bottom: 36px; }
@@ -170,8 +163,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .my-profile-field input, .my-profile-select-value { width: 100%; height: 48px; padding: 0 12px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
 .my-profile-select-value { display: flex; align-items: center; justify-content: space-between; }
 .my-profile-select-arrow { width: 24px; height: 24px; }
-.my-profile-select-arrow .app-icon-light { transform: rotate(90deg); }
-.my-profile-select-arrow .app-icon-dark { transform: rotate(-90deg); }
+.my-profile-select-arrow { transform: rotate(-90deg); color: var(--muted); }
 .my-profile-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 24px; margin-top: 16px; }
 .my-profile-actions button { width: 160px; height: 48px; border-radius: 24px; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; cursor: default; }
 .my-profile-verify { border: 1px solid var(--muted); background: transparent; color: #626262; }
@@ -228,8 +220,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .sidebar-brand { padding: 0 16px; }
   .app-shell--tablet-open .sidebar-collapse { background: var(--surface); }
   :root[data-theme="dark"] .app-shell--tablet-open .sidebar-collapse { background: #454545; }
-  .app-shell--tablet-open .sidebar-collapse-icon .app-icon-light { transform: rotate(180deg); }
-  .app-shell--tablet-open .sidebar-collapse-icon .app-icon-dark { transform: none; }
+  .app-shell--tablet-open .sidebar-collapse-icon { transform: none; }
   .sidebar-backdrop { position: fixed; inset: 0; z-index: 19; border: 0; background: #0009; }
   .app-shell--tablet-open .sidebar { width: 200px; }
   .app-shell--tablet-open .sidebar-label { display: inline; }
