@@ -6,7 +6,7 @@ export type SignupValues = {
 
 export type SignupErrors = Partial<Record<keyof SignupValues, string>>;
 
-export const PASSWORD_MIN_LENGTH = 5;
+export const PASSWORD_MIN_LENGTH = 6;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
