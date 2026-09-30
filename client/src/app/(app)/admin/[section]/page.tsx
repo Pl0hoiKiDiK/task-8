@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
 
 const titles: Record<string, string> = {
   skills: "Skills",
@@ -12,8 +11,7 @@ const titles: Record<string, string> = {
 
 export default async function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;
-  const title = titles[section];
-  if (!title) notFound();
+  if (!titles[section]) notFound();
 
-  return <AppShell title={title} role="admin"><div /></AppShell>;
+  return null;
 }

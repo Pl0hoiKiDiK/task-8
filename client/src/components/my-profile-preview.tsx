@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { AppShell } from "@/components/app-shell";
-import { ProfileBreadcrumbs, ProfileTabs } from "@/components/profile-navigation";
+import { ProfileTabs } from "@/components/profile-navigation";
 
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
@@ -30,7 +29,7 @@ export function MyProfilePreview({ role = "user" }: { role?: "user" | "admin" })
   const [toastVisible, setToastVisible] = useState(true);
 
   return (
-    <AppShell title={<ProfileBreadcrumbs role={role} section="Profile" />} role={role} activeSection={role === "admin" ? "/admin/employees" : "/employees"} headerClassName="profile-header" showSettingsLink={role === "user"}>
+    <>
       <div className="my-profile-page">
         <ProfileTabs role={role} section="Profile" />
 
@@ -76,6 +75,6 @@ export function MyProfilePreview({ role = "user" }: { role?: "user" | "admin" })
           </div>
         </section>
       </div>
-    </AppShell>
+    </>
   );
 }

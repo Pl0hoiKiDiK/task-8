@@ -21,8 +21,8 @@ export function ThemeSync() {
   }, [dispatch, store]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
     if (awaitingSavedTheme.current !== null && theme !== awaitingSavedTheme.current) return;
+    document.documentElement.dataset.theme = theme;
     awaitingSavedTheme.current = null;
     localStorage.setItem(themeKey, theme);
   }, [theme]);

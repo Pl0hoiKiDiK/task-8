@@ -1,6 +1,5 @@
-import { AppShell } from "@/components/app-shell";
 import { AdminProfileActions } from "@/components/admin-profile-actions";
-import { ProfileBreadcrumbs, ProfileTabs } from "@/components/profile-navigation";
+import { ProfileTabs } from "@/components/profile-navigation";
 import { ProfileProficiencyItem, type ProficiencyTone } from "@/components/profile-proficiency-item";
 
 type Skill = { name: string; tone: ProficiencyTone; level: number };
@@ -42,13 +41,7 @@ export function UserSkillsPreview({ role = "user", showExample = false }: { role
   const showSkills = role === "user" || showExample;
 
   return (
-    <AppShell
-      title={<ProfileBreadcrumbs role={role} section="Skills" />}
-      role={role}
-      activeSection={role === "admin" ? "/admin/employees" : "/employees"}
-      headerClassName="profile-header"
-      showSettingsLink={role === "user"}
-    >
+    <>
       <div className={`user-skills-page${role === "admin" ? " user-skills-page--admin" : ""}`}>
         <ProfileTabs role={role} section="Skills" />
         <div className={`user-skills-content${role === "admin" && !showSkills ? " admin-profile-content--empty" : ""}`}>
@@ -63,6 +56,6 @@ export function UserSkillsPreview({ role = "user", showExample = false }: { role
           {role === "admin" && <AdminProfileActions item="skill" />}
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

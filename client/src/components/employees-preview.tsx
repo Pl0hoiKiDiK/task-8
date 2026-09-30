@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { AppShell } from "@/components/app-shell";
 
 const employees = [
   { first: "Rostislav", last: "Harlanov", email: "rostislav@example.com", department: "React", position: "Software Engineer" },
@@ -25,7 +24,7 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
   ), [search]);
 
   return (
-    <AppShell title="Employees" role={admin ? "admin" : "user"}>
+    <>
       <div className="employees-toolbar">
         <label className="search-field">
           <AppIcon name="search" />
@@ -89,6 +88,6 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
           ))}
         </tbody>
       </table>
-    </AppShell>
+    </>
   );
 }

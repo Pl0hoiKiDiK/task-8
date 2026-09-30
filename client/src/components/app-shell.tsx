@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { AppIcon, type IconName } from "@/components/app-icon";
+import { ProfileBreadcrumbs } from "@/components/profile-navigation";
 
 type NavItem = { label: string; href: string; icon: IconName };
 
@@ -35,11 +36,30 @@ function SidebarLink({ item, active, onNavigate }: { item: NavItem; active: bool
   );
 }
 
-export function AppShell({ title, role = "user", initiallyCollapsed = false, activeSection, headerClassName = "", showSettingsLink = false, children }: { title: ReactNode; role?: "user" | "admin"; initiallyCollapsed?: boolean; activeSection?: string; headerClassName?: string; showSettingsLink?: boolean; children: ReactNode }) {
+const pageTitles: Record<string, string> = {
+  employees: "Employees",
+  skills: "Skills",
+  languages: "Languages",
+  cvs: "CVs",
+  departments: "Departments",
+  positions: "Positions",
+  projects: "Projects",
+  settings: "Settings",
+};
+
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [desktopExpanded, setDesktopExpanded] = useState(!initiallyCollapsed);
+  const role = pathname.startsWith("/admin/") ? "admin" : "user";
+  const prefix = role === "admin" ? "/admin" : "";
+  const isProfile = pathname === `${prefix}/profile` || pathname.startsWith(`${prefix}/profile/`);
+  const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : "Profile";
+  const title = isProfile
+    ? <ProfileBreadcrumbs role={role} section={profileSection} />
+    : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
+  const activeSection = isProfile ? `${prefix}/employees` : pathname;
+  const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(pathname === "/settings");
+  const [profileOpen, setProfileOpen] = useState(pathname.endsWith("/settings"));
 
   const closeTablet = () => setTabletExpanded(false);
   const visibleMainItems = role === "admin"
@@ -60,7 +80,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, act
           className="sidebar-collapse"
           type="button"
           aria-label="Toggle navigation"
-          aria-expanded={tabletExpanded}
+          aria-expanded={tabletExpanded || desktopExpanded}
           onClick={() => {
             if (window.matchMedia("(max-width: 900px)").matches) setTabletExpanded((open) => !open);
             else setDesktopExpanded((open) => !open);
@@ -71,11 +91,11 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, act
 
         <nav className="sidebar-main" aria-label="Sections">
           {visibleMainItems.map((item) => (
-            <SidebarLink key={item.href} item={item} active={(activeSection ?? pathname) === item.href} onNavigate={closeTablet} />
+            <SidebarLink key={item.href} item={item} active={activeSection === item.href} onNavigate={closeTablet} />
           ))}
-          {showSettingsLink && role === "user" && (
+          {isProfile && role === "user" && (
             <div className="sidebar-profile-settings">
-              <SidebarLink item={{ label: "Settings", href: "/settings", icon: "settings" }} active={pathname === "/settings"} onNavigate={closeTablet} />
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
             </div>
           )}
           {role === "admin" && (
@@ -89,7 +109,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, act
           {profileOpen && (
             <nav className="profile-menu" aria-label="Account">
               <SidebarLink item={{ label: "Profile", href: role === "admin" ? "/admin/profile" : "/profile", icon: "profile" }} active={pathname === "/profile" || pathname === "/admin/profile"} onNavigate={closeTablet} />
-              <SidebarLink item={{ label: "Settings", href: "/settings", icon: "settings" }} active={pathname === "/settings"} onNavigate={closeTablet} />
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
               <button className="sidebar-link" type="button" disabled title="Sign out is not connected yet">
                 <AppIcon name="logout" /><span className="sidebar-label">Log out</span>
               </button>
@@ -103,7 +123,7 @@ export function AppShell({ title, role = "user", initiallyCollapsed = false, act
       </aside>
 
       <div className="app-content">
-        <header className={`app-header ${headerClassName}`.trim()}>{title}</header>
+        <header className={`app-header${isProfile ? " profile-header" : ""}`}>{title}</header>
         <main className="app-main">{children}</main>
       </div>
     </div>
