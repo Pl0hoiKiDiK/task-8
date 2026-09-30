@@ -108,7 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="sidebar-bottom">
           {profileOpen && (
             <nav className="profile-menu" aria-label="Account">
-              <SidebarLink item={{ label: "Profile", href: role === "admin" ? "/admin/profile" : "/profile", icon: "profile" }} active={pathname === "/profile" || pathname === "/admin/profile"} onNavigate={closeTablet} />
+              <SidebarLink item={{ label: "Profile", href: `${prefix}/profile`, icon: "profile" }} active={pathname === `${prefix}/profile`} onNavigate={closeTablet} />
               <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
               <button className="sidebar-link" type="button" disabled title="Sign out is not connected yet">
                 <AppIcon name="logout" /><span className="sidebar-label">Log out</span>

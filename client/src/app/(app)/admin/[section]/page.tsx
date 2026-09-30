@@ -7,6 +7,7 @@ const titles: Record<string, string> = {
   departments: "Departments",
   positions: "Positions",
   projects: "Projects",
+  profile: "Profile",
 };
 
 export default async function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
