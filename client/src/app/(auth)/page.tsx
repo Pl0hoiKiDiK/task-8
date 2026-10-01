@@ -7,13 +7,7 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <main className="auth-layout">
-      <nav className="auth-tabs" aria-label="Authentication">
-        <span className="auth-tab auth-tab--active" aria-current="page">Sign in</span>
-        <span className="auth-tab">Sign up</span>
-      </nav>
-
-      <section className="auth-panel" aria-labelledby="sign-in-title">
+    <section className="auth-panel" aria-labelledby="sign-in-title">
         <h1 id="sign-in-title">Welcome back</h1>
         <p>Hello again! Sign in to continue</p>
 
@@ -45,6 +39,5 @@ export default function SignInPage() {
           <span className="auth-secondary-action">Forgot password</span>
         </form>
       </section>
-    </main>
   );
 }
