@@ -14,5 +14,5 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
   const { section } = await params;
   if (!titles[section]) notFound();
 
-  return <div />;
+  return null;
 }

@@ -11,5 +11,5 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
   const { section } = await params;
   if (!titles[section]) notFound();
 
-  return <div />;
+  return null;
 }
