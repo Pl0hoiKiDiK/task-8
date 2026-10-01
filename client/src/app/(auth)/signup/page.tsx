@@ -12,7 +12,7 @@ export default function SignUpPage() {
     const [showPasswordConfirm, setshowPasswordConfirm] = useState(false);
 
     return (
-        <section className="auth-panel" aria-labelledby="sign-up-title">
+        <section className="signup-panel" aria-labelledby="sign-up-title">
             <h1 id="sign-up-title">Sign up now</h1>
             <p>Welcome! Sign up to continue</p>
 
@@ -87,11 +87,11 @@ export default function SignUpPage() {
 
                 {formError && <p role="alert" className="auth-form-error">{formError}</p>}
 
-                <button className="primary-button" type="submit" disabled={loading}>
+                <button className="primary-button primary-button-signup" type="submit" disabled={loading}>
                     {loading ? "Creating..." : "Create account"}
                 </button>
                 <Link className="auth-secondary-action" href="/">I have an account</Link>
             </form>
-        </section>
+        </section> 
     );
 }
