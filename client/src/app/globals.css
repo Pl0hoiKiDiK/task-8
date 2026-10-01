@@ -174,13 +174,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .my-profile-toast button { align-self: flex-start; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; }
 .my-profile-toast button .app-icon { width: 24px; height: 24px; }
 .user-skills-content { width: min(900px, 100%); margin: 32px 0 0 min(145px, max(0px, calc((100% - 900px) / 2))); padding: 0 24px; }
-.user-skills-page .my-profile-tab:last-child, .user-languages-page .my-profile-tab:last-child { display: none; }
-.user-skills-page--admin .my-profile-tab:last-child, .user-languages-page--admin .my-profile-tab:last-child { display: grid; }
 .admin-profile-content--empty { padding-top: 64px; }
 .admin-profile-empty { margin: 0; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; text-align: center; }
 .admin-profile-actions { display: flex; justify-content: flex-end; gap: 64px; margin-top: 16px; }
-.user-skills-page--admin .admin-profile-actions { gap: 112px; padding-right: 64px; }
-.user-skills-page--admin .user-skills-content:not(.admin-profile-content--empty) .admin-profile-actions { margin-top: 24px; }
+.user-skills-page--editable .admin-profile-actions { gap: 112px; padding-right: 64px; }
+.user-skills-page--editable .user-skills-content:not(.admin-profile-content--empty) .admin-profile-actions { margin-top: 24px; }
 .admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
 .admin-profile-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0; border: 0; background: transparent; color: #626262; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
 .admin-profile-actions button:last-child { color: #c63031; }
@@ -253,14 +251,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .search-field { width: 276px; }
   .sidebar-bottom { padding-bottom: 56px; }
   .profile-header { padding-left: 36px; }
-  .my-profile-tab:last-child { display: none; }
-  .profile-cvs-page .my-profile-tab:last-child { display: grid; }
   .my-profile-content { width: 100%; }
   .my-profile-avatar-row { gap: 38px; }
   .my-profile-form { grid-template-columns: minmax(0, 1fr); }
   .my-profile-toast { top: auto; bottom: 24px; right: 24px; width: min(360px, calc(100vw - 104px)); }
   .user-skills-content { width: 100%; margin-top: 26px; padding: 0 22px; }
-  .user-skills-page--admin .admin-profile-content--empty { margin-top: 32px; }
+  .user-skills-page--editable .admin-profile-content--empty { margin-top: 32px; }
   .user-skills-content.admin-profile-content--empty { padding-top: 64px; }
   .user-skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .user-skill { gap: 34px; color: #767676; }
@@ -270,7 +266,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .profile-cvs-employee { display: none; }
   .profile-cv p { margin-top: 16px; }
   .admin-profile-actions { gap: 48px; margin-top: 16px; }
-  .user-skills-page--admin .admin-profile-actions { gap: 112px; padding-right: 24px; }
+  .user-skills-page--editable .admin-profile-actions { gap: 112px; padding-right: 24px; }
   .admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
   :root[data-theme="dark"] .user-skills-group h1 { color: #fff; }
   :root[data-theme="dark"] .my-profile-tab--active { color: var(--red); }
@@ -297,7 +293,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .profile-breadcrumbs { gap: 4px; font-size: 13px; }
   .profile-breadcrumb-person .app-icon { display: none; }
   .my-profile-tabs { width: 100%; }
-  .my-profile-tab { width: 25%; }
+  .my-profile-tab { width: 33.333%; }
+  .my-profile-tabs--four .my-profile-tab { width: 25%; }
   .profile-cvs-toolbar { padding-right: 8px; padding-left: 8px; }
   .profile-cvs-heading, .profile-cv-row { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) 28px; }
   .my-profile-avatar-row { gap: 20px; transform: none; }

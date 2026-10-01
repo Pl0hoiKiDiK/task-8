@@ -1,5 +1,4 @@
 import { AppIcon } from "@/components/app-icon";
-import { ProfileTabs } from "@/components/profile-navigation";
 
 const cvs = [
   {
@@ -19,8 +18,6 @@ const cvs = [
 export function ProfileCvsPreview() {
   return (
     <div className="profile-cvs-page">
-      <ProfileTabs role="admin" section="CVs" />
-
       <section className="profile-cvs-list" aria-label="CVs">
         <div className="profile-cvs-toolbar">
           <label className="search-field profile-cvs-search">

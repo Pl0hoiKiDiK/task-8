@@ -1,5 +1,5 @@
-import { UserLanguagesPreview } from "@/components/user-languages-preview";
+import { UserLanguagesPreview, previewLanguages } from "@/components/user-languages-preview";
 
 export default function ProfileLanguagesPage() {
-  return <UserLanguagesPreview />;
+  return <UserLanguagesPreview languages={previewLanguages} />;
 }

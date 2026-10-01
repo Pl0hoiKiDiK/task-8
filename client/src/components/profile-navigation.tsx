@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSelectedLayoutSegment } from "next/navigation";
 import { AppIcon } from "@/components/app-icon";
 
 type ProfileSection = "Profile" | "Skills" | "Languages" | "CVs";
@@ -16,20 +19,21 @@ export function ProfileBreadcrumbs({ role, section }: { role: ProfileRole; secti
   );
 }
 
-export function ProfileTabs({ role, section }: { role: ProfileRole; section: ProfileSection }) {
-  const profileHref = role === "admin" ? "/admin/profile" : "/profile";
-  const skillsHref = `${profileHref}/skills`;
-  const languagesHref = `${profileHref}/languages`;
-  const cvsHref = `${profileHref}/cvs`;
+export function ProfileTabs({ basePath, showCvs = false }: { basePath: "/profile" | "/admin/profile"; showCvs?: boolean }) {
+  const segment = useSelectedLayoutSegment();
+  const tabs = [
+    { label: "Profile", href: basePath, segment: null },
+    { label: "Skills", href: `${basePath}/skills`, segment: "skills" },
+    { label: "Languages", href: `${basePath}/languages`, segment: "languages" },
+    ...(showCvs ? [{ label: "CVs", href: `${basePath}/cvs`, segment: "cvs" }] : []),
+  ];
 
   return (
-    <nav className="my-profile-tabs" aria-label="User details sections">
-      <Link href={profileHref} className={`my-profile-tab${section === "Profile" ? " my-profile-tab--active" : ""}`} aria-current={section === "Profile" ? "page" : undefined}>Profile</Link>
-      <Link href={skillsHref} className={`my-profile-tab${section === "Skills" ? " my-profile-tab--active" : ""}`} aria-current={section === "Skills" ? "page" : undefined}>Skills</Link>
-      <Link href={languagesHref} className={`my-profile-tab${section === "Languages" ? " my-profile-tab--active" : ""}`} aria-current={section === "Languages" ? "page" : undefined}>Languages</Link>
-      {role === "admin" ? (
-        <Link href={cvsHref} className={`my-profile-tab${section === "CVs" ? " my-profile-tab--active" : ""}`} aria-current={section === "CVs" ? "page" : undefined}>CVs</Link>
-      ) : <span className="my-profile-tab">CVs</span>}
+    <nav className={`my-profile-tabs${showCvs ? " my-profile-tabs--four" : ""}`} aria-label="User details sections">
+      {tabs.map((tab) => {
+        const active = segment === tab.segment;
+        return <Link key={tab.href} href={tab.href} className={`my-profile-tab${active ? " my-profile-tab--active" : ""}`} aria-current={active ? "page" : undefined}>{tab.label}</Link>;
+      })}
     </nav>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { ProfileTabs } from "@/components/profile-navigation";
 
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
@@ -25,14 +24,12 @@ function ProfileSelect({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function MyProfilePreview({ role = "user" }: { role?: "user" | "admin" }) {
+export function MyProfilePreview() {
   const [toastVisible, setToastVisible] = useState(true);
 
   return (
     <>
       <div className="my-profile-page">
-        <ProfileTabs role={role} section="Profile" />
-
         {toastVisible && (
           <div className="my-profile-toast" role="status">
             <div>

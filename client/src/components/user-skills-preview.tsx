@@ -1,10 +1,10 @@
 import { AdminProfileActions } from "@/components/admin-profile-actions";
-import { ProfileTabs } from "@/components/profile-navigation";
 import { ProfileProficiencyItem, type ProficiencyTone } from "@/components/profile-proficiency-item";
 
-type Skill = { name: string; tone: ProficiencyTone; level: number };
+export type Skill = { name: string; tone: ProficiencyTone; level: number };
+export type SkillGroup = { title: string; skills: Skill[] };
 
-const skillGroups: { title: string; skills: Skill[] }[] = [
+export const previewSkillGroups: SkillGroup[] = [
   {
     title: "Programming languages",
     skills: [
@@ -37,25 +37,22 @@ const skillGroups: { title: string; skills: Skill[] }[] = [
   },
 ];
 
-export function UserSkillsPreview({ role = "user", showExample = false }: { role?: "user" | "admin"; showExample?: boolean }) {
-  const showSkills = role === "user" || showExample;
+export function UserSkillsPreview({ skillGroups, canEdit = false }: { skillGroups: SkillGroup[]; canEdit?: boolean }) {
+  const hasSkills = skillGroups.some((group) => group.skills.length > 0);
 
   return (
-    <>
-      <div className={`user-skills-page${role === "admin" ? " user-skills-page--admin" : ""}`}>
-        <ProfileTabs role={role} section="Skills" />
-        <div className={`user-skills-content${role === "admin" && !showSkills ? " admin-profile-content--empty" : ""}`}>
-          {showSkills ? skillGroups.map(({ title, skills }) => (
-            <section className="user-skills-group" key={title} aria-label={title}>
-              <h1>{title}</h1>
-              <div className="user-skills-grid">
-                {skills.map((skill) => <ProfileProficiencyItem key={skill.name} {...skill} />)}
-              </div>
-            </section>
-          )) : <h1 className="admin-profile-empty">No skills here</h1>}
-          {role === "admin" && <AdminProfileActions item="skill" />}
-        </div>
+    <div className={`user-skills-page${canEdit ? " user-skills-page--editable" : ""}`}>
+      <div className={`user-skills-content${hasSkills ? "" : " admin-profile-content--empty"}`}>
+        {hasSkills ? skillGroups.filter((group) => group.skills.length > 0).map(({ title, skills }) => (
+          <section className="user-skills-group" key={title} aria-label={title}>
+            <h1>{title}</h1>
+            <div className="user-skills-grid">
+              {skills.map((skill) => <ProfileProficiencyItem key={skill.name} {...skill} />)}
+            </div>
+          </section>
+        )) : <h1 className="admin-profile-empty">No skills here</h1>}
+        {canEdit && <AdminProfileActions item="skill" />}
       </div>
-    </>
+    </div>
   );
 }
