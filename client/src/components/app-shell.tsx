@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { AppIcon, type IconName } from "@/components/app-icon";
+import { ProfileBreadcrumbs } from "@/components/profile-navigation";
 
 type NavItem = { label: string; href: string; icon: IconName };
 
@@ -40,7 +41,6 @@ const pageTitles: Record<string, string> = {
   skills: "Skills",
   languages: "Languages",
   cvs: "CVs",
-  profile: "Profile",
   departments: "Departments",
   positions: "Positions",
   projects: "Projects",
@@ -51,8 +51,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const role = pathname.startsWith("/admin/") ? "admin" : "user";
   const prefix = role === "admin" ? "/admin" : "";
-  const section = pathname.split("/").filter(Boolean).at(-1) ?? "";
-  const title = pageTitles[section] ?? "";
+  const isProfile = pathname === `${prefix}/profile` || pathname.startsWith(`${prefix}/profile/`);
+  const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") ? "CVs" : "Profile";
+  const title = isProfile
+    ? <ProfileBreadcrumbs role={role} section={profileSection} />
+    : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
+  const activeSection = isProfile ? `${prefix}/employees` : pathname;
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(pathname.endsWith("/settings"));
@@ -87,8 +91,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav className="sidebar-main" aria-label="Sections">
           {visibleMainItems.map((item) => (
-            <SidebarLink key={item.href} item={item} active={pathname === item.href} onNavigate={closeTablet} />
+            <SidebarLink key={item.href} item={item} active={activeSection === item.href} onNavigate={closeTablet} />
           ))}
+          {isProfile && role === "user" && (
+            <div className="sidebar-profile-settings">
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
+            </div>
+          )}
           {role === "admin" && (
             <div className="sidebar-admin">
               {adminItems.map((item) => <SidebarLink key={item.href} item={item} active={pathname === item.href} onNavigate={closeTablet} />)}
@@ -114,7 +123,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="app-content">
-        <header className="app-header">{title}</header>
+        <header className={`app-header${isProfile ? " profile-header" : ""}`}>{title}</header>
         <main className="app-main">{children}</main>
       </div>
     </div>
