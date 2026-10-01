@@ -171,6 +171,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .employees-table .employee-department { width: 28%; }
   .search-field { width: 276px; }
   .sidebar-bottom { padding-bottom: 56px; }
+  .signup-panel { margin-top: clamp(110px, 20vh, 180px); } 
 }
 
 @media (prefers-color-scheme: dark) {

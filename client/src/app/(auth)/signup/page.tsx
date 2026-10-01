@@ -34,7 +34,7 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="password-field">
-                    <label className="sr-only" htmlFor="email">Email</label>
+                    <label className="sr-only" htmlFor="password">Password</label>
                     <input
                         id="password"
                         name="password"
