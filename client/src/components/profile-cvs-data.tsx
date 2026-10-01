@@ -12,22 +12,33 @@ export type CvRecord = {
 
 export type CvFields = Pick<CvRecord, "name" | "education" | "description">;
 
-const employee = "thorn_pear@icloud.com";
+export const previewEmployeeEmail = "thorn_pear@icloud.com";
 
 const initialCvs: CvRecord[] = [
   {
     id: "preview-cv-1",
     name: "Software Engineer with 5+ years of experience",
     education: "Computer Systems Design",
-    employee,
+    employee: previewEmployeeEmail,
     description: "Highly motivated and experienced Software Engineer with 5+ years of proven success in leading and developing robust and scalable applications. Adept at leveraging React, Node.js, Three.js, and WebGL to create innovative and visually appealing user interfaces. Possesses strong leadership and mentoring skills, effectively guiding junior developers and fostering a collaborative team environment. Adept at architecting complex systems, ensuring efficient performance, and adhering to best practices. Passionate about delivering high-quality solutions and contributing to the success of dynamic projects.",
   },
   {
     id: "preview-cv-2",
     name: "Software Engineer with 5+ years of experience",
     education: "Computer Systems Design",
-    employee,
+    employee: previewEmployeeEmail,
     description: "Highly motivated and experienced Software Engineer with 5+ years of proven success in designing and developing complex software solutions. Adept at utilizing cutting-edge technologies such as React and Node.js to create user-friendly and scalable applications. Possesses a strong understanding of Computer Systems Design principles and methodologies. A results-oriented individual with a passion for delivering high-quality work and exceeding expectations. A strong team leader and mentor with a proven ability to guide and motivate others to achieve shared goals. Seeking a challenging and rewarding Software Engineer position where I can leverage my skills and experience to contribute to the success of a dynamic and innovative organization.",
+  },
+];
+
+export const sidebarCvs: CvRecord[] = [
+  ...initialCvs,
+  {
+    id: "preview-cv-3",
+    name: "Frontend Developer Portfolio",
+    education: "Computer Science",
+    employee: "alex.morgan@example.com",
+    description: "Frontend developer focused on accessible, responsive web applications.",
   },
 ];
 
@@ -40,11 +51,11 @@ type CvPreviewContextValue = {
 
 const CvPreviewContext = createContext<CvPreviewContextValue | null>(null);
 
-export function CvPreviewProvider({ children }: { children: ReactNode }) {
-  const [cvs, setCvs] = useState(initialCvs);
+export function CvPreviewProvider({ children, initialRecords = initialCvs }: { children: ReactNode; initialRecords?: CvRecord[] }) {
+  const [cvs, setCvs] = useState(initialRecords);
 
   const createCv = (fields: CvFields) => {
-    setCvs((current) => [...current, { ...fields, id: crypto.randomUUID(), employee }]);
+    setCvs((current) => [...current, { ...fields, id: crypto.randomUUID(), employee: previewEmployeeEmail }]);
   };
 
   const updateCv = (id: string, fields: CvFields) => {
@@ -64,6 +75,6 @@ export function CvPreviewProvider({ children }: { children: ReactNode }) {
 
 export function useCvPreviewData() {
   const context = useContext(CvPreviewContext);
-  if (!context) throw new Error("CV preview data is unavailable outside the admin profile");
+  if (!context) throw new Error("CV preview data provider is missing");
   return context;
 }

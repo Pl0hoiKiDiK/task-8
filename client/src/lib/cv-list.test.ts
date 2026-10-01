@@ -17,6 +17,11 @@ describe("filterAndSortCvs", () => {
     expect(filterAndSortCvs(cvs, "React", "asc")).toEqual([]);
   });
 
+  it("searches employee email only for the admin view", () => {
+    expect(filterAndSortCvs(cvs, "ONE@EXAMPLE", "asc")).toEqual([]);
+    expect(filterAndSortCvs(cvs, "ONE@EXAMPLE", "asc", true).map((cv) => cv.id)).toEqual(["2", "3", "1"]);
+  });
+
   it("sorts by name in both directions without changing the source list", () => {
     expect(filterAndSortCvs(cvs, "", "asc").map((cv) => cv.id)).toEqual(["2", "3", "1"]);
     expect(filterAndSortCvs(cvs, "", "desc").map((cv) => cv.id)).toEqual(["1", "3", "2"]);

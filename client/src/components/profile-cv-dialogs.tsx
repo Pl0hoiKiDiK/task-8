@@ -55,10 +55,11 @@ function validate(fields: CvFields) {
   };
 }
 
-export function CvFormDialog({ cv, onClose, onSave }: {
+export function CvFormDialog({ cv, onClose, onSave, saveLabel = "Update" }: {
   cv?: CvRecord;
   onClose: () => void;
   onSave: (fields: CvFields) => void;
+  saveLabel?: string;
 }) {
   const [fields, setFields] = useState<CvFields>(cv ? {
     name: cv.name, education: cv.education, description: cv.description,
@@ -127,7 +128,7 @@ export function CvFormDialog({ cv, onClose, onSave }: {
         {field("description", "Description")}
         <div className="profile-cv-dialog-actions">
           <button className="profile-cv-dialog-cancel" type="button" onClick={onClose}>Cancel</button>
-          <button className="profile-cv-dialog-submit" type="submit" disabled={!valid}>{cv ? "Update" : "Create"}</button>
+          <button className="profile-cv-dialog-submit" type="submit" disabled={!valid}>{cv ? saveLabel : "Create"}</button>
         </div>
       </form>
     </CvDialog>
