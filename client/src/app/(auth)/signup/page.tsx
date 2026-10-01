@@ -74,8 +74,8 @@ export default function SignUpPage() {
                     <button
                         className="password-toggle"
                         type="button"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                        aria-pressed={showPassword}
+                        aria-label={showPasswordConfirm ? "Hide password confirm" : "Show password confirm"}
+                        aria-pressed={showPasswordConfirm}
                         onClick={() => setshowPasswordConfirm((visible) => !visible)}
                     >
                         <AppIcon name="eye" />
