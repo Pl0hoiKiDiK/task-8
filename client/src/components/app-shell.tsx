@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const role = pathname.startsWith("/admin/") ? "admin" : "user";
   const prefix = role === "admin" ? "/admin" : "";
   const isProfile = pathname === `${prefix}/profile` || pathname.startsWith(`${prefix}/profile/`);
-  const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") ? "CVs" : "Profile";
+  const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") || pathname.includes("/cvs/") ? "CVs" : "Profile";
   const title = isProfile
     ? <ProfileBreadcrumbs role={role} section={profileSection} />
     : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
