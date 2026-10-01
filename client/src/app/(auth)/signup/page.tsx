@@ -52,7 +52,7 @@ export default function SignUpPage() {
                 <button className="primary-button primary-button-signup" type="submit" disabled={loading}>
                     {loading ? "Creating..." : "Create account"}
                 </button>
-                <Link className="auth-secondary-action" href="/">I have an account</Link>
+                <Link className="auth-secondary-action" href="/signin">I have an account</Link>
             </form>
         </section>
     );
