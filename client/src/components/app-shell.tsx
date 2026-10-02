@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { AppIcon, type IconName } from "@/components/app-icon";
 import { ProfileBreadcrumbs } from "@/components/profile-navigation";
+import { CvDetailsBreadcrumbs, type CvSection } from "@/components/cv-details-page";
 
 type NavItem = { label: string; href: string; icon: IconName };
 
@@ -52,11 +53,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const role = pathname.startsWith("/admin/") ? "admin" : "user";
   const prefix = role === "admin" ? "/admin" : "";
   const isProfile = pathname === `${prefix}/profile` || pathname.startsWith(`${prefix}/profile/`);
+  const cvPath = !isProfile ? pathname.match(/^\/(?:admin\/)?cvs\/([^/]+)(?:\/(skills|projects|preview))?\/?$/) : null;
+  const cvId = cvPath?.[1];
+  const cvSection = (cvPath?.[2] ?? "details") as CvSection;
   const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") || pathname.includes("/cvs/") ? "CVs" : "Profile";
   const title = isProfile
     ? <ProfileBreadcrumbs role={role} section={profileSection} />
+    : cvId ? <CvDetailsBreadcrumbs cvId={cvId} role={role === "admin" ? "admin" : "employee"} section={cvSection} />
     : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
-  const activeSection = isProfile ? `${prefix}/employees` : pathname;
+  const activeSection = isProfile ? `${prefix}/employees` : cvId ? `${prefix}/cvs` : pathname;
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(pathname.endsWith("/settings"));
@@ -123,7 +128,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="app-content">
-        <header className={`app-header${isProfile ? " profile-header" : ""}`}>{title}</header>
+        <header className={`app-header${isProfile ? " profile-header" : ""}${cvId ? " cv-details-header" : ""}`}>{title}</header>
         <main className="app-main">{children}</main>
       </div>
     </div>

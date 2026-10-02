@@ -113,8 +113,7 @@ export function ProfileCvsPreview({ view = "profile" }: { view?: CvView }) {
                         items[next]?.focus();
                       }}
                     >
-                      {view === "profile" ? <Link role="menuitem" href={`/admin/profile/cvs/${cv.id}`}>View</Link> :
-                        <button type="button" role="menuitem" disabled title="CV details will be added later">View</button>}
+                      <Link role="menuitem" href={`${view === "employee" ? "" : "/admin"}/cvs/${encodeURIComponent(cv.id)}`} onClick={() => setOpenMenuId(null)}>View</Link>
                       <button type="button" role="menuitem" onClick={() => openAction("edit", cv)}>Edit</button>
                       <button type="button" role="menuitem" onClick={() => openAction("delete", cv)}>Delete</button>
                     </div>
