@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, type ChangeEvent, type FormEvent, type FocusEvent } from "react";
 import { useMutation } from "@apollo/client/react";
 import { useAppDispatch } from "@/lib/hooks";
 import { refreshTokenStorage, sessionStarted } from "@/lib/auth/auth-slice";
@@ -13,28 +12,36 @@ const EMPTY_VALUES: SignupValues = { email: "", password: "", confirmPassword: "
 
 export function useSignupForm() {
     const dispatch = useAppDispatch();
-    const router = useRouter();
     const [signup, { loading }] = useMutation(SIGNUP_MUTATION);
 
     const [values, setValues] = useState<SignupValues>(EMPTY_VALUES);
-    const [errors, setErrors] = useState<SignupErrors>({});
+    const [touched, setTouched] = useState<Partial<Record<keyof SignupValues, boolean>>>({});
     const [formError, setFormError] = useState<string | null>(null);
+
+    const validationErrors = validateSignup(values);
+    const canSubmit = Object.keys(validationErrors).length === 0;
+
+    const errors: SignupErrors = {}
+    for (const field of Object.keys(validationErrors) as (keyof SignupValues)[]) {
+        if (touched[field] && validationErrors[field]) errors[field] = validationErrors[field]
+    }
 
     function handleChange(event: ChangeEvent<HTMLInputElement>) {
         const { name, value } = event.target;
         setValues((current) => ({ ...current, [name]: value }));
-        setErrors((current) => ({ ...current, [name]: undefined }));
         setFormError(null);
+    }
+
+    function handleBlur(event: FocusEvent<HTMLInputElement>) {
+        const { name } = event.target;
+        setTouched((current) => ({ ...current, [name]: true }));
     }
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (loading) return;
+        if (loading || !canSubmit) return;
 
-        const fieldErrors = validateSignup(values);
-        setErrors(fieldErrors);
         setFormError(null);
-        if (Object.keys(fieldErrors).length > 0) return;
 
         try {
             const { data } = await signup({
@@ -45,11 +52,10 @@ export function useSignupForm() {
             const { access_token, refresh_token, user } = data.signup;
             refreshTokenStorage.set(refresh_token);
             dispatch(sessionStarted({ user, accessToken: access_token }));
-            router.replace("/employees");
         } catch (error) {
             setFormError(getAuthErrorMessage(error));
         }
     }
 
-    return { values, errors, formError, loading, handleChange, handleSubmit };
+    return { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit };
 }

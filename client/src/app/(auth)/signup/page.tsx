@@ -6,7 +6,7 @@ import Link from "next/link";
 
 
 export default function SignUpPage() {
-    const { values, errors, formError, loading, handleChange, handleSubmit } = useSignupForm();
+    const { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit } = useSignupForm();
 
     return (
         <section className="signup-panel" aria-labelledby="sign-up-title">
@@ -22,6 +22,7 @@ export default function SignUpPage() {
                     placeholder="Email"
                     value={values.email}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     error={errors.email}
                 />
 
@@ -33,6 +34,7 @@ export default function SignUpPage() {
                     placeholder="Password"
                     value={values.password}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     error={errors.password}
                 />
 
@@ -44,12 +46,13 @@ export default function SignUpPage() {
                     placeholder="Confirm password"
                     value={values.confirmPassword}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     error={errors.confirmPassword}
                 />
 
                 {formError && <p role="alert" className="auth-form-error">{formError}</p>}
 
-                <button className="primary-button primary-button-signup" type="submit" disabled={loading}>
+                <button className="primary-button primary-button-signup" type="submit" disabled={loading || !canSubmit}>
                     {loading ? "Creating..." : "Create account"}
                 </button>
                 <Link className="auth-secondary-action" href="/signin">I have an account</Link>
