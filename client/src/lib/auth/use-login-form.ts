@@ -2,27 +2,26 @@
 
 import { useState, type ChangeEvent, type FormEvent, type FocusEvent } from "react";
 import { useMutation } from "@apollo/client/react";
-import { useAppDispatch } from "@/lib/hooks";
-import { refreshTokenStorage, sessionStarted } from "@/lib/auth/auth-slice";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
-import { SIGNUP_MUTATION } from "@/lib/auth/graphql";
-import { validateSignup, type SignupErrors, type SignupValues } from "@/lib/auth/validation";
+import { LOGIN_MUTATION } from "@/lib/auth/graphql";
+import { useStartSession } from "@/lib/auth/use-start-session";
+import { validateLogin, type LoginErrors, type LoginValues } from "@/lib/auth/validation";
 
-const EMPTY_VALUES: SignupValues = { email: "", password: "", confirmPassword: "" }
+const EMPTY_VALUES: LoginValues = { email: "", password: "" };
 
-export function useSignupForm() {
-    const dispatch = useAppDispatch();
-    const [signup, { loading }] = useMutation(SIGNUP_MUTATION);
+export function useLoginForm() {
+    const startSession = useStartSession();
+    const [login, { loading }] = useMutation(LOGIN_MUTATION);
 
-    const [values, setValues] = useState<SignupValues>(EMPTY_VALUES);
-    const [touched, setTouched] = useState<Partial<Record<keyof SignupValues, boolean>>>({});
+    const [values, setValues] = useState<LoginValues>(EMPTY_VALUES);
+    const [touched, setTouched] = useState<Partial<Record<keyof LoginValues, boolean>>>({});
     const [formError, setFormError] = useState<string | null>(null);
 
-    const validationErrors = validateSignup(values);
+    const validationErrors = validateLogin(values);
     const canSubmit = Object.keys(validationErrors).length === 0;
 
-    const errors: SignupErrors = {}
-    for (const field of Object.keys(validationErrors) as (keyof SignupValues)[]) {
+    const errors: LoginErrors = {};
+    for (const field of Object.keys(validationErrors) as (keyof LoginValues)[]) {
         if (touched[field] && validationErrors[field]) errors[field] = validationErrors[field]
     }
 
@@ -44,18 +43,15 @@ export function useSignupForm() {
         setFormError(null);
 
         try {
-            const { data } = await signup({
-                variables: { auth: { ...values, email: values.email.trim() } },
+            const { data } = await login({
+                variables: { auth: { email: values.email.trim(), password: values.password } },
             });
-            if (!data) throw new Error("Empty signup response");
+            if (!data) throw new Error("Empty login response");
 
-            const { access_token, refresh_token, user } = data.signup;
-            refreshTokenStorage.set(refresh_token);
-            dispatch(sessionStarted({ user, accessToken: access_token }));
+            startSession(data.login);
         } catch (error) {
             setFormError(getAuthErrorMessage(error));
         }
     }
-
     return { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit };
 }
