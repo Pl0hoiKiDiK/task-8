@@ -449,7 +449,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .admin-skill-field [aria-invalid="true"] { border-color: var(--red); }
 .admin-skill-dialog-form .profile-cv-dialog-actions { margin-top: -10px; }
 .admin-skill-dialog-form .profile-cv-dialog-submit:disabled { background: var(--border); }
-.admin-skills-page :is(button, input, select):focus-visible, .admin-skills-page ~ .profile-cv-dialog :is(button, input, select):focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.admin-skills-page :is(button, select):focus-visible, .admin-skills-page ~ .profile-cv-dialog :is(button, input, select):focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 @media (max-width: 900px) {
   .admin-skills-row { grid-template-columns: 46% minmax(0, 1fr) 40px; }
