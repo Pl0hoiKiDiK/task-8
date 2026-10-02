@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { initialCvSkills, ownerSkillsFor, previewCvSkills, previewOwnerSkills, type CvSkill, type SkillMastery } from "@/components/cv-skills-data";
 
 export type CvRecord = {
   id: string;
@@ -47,12 +48,22 @@ type CvPreviewContextValue = {
   createCv: (fields: CvFields) => void;
   updateCv: (id: string, fields: CvFields) => void;
   deleteCv: (id: string) => void;
+  cvSkills: Record<string, CvSkill[]>;
+  addCvSkill: (cvId: string, name: string, mastery: SkillMastery) => void;
+  updateCvSkill: (cvId: string, name: string, mastery: SkillMastery) => void;
+  removeCvSkills: (cvId: string, names: string[]) => void;
+  userSkills: CvSkill[];
+  addUserSkill: (name: string, mastery: SkillMastery) => void;
+  updateUserSkill: (name: string, mastery: SkillMastery) => void;
+  removeUserSkills: (names: string[]) => void;
 };
 
 const CvPreviewContext = createContext<CvPreviewContextValue | null>(null);
 
 export function CvPreviewProvider({ children, initialRecords = initialCvs }: { children: ReactNode; initialRecords?: CvRecord[] }) {
   const [cvs, setCvs] = useState(initialRecords);
+  const [cvSkills, setCvSkills] = useState<Record<string, CvSkill[]>>(initialCvSkills);
+  const [userSkills, setUserSkills] = useState<CvSkill[]>(previewCvSkills);
 
   const createCv = (fields: CvFields) => {
     setCvs((current) => [...current, { ...fields, id: crypto.randomUUID(), employee: previewEmployeeEmail }]);
@@ -64,10 +75,44 @@ export function CvPreviewProvider({ children, initialRecords = initialCvs }: { c
 
   const deleteCv = (id: string) => {
     setCvs((current) => current.filter((cv) => cv.id !== id));
+    setCvSkills((current) => Object.fromEntries(Object.entries(current).filter(([cvId]) => cvId !== id)));
+  };
+
+  const addCvSkill = (cvId: string, name: string, mastery: SkillMastery) => {
+    const cv = cvs.find((item) => item.id === cvId);
+    const skill = cv && ownerSkillsFor(cv.employee).find((item) => item.name === name);
+    if (!skill || (cvSkills[cvId] ?? []).some((item) => item.name === name)) throw new Error("Skill is unavailable");
+    setCvSkills((current) => ({ ...current, [cvId]: [...(current[cvId] ?? []), { ...skill, mastery }] }));
+  };
+
+  const updateCvSkill = (cvId: string, name: string, mastery: SkillMastery) => {
+    if (!(cvSkills[cvId] ?? []).some((item) => item.name === name)) throw new Error("Skill was not found");
+    setCvSkills((current) => ({ ...current, [cvId]: (current[cvId] ?? []).map((item) => item.name === name ? { ...item, mastery } : item) }));
+  };
+
+  const removeCvSkills = (cvId: string, names: string[]) => {
+    const selected = new Set(names);
+    setCvSkills((current) => ({ ...current, [cvId]: (current[cvId] ?? []).filter((item) => !selected.has(item.name)) }));
+  };
+
+  const addUserSkill = (name: string, mastery: SkillMastery) => {
+    const skill = previewOwnerSkills.find((item) => item.name === name);
+    if (!skill || userSkills.some((item) => item.name === name)) throw new Error("Skill already exists");
+    setUserSkills((current) => [...current, { ...skill, mastery }]);
+  };
+
+  const updateUserSkill = (name: string, mastery: SkillMastery) => {
+    if (!userSkills.some((item) => item.name === name)) throw new Error("Skill was not found");
+    setUserSkills((current) => current.map((item) => item.name === name ? { ...item, mastery } : item));
+  };
+
+  const removeUserSkills = (names: string[]) => {
+    const selected = new Set(names);
+    setUserSkills((current) => current.filter((item) => !selected.has(item.name)));
   };
 
   return (
-    <CvPreviewContext.Provider value={{ cvs, createCv, updateCv, deleteCv }}>
+    <CvPreviewContext.Provider value={{ cvs, createCv, updateCv, deleteCv, cvSkills, addCvSkill, updateCvSkill, removeCvSkills, userSkills, addUserSkill, updateUserSkill, removeUserSkills }}>
       {children}
     </CvPreviewContext.Provider>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { previewEmployeeEmail, useCvPreviewData, type CvFields, type CvRecord } from "@/components/profile-cvs-data";
+import { CvSkillsPage } from "@/components/cv-skills-page";
 
 export type CvSection = "details" | "skills" | "projects" | "preview";
 
@@ -132,7 +133,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
           >{item.label}</Link>
         ))}
       </nav>
-      {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> :
+      {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> : section === "skills" ? <CvSkillsPage key={cv.id} cv={cv} /> :
         <p className="cv-details-section-placeholder">{sections.find((item) => item.value === section)?.label} content will be added here.</p>}
     </section>
   );
