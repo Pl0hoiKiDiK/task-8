@@ -5,17 +5,29 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/hooks";
 import { refreshTokenStorage, sessionStarted } from "@/lib/auth/auth-slice";
 import type { AuthResult } from "@/lib/auth/graphql";
+import { getHomePath } from "@/lib/auth/routes";
 
-export function useStartSession() {
+export function useSaveSession() {
     const dispatch = useAppDispatch();
-    const router = useRouter();
 
     return useCallback(
         (result: AuthResult) => {
             refreshTokenStorage.set(result.refresh_token);
             dispatch(sessionStarted({ user: result.user, accessToken: result.access_token }));
-            router.replace(result.user.role === "Admin" ? "/admin/employees" : "/employees");
         },
-        [dispatch, router],
+        [dispatch],
+    );
+}
+
+export function useStartSession() {
+    const router = useRouter();
+    const saveSession = useSaveSession();
+
+    return useCallback(
+        (result: AuthResult) => {
+            saveSession(result);
+            router.replace(getHomePath(result.user.role));
+        },
+        [saveSession, router],
     );
 }
