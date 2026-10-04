@@ -2,10 +2,10 @@
 
 import { useState, type ChangeEvent, type FormEvent, type FocusEvent } from "react";
 import { useMutation } from "@apollo/client/react";
-import { getAuthErrorMessage } from "@/lib/auth/errors";
-import { LOGIN_MUTATION } from "@/lib/auth/graphql";
-import { useStartSession } from "@/lib/auth/use-start-session";
-import { validateLogin, type LoginErrors, type LoginValues } from "@/lib/auth/validation";
+import { getAuthErrorMessage } from "@/lib/auth/model/errors";
+import { LOGIN_MUTATION } from "@/lib/auth/api/graphql";
+import { useStartSession } from "@/lib/auth/hooks/use-start-session";
+import { validateLogin, type LoginErrors, type LoginValues } from "@/lib/auth/model/validation";
 
 const EMPTY_VALUES: LoginValues = { email: "", password: "" };
 

@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { preferencesReducer } from "@/lib/preferences-slice";
-import { authReducer } from "./auth/auth-slice";
+import { authReducer } from "./auth/model/auth-slice";
 
 export const makeStore = () =>
   configureStore({

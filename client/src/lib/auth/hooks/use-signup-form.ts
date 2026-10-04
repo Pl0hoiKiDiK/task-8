@@ -2,11 +2,11 @@
 
 import { useState, type ChangeEvent, type FormEvent, type FocusEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useSaveSession } from "@/lib/auth/use-start-session";
+import { useSaveSession } from "@/lib/auth/hooks/use-start-session";
 import { useMutation } from "@apollo/client/react";
-import { getAuthErrorMessage } from "@/lib/auth/errors";
-import { SIGNUP_MUTATION } from "@/lib/auth/graphql";
-import { validateSignup, type SignupErrors, type SignupValues } from "@/lib/auth/validation";
+import { getAuthErrorMessage } from "@/lib/auth/model/errors";
+import { SIGNUP_MUTATION } from "@/lib/auth/api/graphql";
+import { validateSignup, type SignupErrors, type SignupValues } from "@/lib/auth/model/validation";
 
 const EMPTY_VALUES: SignupValues = { email: "", password: "", confirmPassword: "" }
 

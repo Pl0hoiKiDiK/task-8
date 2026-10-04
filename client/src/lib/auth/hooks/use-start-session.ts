@@ -3,9 +3,9 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/hooks";
-import { refreshTokenStorage, sessionStarted } from "@/lib/auth/auth-slice";
-import type { AuthResult } from "@/lib/auth/graphql";
-import { getHomePath } from "@/lib/auth/routes";
+import { refreshTokenStorage, sessionStarted } from "@/lib/auth/model/auth-slice";
+import type { AuthResult } from "@/lib/auth/api/graphql";
+import { getHomePath } from "@/lib/auth/model/routes";
 
 export function useSaveSession() {
     const dispatch = useAppDispatch();

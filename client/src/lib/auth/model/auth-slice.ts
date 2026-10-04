@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { UserRole } from "./graphql";
+import { UserRole } from "../api/graphql";
 
 export type AuthUser = { id: string; email: string; role: UserRole; is_verified: boolean };
 

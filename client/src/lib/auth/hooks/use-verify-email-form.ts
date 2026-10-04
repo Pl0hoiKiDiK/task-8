@@ -4,11 +4,11 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { emailVerified } from "@/lib/auth/auth-slice";
-import { getAuthErrorMessage } from "@/lib/auth/errors";
-import { VERIFY_EMAIL_MUTATION } from "@/lib/auth/graphql";
-import { getHomePath } from "@/lib/auth/routes";
-import { OTP_LENGTH, isOtpComplete } from "@/lib/auth/validation";
+import { emailVerified } from "@/lib/auth/model/auth-slice";
+import { getAuthErrorMessage } from "@/lib/auth/model/errors";
+import { VERIFY_EMAIL_MUTATION } from "@/lib/auth/api/graphql";
+import { getHomePath } from "@/lib/auth/model/routes";
+import { OTP_LENGTH, isOtpComplete } from "@/lib/auth/model/validation";
 
 export function useVerifyEmailForm() {
     const router = useRouter();
