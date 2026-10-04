@@ -1,6 +1,6 @@
 "use client";
 
-import { useLoginForm } from "@/lib/auth/use-login-form";
+import { useLoginForm } from "@/lib/auth/hooks/use-login-form";
 import { AuthField } from "@/components/auth/auth-field";
 
 export default function SignInPage() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSignupForm } from "@/lib/auth/use-signup-form";
+import { useSignupForm } from "@/lib/auth/hooks/use-signup-form";
 import { AuthField } from "@/components/auth/auth-field";
 import Link from "next/link";
 

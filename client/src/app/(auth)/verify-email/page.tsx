@@ -1,7 +1,7 @@
 "use client";
 
 import { OtpField } from "@/components/auth/otp-field";
-import { useVerifyEmailForm } from "@/lib/auth/use-verify-email-form";
+import { useVerifyEmailForm } from "@/lib/auth/hooks/use-verify-email-form";
 
 export default function VerifyEmailPage() {
     const { digits, setDigits, error, loading, canSubmit, handleSubmit, handleLater } =
