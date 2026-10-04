@@ -8,7 +8,7 @@ export default function VerifyEmailPage() {
         useVerifyEmailForm();
 
     return (
-        <section className="auth-panel" aria-labelledby="verify-email-title">
+        <section className="auth-panel auth-panel-verify" aria-labelledby="verify-email-title">
             <h1 id="verify-email-title">Email verification</h1>
             <p>Enter the verification code we sent to your email.</p>
 

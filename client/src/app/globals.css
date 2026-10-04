@@ -70,8 +70,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .primary-button-signup { width: 220px }
 .primary-button:disabled { opacity: .6; cursor: not-allowed; }
 .auth-secondary-action { margin-top: -16px; color: var(--muted); font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
-.otp { display: flex; gap: 8px; justify-content: center; }
-.otp-cell { width: 32px; height: 40px; border: 1px solid #aeaeae; background: transparent; color: var(--text); text-align: center; font-size: 16px; border-radius: 0; }
+
+.otp { display: flex; gap: 16px; justify-content: center; }
+.otp-cell { flex: 0 1 48px; min-width: 0; height: 48px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); text-align: center; font-size: 16px; }
+
+.auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
+.auth-panel-verify .primary-button { margin-top: 5px; }
 
 .app-shell { --sidebar-width: 200px; min-height: 100dvh; }
 .app-shell--collapsed { --sidebar-width: 56px; }
