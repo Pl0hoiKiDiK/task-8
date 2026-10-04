@@ -5,7 +5,7 @@ export type UserRole = "Employee" | "Admin"
 export type AuthResult = {
   access_token: string,
   refresh_token: string,
-  user: { id: string; email: string; role: UserRole },
+  user: { id: string; email: string; role: UserRole; is_verified: boolean },
 }
 
 export type SignupVariables = {
@@ -22,6 +22,7 @@ export const SIGNUP_MUTATION: TypedDocumentNode<SignupData, SignupVariables> = g
         id
         email
         role
+        is_verified
       }
     }
   }
@@ -41,7 +42,14 @@ export const LOGIN_MUTATION: TypedDocumentNode<LoginData, LoginVariables> = gql`
         id
         email
         role
+        is_verified
       }
     }
+  }
+`;
+
+export const VERIFY_EMAIL_MUTATION: TypedDocumentNode<{ verifyMail: null }, { mail: { otp: string } }> = gql`
+  mutation VerifyMail($mail: VerifyMailInput!) {
+    verifyMail(mail: $mail)
   }
 `;

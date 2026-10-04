@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { UserRole } from "./graphql";
 
-export type AuthUser = { id: string; email: string };
+export type AuthUser = { id: string; email: string; role: UserRole; is_verified: boolean };
 
 type AuthState = {
     user: AuthUser | null;
@@ -24,11 +25,15 @@ const authSlice = createSlice({
             state.user = null;
             state.accessToken = null;
         },
+        emailVerified(state) {
+            if (state.user) state.user.is_verified = true;
+        },
     },
 });
 
-export const { sessionStarted, sessionCleared } = authSlice.actions;
+export const { sessionStarted, sessionCleared, emailVerified } = authSlice.actions;
 export const authReducer = authSlice.reducer;
+
 
 const REFRESH_KEY = "cv-builder-refresh-token";
 
