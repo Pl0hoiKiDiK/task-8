@@ -416,6 +416,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .cv-skill-dialog-form .profile-cv-dialog-actions { margin-top: -10px; }
 .cv-skill-dialog .profile-cv-dialog-submit:disabled { background: var(--border); }
 
+.user-languages-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.user-language { gap: 16px; min-height: 48px; }
+.user-language-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-language.user-skill--selected { border-radius: 4px; background: var(--sidebar-active); }
+.user-languages-content { width: min(900px, 100%); margin: 32px auto 0; }
+.user-languages-actions { gap: 64px; margin-top: 24px; padding-right: 24px; }
+.user-languages-actions > button:hover:not(:disabled) { filter: brightness(.8); }
+.user-languages-actions > button:disabled { opacity: .45; }
+.user-languages-empty { margin: 24px 0 0; color: var(--muted); font-size: 16px; }
+
+@media (max-width: 900px) {
+  .user-languages-actions { gap: 24px; padding-right: 0; }
+}
+
+@media (max-width: 600px) {
+  .user-languages-grid { grid-template-columns: minmax(0, 1fr); }
+  .user-languages-content { padding-left: 0; padding-right: 0; }
+  .user-languages-actions { justify-content: space-between; gap: 12px; }
+  .user-languages-actions > button { min-width: 0; }
+  .user-languages-actions.profile-skills-actions > button { flex: 1; }
+  .user-languages-actions .profile-skills-cancel, .user-languages-actions .profile-skills-remove { width: auto; }
+}
+
 @media (max-width: 900px) {
   .cv-skills-content { width: calc(100% - 22px); margin-left: 22px; }
   .cv-skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
