@@ -489,7 +489,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .admin-languages-page { width: 100%; }
 .admin-languages-toolbar { padding-bottom: 6px; }
 .admin-languages-toolbar .search-field:focus-within { outline: 2px solid var(--red); outline-offset: 2px; }
-.admin-languages-toolbar .create-action:hover { color: var(--text); }
+.admin-languages-toolbar .create-action:hover:not(:disabled) { opacity: .8; }
 .admin-languages-toolbar .create-action:active { opacity: .65; }
 .admin-languages-table { width: 100%; }
 .admin-languages-row { display: grid; grid-template-columns: 32% 32% minmax(0, 1fr) 40px; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 14px; line-height: 20px; letter-spacing: .15px; }
@@ -519,4 +519,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .admin-languages-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; padding-left: 8px; padding-right: 0; }
   .admin-language-dialog-form .profile-cv-dialog-actions { gap: 12px; }
   .admin-language-dialog-form .profile-cv-dialog-actions button { width: 50%; }
+}
+
+.admin-departments-page { width: 100%; }
+.admin-departments-toolbar { padding-bottom: 6px; }
+.admin-departments-toolbar .search-field:focus-within { outline: 2px solid var(--red); outline-offset: 2px; }
+.admin-departments-toolbar .create-action:hover:not(:disabled) { opacity: .8; }
+.admin-departments-toolbar .create-action:active:not(:disabled) { opacity: .65; }
+.admin-departments-table { width: 100%; }
+.admin-departments-row { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 14px; line-height: 20px; letter-spacing: .15px; }
+.admin-departments-heading { height: 54px; font-weight: 500; }
+.admin-departments-item { min-height: 73px; }
+.admin-departments-item > span { min-width: 0; overflow-wrap: anywhere; }
+.admin-departments-heading .profile-cvs-sort { min-height: 36px; }
+.admin-departments-state { min-height: 73px; display: grid; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+.admin-departments-state p { margin: 0; }
+.admin-department-dialog-form { display: flex; flex-direction: column; gap: 36px; margin-top: 24px; }
+.admin-department-field { position: relative; }
+.admin-department-field label { position: absolute; top: -16px; left: 12px; color: var(--muted); font-size: 12px; line-height: 16px; }
+.admin-department-field input { display: block; width: 100%; height: 48px; padding: 0 11px; border: 1px solid var(--border); border-radius: 0; background: transparent; color: var(--text); font-size: 14px; line-height: 24px; letter-spacing: .15px; }
+.admin-department-field input::placeholder { color: var(--placeholder); opacity: 1; }
+.admin-department-field [aria-invalid="true"] { border-color: var(--red); }
+.admin-department-dialog-form .profile-cv-dialog-actions { margin-top: -10px; }
+.admin-department-dialog-form .profile-cv-dialog-submit:disabled { background: var(--border); }
+
+@media (max-width: 600px) {
+  .admin-departments-toolbar { padding-left: 0; padding-right: 0; }
+  .admin-departments-row { grid-template-columns: minmax(0, 1fr) 32px; padding-left: 8px; padding-right: 0; }
+  .admin-department-dialog-form .profile-cv-dialog-actions { gap: 12px; }
+  .admin-department-dialog-form .profile-cv-dialog-actions button { width: 50%; }
 }
