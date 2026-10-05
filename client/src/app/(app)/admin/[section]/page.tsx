@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminSkillsPage } from "@/components/admin-skills-page";
+import { AdminLanguagesPage } from "@/components/admin-languages-page";
 
 const titles: Record<string, string> = {
   skills: "Skills",
@@ -16,5 +17,6 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
   if (!titles[section]) notFound();
 
   if (section === "skills") return <AdminSkillsPage />;
+  if (section === "languages") return <AdminLanguagesPage />;
   return null;
 }
