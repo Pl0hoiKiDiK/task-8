@@ -13,7 +13,10 @@ import { OTP_LENGTH, isOtpComplete } from "@/lib/auth/model/validation";
 export function useVerifyEmailForm() {
     const router = useRouter();
     const dispatch = useAppDispatch();
+
+    const status = useAppSelector((state) => state.auth.status);
     const user = useAppSelector((state) => state.auth.user);
+
     const [verify, { loading }] = useMutation(VERIFY_EMAIL_MUTATION);
 
     const [digits, setDigitsState] = useState<string[]>(() => Array(OTP_LENGTH).fill(""));
@@ -22,10 +25,13 @@ export function useVerifyEmailForm() {
     const code = digits.join("");
     const canSubmit = isOtpComplete(code);
 
+    console.log({ status, user });
+    
     useEffect(() => {
+        if (status !== "ready") return;
         if (!user) router.replace("/signin");
         else if (user.is_verified) router.replace(getHomePath(user.role));
-    }, [user, router]);
+    }, [status,user, router]);
 
     function setDigits(next: string[]) {
         setDigitsState(next);
@@ -50,5 +56,6 @@ export function useVerifyEmailForm() {
         if (user) router.replace(getHomePath(user.role));
     }
 
-    return { digits, setDigits, error, loading, canSubmit, handleSubmit, handleLater };
+    const isReady = status === "ready" && user !== null && !user.is_verified;
+    return { digits, setDigits, error, loading, isReady, canSubmit, handleSubmit, handleLater };
 }
