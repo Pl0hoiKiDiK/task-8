@@ -1,4 +1,5 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
+import { AuthUser } from "../model/auth-slice";
 
 export type UserRole = "Employee" | "Admin"
 
@@ -51,5 +52,25 @@ export const LOGIN_MUTATION: TypedDocumentNode<LoginData, LoginVariables> = gql`
 export const VERIFY_EMAIL_MUTATION: TypedDocumentNode<{ verifyMail: null }, { mail: { otp: string } }> = gql`
   mutation VerifyMail($mail: VerifyMailInput!) {
     verifyMail(mail: $mail)
+  }
+`;
+
+export const UPDATE_TOKEN_MUTATION: TypedDocumentNode<{ updateToken: { access_token: string; refresh_token: string } }> = gql`
+  mutation UpdateToken {
+    updateToken {
+      access_token
+      refresh_token
+    }
+  }
+`;
+
+export const USER_QUERY: TypedDocumentNode<{ user: AuthUser }, { userId: string }> = gql`
+  query User($userId: ID!) {
+    user(userId: $userId) {
+      id
+      email
+      role
+      is_verified
+    }
   }
 `;
