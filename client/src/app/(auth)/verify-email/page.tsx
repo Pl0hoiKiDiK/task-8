@@ -4,9 +4,11 @@ import { OtpField } from "@/components/auth/otp-field";
 import { useVerifyEmailForm } from "@/lib/auth/hooks/use-verify-email-form";
 
 export default function VerifyEmailPage() {
-    const { digits, setDigits, error, loading, canSubmit, handleSubmit, handleLater } =
+    const { digits, setDigits, error, loading, isReady, canSubmit, handleSubmit, handleLater } =
         useVerifyEmailForm();
 
+    if (!isReady) return null;
+    
     return (
         <section className="auth-panel auth-panel-verify" aria-labelledby="verify-email-title">
             <h1 id="verify-email-title">Email verification</h1>
