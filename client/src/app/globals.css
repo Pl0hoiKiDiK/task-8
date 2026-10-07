@@ -74,6 +74,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .otp { display: flex; gap: 16px; justify-content: center; }
 .otp-cell { flex: 0 1 48px; min-width: 0; height: 48px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); text-align: center; font-size: 16px; }
 
+.auth-form > input:focus-visible,
+.password-field input:focus-visible,
+.otp-cell:focus-visible { outline: none; border-color: var(--text); }
+
+.auth-form > input[aria-invalid="true"],
+.password-field input[aria-invalid="true"],
+.otp-cell[aria-invalid="true"] { border-color: var(--red); }
+
+.auth-error,
+.auth-form-error { margin: 8px 0 0; color: var(--red); font-size: 14px; line-height: 20px; letter-spacing: .25px; }
+.auth-form-error { margin-top: -24px; }
+
 .auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
 .auth-panel-verify .primary-button { margin-top: 5px; }
 
