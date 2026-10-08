@@ -24,8 +24,6 @@ export function useVerifyEmailForm() {
 
     const code = digits.join("");
     const canSubmit = isOtpComplete(code);
-
-    console.log({ status, user });
     
     useEffect(() => {
         if (status !== "ready") return;
