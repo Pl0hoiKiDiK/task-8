@@ -11,6 +11,7 @@ const MESSAGES: Record<string, string> = {
     userAlreadyExists: "An account with this email already exists",
     invalidCredentials: "Invalid email or password",
     failedToSendEmail: "Account created, but we could not send the confirmation email.",
+    mailNotFound: "Invalid verification code",
 };
 
 export function getAuthErrorMessage(error: unknown): string {

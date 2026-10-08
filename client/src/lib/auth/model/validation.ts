@@ -1,6 +1,9 @@
 export const PASSWORD_MIN_LENGTH = 6;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export const OTP_LENGTH = 6;
+export const isOtpComplete = (code: string) => new RegExp(`^\\d{${OTP_LENGTH}}$`).test(code);
+
 export function checkPassword(password: string): string | undefined {
     if (!password) return "Password is required";
     if (password.length < PASSWORD_MIN_LENGTH) { return `Password must be at least ${PASSWORD_MIN_LENGTH} characters`; }

@@ -71,6 +71,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .primary-button:disabled { opacity: .6; cursor: not-allowed; }
 .auth-secondary-action { margin-top: -16px; color: var(--muted); font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
 
+.otp { display: flex; gap: 16px; justify-content: center; }
+.otp-cell { flex: 0 1 48px; min-width: 0; height: 48px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); text-align: center; font-size: 16px; }
+
+.auth-form > input:focus-visible,
+.password-field input:focus-visible,
+.otp-cell:focus-visible { outline: none; border-color: var(--text); }
+
+.auth-form > input[aria-invalid="true"],
+.password-field input[aria-invalid="true"],
+.otp-cell[aria-invalid="true"] { border-color: var(--red); }
+.otp-cell[aria-invalid="true"]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.auth-error,
+.auth-form-error { margin: 8px 0 0; color: var(--red); font-size: 14px; line-height: 20px; letter-spacing: .25px; }
+.auth-form-error { margin-top: -24px; }
+
+.auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
+.auth-panel-verify .primary-button { margin-top: 5px; }
+
 .app-shell { --sidebar-width: 200px; min-height: 100dvh; }
 .app-shell--collapsed { --sidebar-width: 56px; }
 .sidebar { width: var(--sidebar-width); position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; flex-direction: column; background: var(--surface); transition: width .18s ease; }

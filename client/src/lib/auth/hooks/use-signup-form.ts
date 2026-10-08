@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent, type FocusEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useSaveSession } from "@/lib/auth/hooks/use-start-session";
 import { useMutation } from "@apollo/client/react";
-import { useAppDispatch } from "@/lib/hooks";
-import { refreshTokenStorage, sessionStarted } from "@/lib/auth/auth-slice";
-import { getAuthErrorMessage } from "@/lib/auth/errors";
-import { SIGNUP_MUTATION } from "@/lib/auth/graphql";
-import { validateSignup, type SignupErrors, type SignupValues } from "@/lib/auth/validation";
+import { getAuthErrorMessage } from "@/lib/auth/model/errors";
+import { SIGNUP_MUTATION } from "@/lib/auth/api/graphql";
+import { validateSignup, type SignupErrors, type SignupValues } from "@/lib/auth/model/validation";
 
 const EMPTY_VALUES: SignupValues = { email: "", password: "", confirmPassword: "" }
 
 export function useSignupForm() {
-    const dispatch = useAppDispatch();
-    const [signup, { loading }] = useMutation(SIGNUP_MUTATION);
+    const saveSession = useSaveSession();
+    const router = useRouter();
 
+    const [signup, { loading }] = useMutation(SIGNUP_MUTATION);
     const [values, setValues] = useState<SignupValues>(EMPTY_VALUES);
     const [touched, setTouched] = useState<Partial<Record<keyof SignupValues, boolean>>>({});
     const [formError, setFormError] = useState<string | null>(null);
@@ -49,9 +50,8 @@ export function useSignupForm() {
             });
             if (!data) throw new Error("Empty signup response");
 
-            const { access_token, refresh_token, user } = data.signup;
-            refreshTokenStorage.set(refresh_token);
-            dispatch(sessionStarted({ user, accessToken: access_token }));
+            saveSession(data.signup);
+            router.replace("/verify-email");
         } catch (error) {
             setFormError(getAuthErrorMessage(error));
         }
