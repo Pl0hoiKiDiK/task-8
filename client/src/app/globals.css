@@ -81,6 +81,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-form > input[aria-invalid="true"],
 .password-field input[aria-invalid="true"],
 .otp-cell[aria-invalid="true"] { border-color: var(--red); }
+.otp-cell[aria-invalid="true"]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 .auth-error,
 .auth-form-error { margin: 8px 0 0; color: var(--red); font-size: 14px; line-height: 20px; letter-spacing: .25px; }
