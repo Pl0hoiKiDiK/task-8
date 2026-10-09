@@ -52,10 +52,8 @@ export function UserLanguagesPreview() {
     </section>
     {(dialog === "add" || dialog === "edit") && <LanguageFormDialog kind={dialog} language={editing} existing={shownLanguages}
       onClose={() => setDialog(null)} onSave={dialog === "add" ? addLanguage : updateLanguage} />}
-    {dialog === "remove" && <LanguageRemoveDialog count={selected.length} onClose={() => setDialog(null)} onConfirm={() => {
-      removeLanguages(selected);
-      cancelSelection();
-    }} />}
+    {dialog === "remove" && <LanguageRemoveDialog count={selected.length} onClose={() => setDialog(null)}
+      onConfirm={() => removeLanguages(selected)} onSuccess={cancelSelection} />}
   </div>;
 }
 
@@ -126,7 +124,7 @@ function LanguageFormDialog({ kind, language, existing, onClose, onSave }: {
   </SkillDialog>;
 }
 
-function LanguageRemoveDialog({ count, onClose, onConfirm }: { count: number; onClose: () => void; onConfirm: () => void | Promise<void> }) {
+function LanguageRemoveDialog({ count, onClose, onConfirm, onSuccess }: { count: number; onClose: () => void; onConfirm: () => void | Promise<void>; onSuccess: () => void }) {
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState("");
 
@@ -137,6 +135,7 @@ function LanguageRemoveDialog({ count, onClose, onConfirm }: { count: number; on
     try {
       await onConfirm();
       onClose();
+      onSuccess();
     } catch {
       setError("Failed to remove languages. Please try again.");
     } finally {

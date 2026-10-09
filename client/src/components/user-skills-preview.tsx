@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { availableOwnerSkills, masteryDisplay, previewOwnerSkills, type CvSkill, type SkillMastery } from "@/components/cv-skills-data";
+import { availableOwnerSkills, masteryDisplay, masteryFromLevel, previewOwnerSkills, type CvSkill, type SkillMastery } from "@/components/cv-skills-data";
 import { ProfileProficiencyItem, type ProficiencyTone } from "@/components/profile-proficiency-item";
 import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { SkillFormDialog, SkillRemoveDialog } from "@/components/skill-dialogs";
@@ -46,7 +46,7 @@ export const previewSkillGroups: SkillGroup[] = [
 export function UserSkillsPreview({ skillGroups, canEdit = false, shared = false }: { skillGroups: SkillGroup[]; canEdit?: boolean; shared?: boolean }) {
   const { userSkills, addUserSkill, updateUserSkill, removeUserSkills } = useCvPreviewData();
   const [localSkills, setLocalSkills] = useState<CvSkill[]>(() => skillGroups.flatMap(({ title, skills: groupSkills }) =>
-    groupSkills.map(({ name, level }) => ({ name, category: title, mastery: ({ 20: "Novice", 40: "Advanced", 60: "Competent", 80: "Proficient", 100: "Expert" } as Record<number, SkillMastery>)[level] })),
+    groupSkills.map(({ name, level }) => ({ name, category: title, mastery: masteryFromLevel(level) })),
   ));
   const skills = shared ? userSkills : localSkills;
   const [dialog, setDialog] = useState<"add" | "update" | "remove" | null>(null);
@@ -116,11 +116,10 @@ export function UserSkillsPreview({ skillGroups, canEdit = false, shared = false
       </div>
       {(dialog === "add" || dialog === "update") && <SkillFormDialog kind={dialog} skill={dialog === "update" ? editing : undefined} available={available}
         onClose={() => setDialog(null)} onSave={saveSkill} />}
-      {dialog === "remove" && <SkillRemoveDialog title={shared ? "Remove skill" : "Remove skills"} count={selected.length} error="" onClose={() => setDialog(null)}
+      {dialog === "remove" && <SkillRemoveDialog title={shared ? "Remove skill" : "Remove skills"} count={selected.length} error="" onClose={() => setDialog(null)} onSuccess={cancelSelection}
         onConfirm={() => {
           if (shared) removeUserSkills(selected);
           else { const removing = new Set(selected); setLocalSkills((current) => current.filter((skill) => !removing.has(skill.name))); }
-          cancelSelection();
         }} />}
     </div>
   );

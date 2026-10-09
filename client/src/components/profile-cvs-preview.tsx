@@ -9,6 +9,11 @@ import { filterAndSortCvs, type CvSortDirection } from "@/lib/cv-list";
 
 type ActiveDialog = { type: "create" } | { type: "edit" | "delete"; cv: CvRecord } | null;
 type CvView = "profile" | "admin" | "employee";
+const cvBasePath: Record<CvView, string> = {
+  profile: "/admin/profile/cvs",
+  admin: "/admin/cvs",
+  employee: "/cvs",
+};
 const PAGE_SIZE = 5;
 
 export function ProfileCvsPreview({ view = "profile" }: { view?: CvView }) {
@@ -113,7 +118,7 @@ export function ProfileCvsPreview({ view = "profile" }: { view?: CvView }) {
                         items[next]?.focus();
                       }}
                     >
-                      <Link role="menuitem" href={`${view === "employee" ? "" : "/admin"}/cvs/${encodeURIComponent(cv.id)}`} onClick={() => setOpenMenuId(null)}>View</Link>
+                      <Link role="menuitem" href={`${cvBasePath[view]}/${encodeURIComponent(cv.id)}`} onClick={() => setOpenMenuId(null)}>View</Link>
                       <button type="button" role="menuitem" onClick={() => openAction("edit", cv)}>Edit</button>
                       <button type="button" role="menuitem" onClick={() => openAction("delete", cv)}>Delete</button>
                     </div>

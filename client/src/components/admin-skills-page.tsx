@@ -1,126 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { AppIcon } from "@/components/app-icon";
+import { useState, type FormEvent } from "react";
+import { AdminCatalogPage } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
 import { filterAndSortSkills, initialAdminSkills, skillCategories, skillNameExists, skillType, type AdminSkill } from "@/components/admin-skills-data";
 
-type DialogState = { type: "create" } | { type: "edit" | "delete"; skill: AdminSkill } | null;
-const PAGE_SIZE = 10;
-
 export function AdminSkillsPage() {
-  const [skills, setSkills] = useState(initialAdminSkills);
-  const [search, setSearch] = useState("");
-  const [direction, setDirection] = useState<"asc" | "desc" | null>(null);
-  const [page, setPage] = useState(1);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<DialogState>(null);
-  const menuRoot = useRef<HTMLDivElement>(null);
-  const menuTrigger = useRef<HTMLButtonElement | null>(null);
-  const createTrigger = useRef<HTMLButtonElement>(null);
-  const matchingSkills = useMemo(() => filterAndSortSkills(skills, search, direction), [skills, search, direction]);
-  const pageCount = Math.ceil(matchingSkills.length / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, pageCount));
-  const visibleSkills = matchingSkills.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  useEffect(() => {
-    if (!openMenuId) return;
-    menuRoot.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    const outside = (event: PointerEvent) => {
-      if (event.target instanceof Node && !menuRoot.current?.contains(event.target)) setOpenMenuId(null);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { setOpenMenuId(null); menuTrigger.current?.focus(); }
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
-  }, [openMenuId]);
-
-  function openAction(type: "edit" | "delete", skill: AdminSkill) {
-    setOpenMenuId(null);
-    setDialog({ type, skill });
-  }
-
-  function closeDialog() {
-    setDialog(null);
-    requestAnimationFrame(() => {
-      if (menuTrigger.current?.isConnected) menuTrigger.current.focus();
-      else createTrigger.current?.focus();
-    });
-  }
-
-  return (
-    <section className="admin-skills-page" aria-label="Skills catalog">
-      <div className="profile-cvs-toolbar admin-skills-toolbar">
-        <label className="search-field profile-cvs-search">
-          <AppIcon name="search" />
-          <span className="sr-only">Search skills by name</span>
-          <input type="search" placeholder="Search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); setOpenMenuId(null); }} />
-        </label>
-        <button type="button" ref={createTrigger} className="create-action profile-cvs-create" aria-label="Create skill" onClick={() => { menuTrigger.current = null; setDialog({ type: "create" }); }}>
-          <AppIcon name="plus" /><span>Create skill</span>
-        </button>
-      </div>
-
-      <div className="admin-skills-table" role="table" aria-label="Skills">
-        <div className="admin-skills-row admin-skills-heading" role="row">
-          <div role="columnheader" aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}>
-            <button type="button" className="profile-cvs-sort" aria-label={`Sort by name${direction ? `, currently ${direction === "asc" ? "ascending" : "descending"}` : ""}`}
-              onClick={() => { setDirection((value) => value === "asc" ? "desc" : "asc"); setPage(1); }}>
-              Name <AppIcon name="sort" className={direction === "desc" ? "sort-indicator profile-cvs-sort--desc" : "sort-indicator"} />
-            </button>
-          </div>
-          <span className="admin-skills-type" role="columnheader">Type</span>
-          <span role="columnheader">Category</span>
-          <span role="columnheader"><span className="sr-only">Actions</span></span>
-        </div>
-        {visibleSkills.length === 0 ? (
-          <p className="profile-cvs-empty" role="status">No skills found</p>
-        ) : visibleSkills.map((skill) => (
-          <div className="admin-skills-row admin-skills-item" role="row" key={skill.id}>
-            <span role="cell">{skill.name}</span>
-            <span role="cell" className="admin-skills-type">{skillType(skill.category)}</span>
-            <span role="cell">{skill.category}</span>
-            <div className="profile-cv-actions" role="cell" ref={openMenuId === skill.id ? menuRoot : undefined}>
-              <button type="button" className="profile-cv-more" aria-label={`Actions for ${skill.name}`} aria-haspopup="menu" aria-expanded={openMenuId === skill.id}
-                onClick={(event) => { menuTrigger.current = event.currentTarget; setOpenMenuId((value) => value === skill.id ? null : skill.id); }}>
-                <AppIcon name="more" />
-              </button>
-              {openMenuId === skill.id && <div className="profile-cv-actions-menu" role="menu" aria-label={`Actions for ${skill.name}`}
-                onKeyDown={(event) => {
-                  if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-                  event.preventDefault();
-                  const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'));
-                  const at = items.indexOf(document.activeElement as HTMLElement);
-                  items[event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : event.key === "ArrowDown" ? (at + 1) % items.length : (at - 1 + items.length) % items.length]?.focus();
-                }}>
-                <button type="button" role="menuitem" onClick={() => openAction("edit", skill)}>Edit</button>
-                <button type="button" role="menuitem" onClick={() => openAction("delete", skill)}>Delete</button>
-              </div>}
-            </div>
-          </div>
-        ))}
-      </div>
-      {pageCount > 1 && <nav className="profile-cvs-pagination" aria-label="Skill pages">
-        <button type="button" disabled={currentPage === 1} aria-label="Previous page" onClick={() => setPage(currentPage - 1)}>‹</button>
-        {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button type="button" key={number} aria-label={`Page ${number}`}
-          aria-current={currentPage === number ? "page" : undefined} onClick={() => setPage(number)}>{number}</button>)}
-        <button type="button" disabled={currentPage === pageCount} aria-label="Next page" onClick={() => setPage(currentPage + 1)}>›</button>
-      </nav>}
-      {dialog?.type === "create" && <AdminSkillFormDialog skills={skills} onClose={closeDialog} onSave={(name, category) => {
-        setSkills((value) => [...value, { id: crypto.randomUUID(), name, category }]);
-      }} />}
-      {dialog?.type === "edit" && <AdminSkillFormDialog skill={dialog.skill} skills={skills} onClose={closeDialog} onSave={(name, category) => {
-        setSkills((value) => value.map((item) => item.id === dialog.skill.id ? { ...item, name, category } : item));
-      }} />}
-      {dialog?.type === "delete" && <AdminSkillDeleteDialog skill={dialog.skill} onClose={closeDialog} onDelete={() => {
-        setSkills((value) => value.filter((item) => item.id !== dialog.skill.id));
-      }} />}
-    </section>
-  );
+  return <AdminCatalogPage<AdminSkill>
+    singular="Skill" plural="Skills" className="admin-skills"
+    initialItems={initialAdminSkills}
+    columns={[
+      { key: "name", label: "Name", sortable: true, render: (item) => item.name },
+      { key: "type", label: "Type", className: "admin-skills-type", render: (item) => skillType(item.category) },
+      { key: "category", label: "Category", render: (item) => item.category },
+    ]}
+    filterAndSort={(items, search, sort) => filterAndSortSkills(items, search, sort?.direction ?? null)}
+    renderDialog={({ dialog, actions }) => {
+      if (dialog?.type === "create") return <AdminSkillFormDialog key="create" skills={actions.items}
+        onClose={actions.close} onSave={(name, category) => actions.create({ id: crypto.randomUUID(), name, category })} />;
+      if (dialog?.type === "edit") return <AdminSkillFormDialog key={dialog.item.id} skill={dialog.item}
+        skills={actions.items} onClose={actions.close}
+        onSave={(name, category) => actions.update({ ...dialog.item, name, category })} />;
+      if (dialog?.type === "delete") return <AdminSkillDeleteDialog key={dialog.item.id} skill={dialog.item}
+        onClose={actions.close} onDelete={() => actions.remove(dialog.item.id)} />;
+      return null;
+    }}
+  />;
 }
-
 function AdminSkillFormDialog({ skill, skills, onClose, onSave }: {
   skill?: AdminSkill;
   skills: AdminSkill[];

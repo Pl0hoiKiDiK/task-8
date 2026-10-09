@@ -463,6 +463,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .admin-skills-item { min-height: 73px; }
 .admin-skills-item > span { min-width: 0; overflow-wrap: anywhere; }
 .admin-skills-heading .profile-cvs-sort { min-height: 36px; }
+.admin-skills-state { min-height: 73px; display: grid; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+.admin-skills-state p { margin: 0; }
 .admin-skill-dialog-form { display: flex; flex-direction: column; gap: 36px; margin-top: 24px; }
 .admin-skill-field { position: relative; }
 .admin-skill-field label { position: absolute; top: -16px; left: 12px; color: var(--muted); font-size: 12px; line-height: 16px; }

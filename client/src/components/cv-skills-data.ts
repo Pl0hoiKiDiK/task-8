@@ -14,6 +14,12 @@ export const masteryDisplay: Record<SkillMastery, { level: number; tone: Profici
   Expert: { level: 100, tone: "red" },
 };
 
+export function masteryFromLevel(level: number): SkillMastery {
+  if (!Number.isFinite(level)) return "Novice";
+  const index = Math.min(masteryOptions.length - 1, Math.max(0, Math.round(level / 20) - 1));
+  return masteryOptions[index];
+}
+
 export const previewCvSkills: OwnerSkill[] = [
   { name: "TypeScript", category: "Programming languages", mastery: "Proficient" },
   { name: "JavaScript", category: "Programming languages", mastery: "Expert" },

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { AppIcon } from "@/components/app-icon";
+import { useState, type FormEvent } from "react";
+import { AdminCatalogPage, type CatalogSort } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
 import {
   filterAndSortLanguages,
@@ -13,187 +13,37 @@ import {
   type LanguageSort,
 } from "@/components/admin-languages-data";
 
-type DialogState = { type: "create" } | { type: "edit" | "delete"; language: AdminLanguage } | null;
-type LoadState = "loading" | "ready" | "error";
-const PAGE_SIZE = 10;
-
 async function loadLanguagePreview(): Promise<AdminLanguage[]> {
   // Local catalog preview until the authenticated language API is connected.
   return [...initialAdminLanguages];
 }
 
-export function AdminLanguagesPage() {
-  const [languages, setLanguages] = useState<AdminLanguage[]>([]);
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<LanguageSort>(null);
-  const [page, setPage] = useState(1);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<DialogState>(null);
-  const menuRoot = useRef<HTMLDivElement>(null);
-  const menuTrigger = useRef<HTMLButtonElement | null>(null);
-  const createTrigger = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    let active = true;
-    void loadLanguagePreview().then((items) => {
-      if (!active) return;
-      setLanguages(items);
-      setLoadState("ready");
-    }).catch(() => { if (active) setLoadState("error"); });
-    return () => { active = false; };
-  }, []);
-
-  function retryLoad() {
-    setLoadState("loading");
-    void loadLanguagePreview().then((items) => {
-      setLanguages(items);
-      setLoadState("ready");
-    }).catch(() => setLoadState("error"));
-  }
-
-  const matchingLanguages = useMemo(
-    () => filterAndSortLanguages(languages, search, sort),
-    [languages, search, sort],
-  );
-  const pageCount = Math.ceil(matchingLanguages.length / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, pageCount));
-  const visibleLanguages = matchingLanguages.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  useEffect(() => {
-    if (!openMenuId) return;
-    menuRoot.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    const outside = (event: PointerEvent) => {
-      if (event.target instanceof Node && !menuRoot.current?.contains(event.target)) setOpenMenuId(null);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpenMenuId(null);
-        menuTrigger.current?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [openMenuId]);
-
-  function toggleSort(field: "name" | "iso") {
-    setSort((current) => ({
-      field,
-      direction: current?.field === field && current.direction === "asc" ? "desc" : "asc",
-    }));
-    setPage(1);
-    setOpenMenuId(null);
-  }
-
-  function openAction(type: "edit" | "delete", language: AdminLanguage) {
-    setOpenMenuId(null);
-    setDialog({ type, language });
-  }
-
-  function closeDialog() {
-    setDialog(null);
-    requestAnimationFrame(() => {
-      if (menuTrigger.current?.isConnected) menuTrigger.current.focus();
-      else createTrigger.current?.focus();
-    });
-  }
-
-  function createLanguage(fields: LanguageFields) {
-    const language = { id: crypto.randomUUID(), ...fields };
-    setLanguages((current) => [...current, language]);
-    setSearch("");
-    setSort(null);
-    setPage(Math.ceil((languages.length + 1) / PAGE_SIZE));
-  }
-
-  function updateLanguage(id: string, fields: LanguageFields) {
-    const index = languages.findIndex((item) => item.id === id);
-    setLanguages((current) => current.map((item) => item.id === id ? { ...item, ...fields } : item));
-    setSearch("");
-    setSort(null);
-    setPage(Math.floor(Math.max(index, 0) / PAGE_SIZE) + 1);
-  }
-
-  return <section className="admin-languages-page" aria-label="Languages catalog">
-    <div className="profile-cvs-toolbar admin-languages-toolbar">
-      <label className="search-field profile-cvs-search">
-        <AppIcon name="search" />
-        <span className="sr-only">Search languages by name</span>
-        <input type="search" placeholder="Search" value={search}
-          onChange={(event) => { setSearch(event.target.value); setPage(1); setOpenMenuId(null); }} />
-      </label>
-      <button type="button" ref={createTrigger} className="create-action profile-cvs-create"
-        aria-label="Create language" onClick={() => { menuTrigger.current = null; setDialog({ type: "create" }); }}>
-        <AppIcon name="plus" /><span>Create language</span>
-      </button>
-    </div>
-
-    <div className="admin-languages-table" role="table" aria-label="Languages" aria-busy={loadState === "loading"}>
-      <div className="admin-languages-row admin-languages-heading" role="row">
-        {(["name", "iso"] as const).map((field) => <div key={field} role="columnheader"
-          aria-sort={sort?.field === field ? sort.direction === "asc" ? "ascending" : "descending" : "none"}>
-          <button type="button" className="profile-cvs-sort"
-            aria-label={`Sort by ${field === "iso" ? "ISO" : "name"}${sort?.field === field ? `, currently ${sort.direction === "asc" ? "ascending" : "descending"}` : ""}`}
-            onClick={() => toggleSort(field)}>
-            {field === "iso" ? "ISO" : "Name"}
-            <AppIcon name="sort" className={sort?.field === field && sort.direction === "desc" ? "sort-indicator profile-cvs-sort--desc" : "sort-indicator"} />
-          </button>
-        </div>)}
-        <span className="admin-languages-native" role="columnheader">Native name</span>
-        <span role="columnheader"><span className="sr-only">Actions</span></span>
-      </div>
-
-      {loadState === "loading" ? <div className="admin-languages-state" role="row"><p role="cell" aria-live="polite">Loading languages…</p></div>
-        : loadState === "error" ? <div className="admin-languages-state" role="row"><div role="cell">
-          <p role="alert">Could not load languages.</p>
-          <button type="button" onClick={retryLoad}>Retry</button>
-        </div></div>
-          : visibleLanguages.length === 0 ? <div className="admin-languages-state" role="row"><p role="cell">No languages found</p></div>
-            : visibleLanguages.map((language) => <div className="admin-languages-row admin-languages-item" role="row" key={language.id}>
-              <span role="cell">{language.name}</span>
-              <span role="cell">{language.iso}</span>
-              <span role="cell" className="admin-languages-native">{language.nativeName}</span>
-              <div className="profile-cv-actions" role="cell" ref={openMenuId === language.id ? menuRoot : undefined}>
-                <button type="button" className="profile-cv-more" aria-label={`Actions for ${language.name}`}
-                  aria-haspopup="menu" aria-expanded={openMenuId === language.id}
-                  onClick={(event) => { menuTrigger.current = event.currentTarget; setOpenMenuId((value) => value === language.id ? null : language.id); }}>
-                  <AppIcon name="more" />
-                </button>
-                {openMenuId === language.id && <div className="profile-cv-actions-menu" role="menu" aria-label={`Actions for ${language.name}`}
-                  onKeyDown={(event) => {
-                    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-                    event.preventDefault();
-                    const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'));
-                    const at = items.indexOf(document.activeElement as HTMLElement);
-                    items[event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : event.key === "ArrowDown" ? (at + 1) % items.length : (at - 1 + items.length) % items.length]?.focus();
-                  }}>
-                  <button type="button" role="menuitem" onClick={() => openAction("edit", language)}>Edit</button>
-                  <button type="button" role="menuitem" onClick={() => openAction("delete", language)}>Delete</button>
-                </div>}
-              </div>
-            </div>)}
-    </div>
-
-    {loadState === "ready" && pageCount > 1 && <nav className="profile-cvs-pagination" aria-label="Language pages">
-      <button type="button" disabled={currentPage === 1} aria-label="Previous page" onClick={() => setPage(currentPage - 1)}>‹</button>
-      {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button type="button" key={number}
-        aria-label={`Page ${number}`} aria-current={currentPage === number ? "page" : undefined}
-        onClick={() => { setPage(number); setOpenMenuId(null); }}>{number}</button>)}
-      <button type="button" disabled={currentPage === pageCount} aria-label="Next page" onClick={() => setPage(currentPage + 1)}>›</button>
-    </nav>}
-
-    {dialog?.type === "create" && <AdminLanguageFormDialog languages={languages} onClose={closeDialog} onSave={createLanguage} />}
-    {dialog?.type === "edit" && <AdminLanguageFormDialog language={dialog.language} languages={languages} onClose={closeDialog}
-      onSave={(fields) => updateLanguage(dialog.language.id, fields)} />}
-    {dialog?.type === "delete" && <AdminLanguageDeleteDialog language={dialog.language} onClose={closeDialog}
-      onDelete={() => setLanguages((current) => current.filter((item) => item.id !== dialog.language.id))} />}
-  </section>;
+function sortLanguages(items: AdminLanguage[], search: string, sort: CatalogSort) {
+  return filterAndSortLanguages(items, search, sort as LanguageSort);
 }
 
+export function AdminLanguagesPage() {
+  return <AdminCatalogPage<AdminLanguage>
+    singular="Language" plural="Languages" className="admin-languages"
+    initialItems={[]} loadItems={loadLanguagePreview}
+    columns={[
+      { key: "name", label: "Name", sortable: true, render: (item) => item.name },
+      { key: "iso", label: "ISO", sortable: true, render: (item) => item.iso },
+      { key: "nativeName", label: "Native name", className: "admin-languages-native", render: (item) => item.nativeName },
+    ]}
+    filterAndSort={sortLanguages}
+    renderDialog={({ dialog, actions }) => {
+      if (dialog?.type === "create") return <AdminLanguageFormDialog key="create" languages={actions.items}
+        onClose={actions.close} onSave={(fields) => actions.create({ id: crypto.randomUUID(), ...fields })} />;
+      if (dialog?.type === "edit") return <AdminLanguageFormDialog key={dialog.item.id} language={dialog.item}
+        languages={actions.items} onClose={actions.close}
+        onSave={(fields) => actions.update({ ...dialog.item, ...fields })} />;
+      if (dialog?.type === "delete") return <AdminLanguageDeleteDialog key={dialog.item.id} language={dialog.item}
+        onClose={actions.close} onDelete={() => actions.remove(dialog.item.id)} />;
+      return null;
+    }}
+  />;
+}
 function AdminLanguageFormDialog({ language, languages, onClose, onSave }: {
   language?: AdminLanguage;
   languages: AdminLanguage[];

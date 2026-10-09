@@ -64,7 +64,7 @@ export function CvSkillsPage({ cv }: { cv: CvRecord }) {
         onClose={() => setDialog(null)}
         onSave={(name, mastery) => dialog === "add" ? addCvSkill(cv.id, name, mastery) : updateCvSkill(cv.id, name, mastery)} />}
       {dialog === "remove" && <SkillRemoveDialog count={selected.length} error="" onClose={() => setDialog(null)}
-        onConfirm={() => { removeCvSkills(cv.id, selected); cancelSelection(); }} />}
+        onConfirm={() => removeCvSkills(cv.id, selected)} onSuccess={cancelSelection} />}
     </div>
   );
 }

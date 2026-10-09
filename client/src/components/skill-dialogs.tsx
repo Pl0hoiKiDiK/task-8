@@ -97,12 +97,13 @@ export function SkillFormDialog({ kind, skill, available, onClose, onSave }: {
   );
 }
 
-export function SkillRemoveDialog({ count, error, title = "Remove skills", onClose, onConfirm }: {
+export function SkillRemoveDialog({ count, error, title = "Remove skills", onClose, onConfirm, onSuccess }: {
   count: number;
   error: string;
   title?: string;
   onClose: () => void;
   onConfirm: () => void | Promise<void>;
+  onSuccess?: () => void;
 }) {
   const [removing, setRemoving] = useState(false);
   const [requestError, setRequestError] = useState("");
@@ -114,6 +115,7 @@ export function SkillRemoveDialog({ count, error, title = "Remove skills", onClo
     try {
       await onConfirm();
       onClose();
+      onSuccess?.();
     } catch {
       setRequestError("Failed to remove skills. Please try again.");
     } finally {
