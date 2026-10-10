@@ -3,6 +3,8 @@
 import { useLoginForm } from "@/lib/auth/hooks/use-login-form";
 import { AuthField } from "@/components/auth/auth-field";
 
+import Link from "next/link";
+
 export default function SignInPage() {
   const { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit } = useLoginForm();
 
@@ -41,7 +43,7 @@ export default function SignInPage() {
         <button className="primary-button" type="submit" disabled={loading || !canSubmit}>
           {loading ? "Signing in..." : "Sign in"}
         </button>
-        <span className="auth-secondary-action">Forgot password</span>
+        <Link href="/forgot-password">Forgot password?</Link>
       </form>
     </section>
   );

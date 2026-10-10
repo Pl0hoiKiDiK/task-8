@@ -74,3 +74,21 @@ export const USER_QUERY: TypedDocumentNode<{ user: AuthUser }, { userId: string 
     }
   }
 `;
+
+export const FORGOT_PASSWORD_MUTATION: TypedDocumentNode<
+  { forgotPassword: null },
+  { auth: { email: string } }
+> = gql`
+  mutation ForgotPassword($auth: ForgotPasswordInput!) {
+    forgotPassword(auth: $auth)
+  }
+`;
+
+export const RESET_PASSWORD_MUTATION: TypedDocumentNode<
+  { resetPassword: null },
+  { auth: { newPassword: string; confirmPassword: string } }
+> = gql`
+  mutation ResetPassword($auth: ResetPasswordInput!) {
+    resetPassword(auth: $auth)
+  }
+`;

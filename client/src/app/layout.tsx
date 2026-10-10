@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `try{const theme=localStorage.getItem("cv-builder-theme");if(theme==="light"||theme==="dark"||theme==="system")document.documentElement.dataset.theme=theme}catch{}` }} />
+        {/* <script dangerouslySetInnerHTML={{ __html: `try{const theme=localStorage.getItem("cv-builder-theme");if(theme==="light"||theme==="dark"||theme==="system")document.documentElement.dataset.theme=theme}catch{}` }} /> */}
       </head>
       <body className={roboto.variable}>
         <AppProviders>
