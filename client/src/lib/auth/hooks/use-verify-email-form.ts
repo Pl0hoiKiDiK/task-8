@@ -10,6 +10,12 @@ import { VERIFY_EMAIL_MUTATION } from "@/lib/auth/api/graphql";
 import { getHomePath } from "@/lib/auth/model/routes";
 import { OTP_LENGTH, isOtpComplete } from "@/lib/auth/model/validation";
 
+const VERIFY_ERROR_OVERRIDES = {
+    mailNotFound: "Invalid verification code",
+    Unauthorized: "Verification code has expired",
+};
+
+
 export function useVerifyEmailForm() {
     const router = useRouter();
     const dispatch = useAppDispatch();
@@ -46,7 +52,7 @@ export function useVerifyEmailForm() {
             await verify({ variables: { mail: { otp: code } } });
             dispatch(emailVerified());
         } catch (err) {
-            setError(getAuthErrorMessage(err));
+            setError(getAuthErrorMessage(err, VERIFY_ERROR_OVERRIDES));
         }
     }
 

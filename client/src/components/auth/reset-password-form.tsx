@@ -43,6 +43,8 @@ export function ResetPasswordForm({ token }: { token?: string }) {
                         error={errors.confirmPassword}
                     />
 
+                    {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+
                     <button className="primary-button primary-button-compact" type="submit" disabled={loading || !canSubmit}>
                         {loading ? "Saving..." : "Submit"}
                     </button>

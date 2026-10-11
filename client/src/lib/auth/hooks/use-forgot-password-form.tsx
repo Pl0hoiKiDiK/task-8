@@ -6,6 +6,10 @@ import { FORGOT_PASSWORD_MUTATION } from "@/lib/auth/api/graphql";
 import { getAuthErrorMessage } from "@/lib/auth/model/errors";
 import { checkEmail } from "@/lib/auth/model/validation";
 
+const FORGOT_ERROR_OVERRIDES = {
+    failedToSendEmail: "No account found with this email address",
+};
+
 export function useForgotPasswordForm() {
     const [forgot, { loading }] = useMutation(FORGOT_PASSWORD_MUTATION);
     const [email, setEmail] = useState("");
@@ -31,7 +35,7 @@ export function useForgotPasswordForm() {
             await forgot({ variables: { auth: { email: email.trim() } } });
             setSentTo(email.trim());
         } catch (error) {
-            console.log(error)
+            setFormError(getAuthErrorMessage(error, FORGOT_ERROR_OVERRIDES));
         }
     }
 

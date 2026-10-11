@@ -14,6 +14,9 @@ import {
 } from "@/lib/auth/model/validation";
 
 const EMPTY_VALUES: ResetPasswordValues = { newPassword: "", confirmPassword: "" };
+const RESET_ERROR_OVERRIDES = {
+    actionExpired: "This password reset link has expired",
+};
 
 export function useResetPasswordForm(token: string | undefined) {
     const router = useRouter();
@@ -57,7 +60,8 @@ export function useResetPasswordForm(token: string | undefined) {
                 context: { headers: { authorization: `Bearer ${token}` } },
             });
         } catch (error) {
-            setFormError(getAuthErrorMessage(error));
+            console.log(error);
+            setFormError(getAuthErrorMessage(error, RESET_ERROR_OVERRIDES));
             return;
         }
 
