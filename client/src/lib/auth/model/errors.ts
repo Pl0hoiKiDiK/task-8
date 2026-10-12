@@ -13,7 +13,7 @@ const MESSAGES: Record<string, string> = {
     failedToSendEmail: "Account created, but we could not send the confirmation email.",
     mailNotFound: "Mail not found",
     actionExpired: "This password reset link has expired",
-    unauthorized: "Unauthorized",
+    unauthorized: "Your session has expired. Please sign in again.",
 };
 
 export function getAuthErrorMessage(error: unknown, overrides: Record<string, string> = {}): string {

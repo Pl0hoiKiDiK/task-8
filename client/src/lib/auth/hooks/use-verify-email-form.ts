@@ -12,7 +12,7 @@ import { OTP_LENGTH, isOtpComplete } from "@/lib/auth/model/validation";
 
 const VERIFY_ERROR_OVERRIDES = {
     mailNotFound: "Invalid verification code",
-    Unauthorized: "Verification code has expired",
+    unauthorized: "Verification code has expired",
 };
 
 
