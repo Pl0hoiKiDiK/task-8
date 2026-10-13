@@ -102,8 +102,14 @@ export class CvProjectsService {
   async removeCvProject({ cvId, projectId }: RemoveCvProjectInput) {
     const cv = await this.findOneByIdAndJoin(cvId);
 
-    cv.projects = cv.projects.filter(({ project }) => String(project.id) !== projectId);
-    await this.cvProjectRepository.delete({ project: { id: projectId } });
+    const cvProject = cv.projects.find(({ project }) => String(project.id) === projectId);
+    if (!cvProject) {
+      throw cvProjectNotFound;
+    }
+
+    cv.projects = cv.projects.filter((entry) => entry.id !== cvProject.id);
+    await this.cvRepository.save(cv);
+    await this.cvProjectRepository.delete(cvProject.id);
 
     return cv;
   }
