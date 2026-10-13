@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { initialCvSkills, ownerSkillsFor, previewCvSkills, previewOwnerSkills, type CvSkill, type SkillMastery } from "@/components/cv-skills-data";
+import { initialCvProjects, projectCatalog, validateCvProject, type CvProjectEntry, type CvProjectFields } from "@/components/cv-projects-data";
 
 export type CvRecord = {
   id: string;
@@ -52,6 +53,10 @@ type CvPreviewContextValue = {
   addCvSkill: (cvId: string, name: string, mastery: SkillMastery) => void;
   updateCvSkill: (cvId: string, name: string, mastery: SkillMastery) => void;
   removeCvSkills: (cvId: string, names: string[]) => void;
+  cvProjects: Record<string, CvProjectEntry[]>;
+  addCvProject: (cvId: string, fields: CvProjectFields) => void;
+  updateCvProject: (cvId: string, fields: CvProjectFields) => void;
+  removeCvProject: (cvId: string, projectId: string) => void;
   userSkills: CvSkill[];
   addUserSkill: (name: string, mastery: SkillMastery) => void;
   updateUserSkill: (name: string, mastery: SkillMastery) => void;
@@ -63,6 +68,7 @@ const CvPreviewContext = createContext<CvPreviewContextValue | null>(null);
 export function CvPreviewProvider({ children, initialRecords = initialCvs }: { children: ReactNode; initialRecords?: CvRecord[] }) {
   const [cvs, setCvs] = useState(initialRecords);
   const [cvSkills, setCvSkills] = useState<Record<string, CvSkill[]>>(initialCvSkills);
+  const [cvProjects, setCvProjects] = useState<Record<string, CvProjectEntry[]>>(initialCvProjects);
   const [userSkills, setUserSkills] = useState<CvSkill[]>(previewCvSkills);
 
   const createCv = (fields: CvFields) => {
@@ -76,6 +82,31 @@ export function CvPreviewProvider({ children, initialRecords = initialCvs }: { c
   const deleteCv = (id: string) => {
     setCvs((current) => current.filter((cv) => cv.id !== id));
     setCvSkills((current) => Object.fromEntries(Object.entries(current).filter(([cvId]) => cvId !== id)));
+    setCvProjects((current) => Object.fromEntries(Object.entries(current).filter(([cvId]) => cvId !== id)));
+  };
+
+  const addCvProject = (cvId: string, fields: CvProjectFields) => {
+    if (!cvs.some((cv) => cv.id === cvId)) throw new Error("CV was not found");
+    if (Object.keys(validateCvProject(fields, projectCatalog)).length) throw new Error("Project information is invalid");
+    if ((cvProjects[cvId] ?? []).some((entry) => entry.projectId === fields.projectId)) throw new Error("Project already added");
+    setCvProjects((current) => ({ ...current, [cvId]: [...(current[cvId] ?? []), fields] }));
+  };
+
+  const updateCvProject = (cvId: string, fields: CvProjectFields) => {
+    if (Object.keys(validateCvProject(fields, projectCatalog)).length) throw new Error("Project information is invalid");
+    if (!(cvProjects[cvId] ?? []).some((entry) => entry.projectId === fields.projectId)) throw new Error("Project was not found");
+    setCvProjects((current) => ({
+      ...current,
+      [cvId]: (current[cvId] ?? []).map((entry) => entry.projectId === fields.projectId ? fields : entry),
+    }));
+  };
+
+  const removeCvProject = (cvId: string, projectId: string) => {
+    if (!(cvProjects[cvId] ?? []).some((entry) => entry.projectId === projectId)) throw new Error("Project was not found");
+    setCvProjects((current) => ({
+      ...current,
+      [cvId]: (current[cvId] ?? []).filter((entry) => entry.projectId !== projectId),
+    }));
   };
 
   const addCvSkill = (cvId: string, name: string, mastery: SkillMastery) => {
@@ -112,7 +143,7 @@ export function CvPreviewProvider({ children, initialRecords = initialCvs }: { c
   };
 
   return (
-    <CvPreviewContext.Provider value={{ cvs, createCv, updateCv, deleteCv, cvSkills, addCvSkill, updateCvSkill, removeCvSkills, userSkills, addUserSkill, updateUserSkill, removeUserSkills }}>
+    <CvPreviewContext.Provider value={{ cvs, createCv, updateCv, deleteCv, cvSkills, addCvSkill, updateCvSkill, removeCvSkills, cvProjects, addCvProject, updateCvProject, removeCvProject, userSkills, addUserSkill, updateUserSkill, removeUserSkills }}>
       {children}
     </CvPreviewContext.Provider>
   );
