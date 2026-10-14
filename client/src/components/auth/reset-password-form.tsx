@@ -5,8 +5,17 @@ import { AuthField } from "@/components/auth/auth-field";
 import { useResetPasswordForm } from "@/lib/auth/hooks/use-reset-password-form";
 
 export function ResetPasswordForm({ token }: { token?: string }) {
-    const { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit } =
+    const { values, errors, formError, loading, passwordChanged, canSubmit, handleChange, handleBlur, handleSubmit } =
         useResetPasswordForm(token);
+
+    if (passwordChanged) {
+        return (
+            <>
+                <p role="status">Your password has been changed. Please sign in with your new password.</p>
+                <Link className="primary-button primary-button-compact" href="/signin">Sign in</Link>
+            </>
+        );
+    }
 
     return (
         <section className="auth-panel" aria-labelledby="reset-password-title">
@@ -14,7 +23,7 @@ export function ResetPasswordForm({ token }: { token?: string }) {
             <p>Here you should write a new password and confirm it</p>
 
             {!token ? (
-                <div className="auth-form">
+                <div className="auth-form">``
                     <p role="alert" className="auth-error">LINK_EXPIRED_MESSAGE</p>
                 </div>
             ) : (

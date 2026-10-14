@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ChangeEvent, type FocusEvent, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN_MUTATION, RESET_PASSWORD_MUTATION } from "@/lib/auth/api/graphql";
 import { useStartSession } from "@/lib/auth/hooks/use-start-session";
@@ -19,7 +18,6 @@ const RESET_ERROR_OVERRIDES = {
 };
 
 export function useResetPasswordForm(token: string | undefined) {
-    const router = useRouter();
     const startSession = useStartSession();
     const [reset, { loading: resetting }] = useMutation(RESET_PASSWORD_MUTATION);
     const [login, { loading: loggingIn }] = useMutation(LOGIN_MUTATION);
@@ -27,6 +25,7 @@ export function useResetPasswordForm(token: string | undefined) {
     const [values, setValues] = useState<ResetPasswordValues>(EMPTY_VALUES);
     const [touched, setTouched] = useState<Partial<Record<keyof ResetPasswordValues, boolean>>>({});
     const [formError, setFormError] = useState<string | null>(null);
+    const [passwordChanged, setPasswordChanged] = useState(false);
 
     const loading = resetting || loggingIn;
     const validationErrors = validateResetPassword(values);
@@ -60,14 +59,13 @@ export function useResetPasswordForm(token: string | undefined) {
                 context: { headers: { authorization: `Bearer ${token}` } },
             });
         } catch (error) {
-            console.log(error);
             setFormError(getAuthErrorMessage(error, RESET_ERROR_OVERRIDES));
             return;
         }
 
         const email = decodeJwt(token)?.email
         if (!email) {
-            router.replace("/signin");
+            setPasswordChanged(true);
             return;
         }
         try {
@@ -75,9 +73,9 @@ export function useResetPasswordForm(token: string | undefined) {
             if (!data) throw new Error("Empty login response");
             startSession(data.login);
         } catch {
-            router.replace("/signin");
+            setPasswordChanged(true);
         }
     }
 
-    return { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit };
+    return { values, errors, formError, loading, passwordChanged, canSubmit, handleChange, handleBlur, handleSubmit };
 }
