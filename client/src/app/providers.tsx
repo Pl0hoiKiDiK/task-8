@@ -14,6 +14,7 @@ import { makeStore, type AppStore } from "@/lib/store";
 import { useAppDispatch } from "@/lib/hooks";
 import { restoreFinished, sessionStarted } from "@/lib/auth/model/auth-slice";
 import { restoreSession } from "@/lib/auth/api/restore-session";
+import { RequireAuth } from "@/components/auth/require-auth";
 
 function makeApolloClient(store: AppStore) {
   const httpLink = new HttpLink({
@@ -56,7 +57,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ReduxProvider store={store}>
       <ApolloNextAppProvider makeClient={() => makeApolloClient(store)}>
         <SessionRestorer />
-        {children}
+        <RequireAuth>{children}</RequireAuth>
       </ApolloNextAppProvider>
     </ReduxProvider>
   );
