@@ -11,13 +11,15 @@ const MESSAGES: Record<string, string> = {
     userAlreadyExists: "An account with this email already exists",
     invalidCredentials: "Invalid email or password",
     failedToSendEmail: "Account created, but we could not send the confirmation email.",
-    mailNotFound: "Invalid verification code",
+    mailNotFound: "Mail not found",
+    actionExpired: "This password reset link has expired",
+    unauthorized: "Your session has expired. Please sign in again.",
 };
 
-export function getAuthErrorMessage(error: unknown): string {
+export function getAuthErrorMessage(error: unknown, overrides: Record<string, string> = {}): string {
     if (CombinedGraphQLErrors.is(error)) {
         const message = error.errors[0]?.message;
-        return (message && MESSAGES[message]) || GENERIC_MESSAGE;
+        return (message && (overrides[message] ?? MESSAGES[message])) || GENERIC_MESSAGE;
     }
     return NETWORK_MESSAGE;
 }
