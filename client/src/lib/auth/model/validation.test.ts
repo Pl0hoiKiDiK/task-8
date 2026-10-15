@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PASSWORD_MIN_LENGTH, validateSignup } from "@/lib/auth/model/validation";
+import { PASSWORD_MIN_LENGTH, validateChangePassword, validateSignup } from "@/lib/auth/model/validation";
 
 const valid = {
     email: "user@example.com",
@@ -32,5 +32,31 @@ describe("validateSignup", () => {
 
     it("rejects mismatched confirmation", () => {
         expect(validateSignup({ ...valid, confirmPassword: valid.password + "x" }).confirmPassword).toBeDefined();
+    });
+});
+
+describe("validateChangePassword", () => {
+    const validChange = {
+        password: "old-secret",
+        newPassword: "new-secret",
+        confirmPassword: "new-secret",
+    };
+
+    it("enables a complete password change", () => {
+        expect(validateChangePassword(validChange)).toEqual({});
+    });
+
+    it("requires all fields and matches the confirmation", () => {
+        expect(Object.keys(validateChangePassword({ password: "", newPassword: "", confirmPassword: "" })).sort())
+            .toEqual(["confirmPassword", "newPassword", "password"]);
+        expect(validateChangePassword({ ...validChange, confirmPassword: "different" }).confirmPassword)
+            .toBe("Passwords do not match");
+    });
+
+    it("uses the server password length and rejects reusing the current password", () => {
+        expect(validateChangePassword({ ...validChange, newPassword: "short", confirmPassword: "short" }).newPassword)
+            .toBeDefined();
+        expect(validateChangePassword({ ...validChange, newPassword: validChange.password, confirmPassword: validChange.password }).newPassword)
+            .toBe("New password must be different from current password");
     });
 });

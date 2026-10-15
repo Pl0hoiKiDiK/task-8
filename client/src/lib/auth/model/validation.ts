@@ -76,3 +76,25 @@ export function validateResetPassword(values: ResetPasswordValues): ResetPasswor
     if (confirm) errors.confirmPassword = confirm;
     return errors;
 }
+
+export type ChangePasswordValues = {
+    password: string;
+    newPassword: string;
+    confirmPassword: string;
+};
+
+export type ChangePasswordErrors = Partial<Record<keyof ChangePasswordValues, string>>;
+
+export function validateChangePassword(values: ChangePasswordValues): ChangePasswordErrors {
+    const errors: ChangePasswordErrors = {};
+    const currentPassword = checkPassword(values.password);
+    const newPassword = checkPassword(values.newPassword);
+    const confirmPassword = checkConfirmPassword(values.newPassword, values.confirmPassword);
+
+    if (currentPassword) errors.password = currentPassword;
+    if (newPassword) errors.newPassword = newPassword;
+    else if (values.password === values.newPassword) errors.newPassword = "New password must be different from current password";
+    if (confirmPassword) errors.confirmPassword = confirmPassword;
+
+    return errors;
+}

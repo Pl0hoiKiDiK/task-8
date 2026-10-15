@@ -155,23 +155,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .employees-table .employee-department { width: 14%; }
 .employees-table .employee-position { width: 17%; }
 
-.settings-layout { width: min(852px, 100%); margin: 0 auto; }
-.settings-select { position: relative; display: block; margin-bottom: 20px; }
-.settings-select > span { display: block; padding-left: 14px; color: var(--muted); font-size: 12px; line-height: 16px; }
-.settings-select select { width: 100%; height: 48px; padding: 0 40px 0 12px; border: 1px solid #aeaeae; border-radius: 0; appearance: none; background: var(--surface); color: var(--text); font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-.settings-select-arrow { position: absolute; right: 12px; bottom: 12px; pointer-events: none; }
-.settings-select-arrow { transform: rotate(-90deg); }
-.settings-password-section { margin-top: 36px; }
-.settings-password-section h1 { margin: 0 0 26px; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
-.settings-password { position: relative; margin-bottom: 36px; }
-.settings-password input { width: 100%; height: 48px; padding: 0 52px 0 12px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); font-size: 16px; line-height: 23px; letter-spacing: .15px; }
-.settings-password input::placeholder { color: var(--placeholder); opacity: 1; }
-.settings-password button { position: absolute; inset: 0 8px 0 auto; display: grid; place-items: center; width: 40px; border: 0; background: transparent; color: var(--muted); }
-.settings-password button .app-icon { width: 24px; height: 24px; }
-.settings-submit { display: block; width: 160px; height: 48px; margin: 0 0 0 auto; border: 0; border-radius: 24px; background: #aeaeae; color: #f5f5f7; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; cursor: not-allowed; }
-:root[data-theme="dark"] .settings-submit { background: #626262; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .settings-submit { background: #626262; } }
-
 .profile-header { display: flex; align-items: center; }
 .profile-breadcrumbs { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .profile-breadcrumbs a { color: var(--muted); text-decoration: none; }
@@ -343,7 +326,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .app-shell--tablet-open .sidebar-label { display: inline; }
   .create-action { padding: 0 4px; }
   .create-action span:not(.app-icon) { display: none; }
-  .settings-submit { display: none; }
   .app-shell--tablet-open .sidebar-account { padding-left: 8px; }
   .app-shell--tablet-open .sidebar-link { color: var(--muted); }
   .app-shell--tablet-open .sidebar-link--active { color: var(--text); }
