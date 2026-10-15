@@ -92,3 +92,18 @@ export const RESET_PASSWORD_MUTATION: TypedDocumentNode<
     resetPassword(auth: $auth)
   }
 `;
+
+export type ChangePasswordVariables = {
+  args: { oldPassword: string; newPassword: string; confirmPassword: string };
+};
+
+export const CHANGE_PASSWORD_MUTATION: TypedDocumentNode<
+  { changePassword: { id: string } },
+  ChangePasswordVariables
+> = gql`
+  mutation ChangePassword($args: ChangePasswordInput!) {
+    changePassword(args: $args) {
+      id
+    }
+  }
+`;

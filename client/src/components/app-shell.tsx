@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useApolloClient } from "@apollo/client/react";
 import { AppIcon, type IconName } from "@/components/app-icon";
 import { ProfileBreadcrumbs } from "@/components/profile-navigation";
 import { CvDetailsBreadcrumbs, type CvSection } from "@/components/cv-details-page";
+import { refreshTokenStorage, sessionCleared } from "@/lib/auth/model/auth-slice";
+import { useAppDispatch } from "@/lib/hooks";
 
 type NavItem = { label: string; href: string; icon: IconName };
 
@@ -50,6 +53,11 @@ const pageTitles: Record<string, string> = {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const client = useApolloClient();
+  const dispatch = useAppDispatch();
+  const accountRef = useRef<HTMLDivElement>(null);
+  const accountButtonRef = useRef<HTMLButtonElement>(null);
   const role = pathname.startsWith("/admin/") ? "admin" : "user";
   const prefix = role === "admin" ? "/admin" : "";
   const isProfile = pathname === `${prefix}/profile` || pathname.startsWith(`${prefix}/profile/`);
@@ -64,7 +72,34 @@ export function AppShell({ children }: { children: ReactNode }) {
   const activeSection = isProfile ? `${prefix}/employees` : cvId ? `${prefix}/cvs` : pathname;
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(pathname.endsWith("/settings"));
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    function closeOnOutsideClick(event: PointerEvent) {
+      if (!accountRef.current?.contains(event.target as Node)) setProfileOpen(false);
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+        accountButtonRef.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [profileOpen]);
+
+  async function signOut() {
+    refreshTokenStorage.clear();
+    dispatch(sessionCleared());
+    setProfileOpen(false);
+    await client.clearStore().catch(() => undefined);
+    router.replace("/signin");
+  }
 
   const closeTablet = () => setTabletExpanded(false);
   const visibleMainItems = role === "admin"
@@ -110,17 +145,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </nav>
 
-        <div className="sidebar-bottom">
+        <div className="sidebar-bottom" ref={accountRef}>
           {profileOpen && (
-            <nav className="profile-menu" aria-label="Account">
-              <SidebarLink item={{ label: "Profile", href: `${prefix}/profile`, icon: "profile" }} active={pathname === `${prefix}/profile`} onNavigate={closeTablet} />
-              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
-              <button className="sidebar-link" type="button" disabled title="Sign out is not connected yet">
+            <nav id="account-menu" className="profile-menu" aria-label="Account">
+              <SidebarLink item={{ label: "Profile", href: `${prefix}/profile`, icon: "profile" }} active={pathname === `${prefix}/profile`} onNavigate={() => { closeTablet(); setProfileOpen(false); }} />
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={() => { closeTablet(); setProfileOpen(false); }} />
+              <button className="sidebar-link" type="button" onClick={signOut}>
                 <AppIcon name="logout" /><span className="sidebar-label">Log out</span>
               </button>
             </nav>
           )}
-          <button className="sidebar-account" type="button" aria-expanded={profileOpen} onClick={() => setProfileOpen((open) => !open)}>
+          <button className="sidebar-account" ref={accountButtonRef} type="button" aria-expanded={profileOpen} aria-controls={profileOpen ? "account-menu" : undefined} onClick={() => setProfileOpen((open) => !open)}>
             <span className="account-avatar">R</span>
             <span className="sidebar-label">Rostislav Harlanov</span>
           </button>
