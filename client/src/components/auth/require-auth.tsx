@@ -1,7 +1,6 @@
 "use client"
 
-import { getHomePath } from "@/lib/auth/model/routes";
-import { isAllowed } from "@/lib/auth/model/access";
+import { getRedirectPath } from "@/lib/auth/model/access";
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -16,15 +15,16 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
     const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
     const ready = status === "ready"
-    const allowed = !!user && isAllowed(pathname, user.role)
+
+    const redirectTo = user ? getRedirectPath(pathname, user.role) : null
 
     useEffect(() => {
         if (isPublic || !ready) return
         if (!user) router.replace("/signin")
-        else if (!allowed) router.replace(getHomePath(user.role))
-    }, [isPublic, ready, user, allowed, router])
+        else if (redirectTo) router.replace(redirectTo)
+    }, [isPublic, ready, user, redirectTo, router])
 
     if (isPublic) return <>{children}</>
-    if (!ready || !user || !allowed) return null
+    if (!ready || !user || redirectTo) return null
     return <>{children}</>
 }
