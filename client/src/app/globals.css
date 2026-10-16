@@ -59,48 +59,6 @@ button, input, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
-.auth-layout { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; }
-.auth-tabs { display: flex; height: 56px; flex: none; justify-content: center; }
-.auth-tab { width: 150px; display: grid; place-items: center; color: var(--text); font-size: 14px; font-weight: 500; line-height: 17.5px; letter-spacing: .4px; text-transform: uppercase; }
-.auth-tab--active { color: var(--red); font-weight: 600; border-bottom: 2px solid var(--red); }
-
-.auth-panel, .signup-panel { width: min(560px, calc(100% - 48px)); text-align: center; }
-.auth-panel { margin-top: clamp(100px, 24.5vh, 220px); }
-.signup-panel { margin-top: clamp(64px, 20vh, 180px); }
-.auth-panel h1, .signup-panel h1 { margin: 0; font-size: 34px; font-weight: 400; line-height: 42px; letter-spacing: .25px; }
-.auth-panel > p, .signup-panel > p { margin: 20px 0 42px; font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-
-.auth-form { display: flex; flex-direction: column; align-items: center; gap: 36px; }
-.auth-form > input, .password-field input { width: 100%; height: 48px; padding: 0 11px; border: 1px solid #aeaeae; border-radius: 0; outline-offset: 1px; color: var(--text); background: transparent; font-size: 16px; line-height: 23px; letter-spacing: .15px; }
-.auth-form input::placeholder { color: var(--placeholder); opacity: 1; }
-.password-field { width: 100%; position: relative; }
-.password-field input { padding-right: 48px; }
-.password-toggle { position: absolute; top: 0; right: 8px; width: 40px; height: 48px; border: 0; background: none; color: var(--muted); display: grid; place-items: center; }
-.password-toggle .app-icon { width: 24px; height: 24px; }
-.primary-button { width: 160px; height: 48px; margin-top: 8px; border: 0; border-radius: 24px; background: var(--red); color: #f5f5f7; box-shadow: 0 2px 3px #0003; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
-.primary-button-signup { width: 220px }
-.primary-button:disabled { opacity: .6; cursor: not-allowed; }
-.auth-secondary-action { margin-top: -16px; color: var(--muted); font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
-
-.otp { display: flex; gap: 16px; justify-content: center; }
-.otp-cell { flex: 0 1 48px; min-width: 0; height: 48px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); text-align: center; font-size: 16px; }
-
-.auth-form > input:focus-visible,
-.password-field input:focus-visible,
-.otp-cell:focus-visible { outline: none; border-color: var(--text); }
-
-.auth-form > input[aria-invalid="true"],
-.password-field input[aria-invalid="true"],
-.otp-cell[aria-invalid="true"] { border-color: var(--red); }
-.otp-cell[aria-invalid="true"]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
-
-.auth-error,
-.auth-form-error { margin: 8px 0 0; color: var(--red); font-size: 14px; line-height: 20px; letter-spacing: .25px; }
-.auth-form-error { margin-top: -24px; }
-
-.auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
-.auth-panel-verify .primary-button { margin-top: 5px; }
-
 .app-shell { --sidebar-width: 200px; min-height: 100dvh; }
 .app-shell--collapsed { --sidebar-width: 56px; }
 .sidebar { width: var(--sidebar-width); position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; flex-direction: column; background: var(--surface); transition: width .18s ease; }
@@ -357,7 +315,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
   :root[data-theme="dark"] .user-skills-group h1 { color: #fff; }
   :root[data-theme="dark"] .my-profile-tab--active { color: var(--red); }
-  .signup-panel { margin-top: clamp(110px, 20vh, 180px); } 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -370,7 +327,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 600px) {
-  .auth-panel { margin-top: clamp(72px, 20vh, 190px); }
   .app-header { padding-left: 24px; }
   .app-main { padding-left: 16px; padding-right: 16px; }
   .cv-details-header { padding-left: 24px; }

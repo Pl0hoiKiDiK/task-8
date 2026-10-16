@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AuthField } from "@/components/auth/auth-field";
+import { authCompactButton, authDescription, authForm, authFormError, authSecondaryAction, authTitle, resetPanel } from "@/components/auth/auth-styles";
 import { useResetPasswordForm } from "@/lib/auth/hooks/use-reset-password-form";
 
 export function ResetPasswordForm({ token }: { token?: string }) {
@@ -10,24 +11,25 @@ export function ResetPasswordForm({ token }: { token?: string }) {
 
     if (passwordChanged) {
         return (
-            <>
-                <p role="status">Your password has been changed. Please sign in with your new password.</p>
-                <Link className="primary-button primary-button-compact" href="/signin">Sign in</Link>
-            </>
+            <section className={resetPanel}>
+                <p role="status" className={authDescription}>Your password has been changed. Please sign in with your new password.</p>
+                <Link className={`${authCompactButton} mx-auto`} href="/signin">Sign in</Link>
+            </section>
         );
     }
 
     return (
-        <section className="auth-panel" aria-labelledby="reset-password-title">
-            <h1 id="reset-password-title">Reset password</h1>
-            <p>Here you should write a new password and confirm it</p>
+        <section className={resetPanel} aria-labelledby="reset-password-title">
+            <h1 id="reset-password-title" className={authTitle}>Reset password</h1>
+            <p className={authDescription}>Here you should write a new password and confirm it</p>
 
             {!token ? (
-                <div className="auth-form">``
-                    <p role="alert" className="auth-error">LINK_EXPIRED_MESSAGE</p>
+                <div className={authForm}>
+                    <p role="alert" className="text-sm leading-5 text-[var(--red)]">This password reset link has expired</p>
+                    <Link className={authSecondaryAction} href="/signin">Go to sign in</Link>
                 </div>
             ) : (
-                <form className="auth-form" onSubmit={handleSubmit} noValidate>
+                <form className={authForm} onSubmit={handleSubmit} noValidate>
                     <AuthField
                         name="newPassword"
                         label="New password"
@@ -52,12 +54,12 @@ export function ResetPasswordForm({ token }: { token?: string }) {
                         error={errors.confirmPassword}
                     />
 
-                    {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+                    {formError && <p role="alert" className={authFormError}>{formError}</p>}
 
-                    <button className="primary-button primary-button-compact" type="submit" disabled={loading || !canSubmit}>
+                    <button className={authCompactButton} type="submit" disabled={loading || !canSubmit}>
                         {loading ? "Saving..." : "Submit"}
                     </button>
-                    <Link className="auth-secondary-action" href="/signin">Go to sign in</Link>
+                    <Link className={authSecondaryAction} href="/signin">Go to sign in</Link>
                 </form>
             )}
         </section>
