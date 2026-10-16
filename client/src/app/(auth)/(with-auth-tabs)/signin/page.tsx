@@ -2,6 +2,7 @@
 
 import { useLoginForm } from "@/lib/auth/hooks/use-login-form";
 import { AuthField } from "@/components/auth/auth-field";
+import { authCompactButton, authDescription, authForm, authFormError, authPanel, authSecondaryAction, authTitle } from "@/components/auth/auth-styles";
 
 import Link from "next/link";
 
@@ -9,11 +10,11 @@ export default function SignInPage() {
   const { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit } = useLoginForm();
 
   return (
-    <section className="auth-panel" aria-labelledby="sign-in-title">
-      <h1 id="sign-in-title">Welcome back</h1>
-      <p>Hello again! Sign in to continue</p>
+    <section className={authPanel} aria-labelledby="sign-in-title">
+      <h1 id="sign-in-title" className={authTitle}>Welcome back</h1>
+      <p className={authDescription}>Hello again! Sign in to continue</p>
 
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form className={authForm} onSubmit={handleSubmit} noValidate>
         <AuthField
           name="email"
           label="Email"
@@ -38,12 +39,12 @@ export default function SignInPage() {
           error={errors.password}
         />
 
-        {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+        {formError && <p role="alert" className={authFormError}>{formError}</p>}
 
-        <button className="primary-button" type="submit" disabled={loading || !canSubmit}>
+        <button className={authCompactButton} type="submit" disabled={loading || !canSubmit}>
           {loading ? "Signing in..." : "Sign in"}
         </button>
-        <Link href="/forgot-password">Forgot password?</Link>
+        <Link className={authSecondaryAction} href="/forgot-password">Forgot password?</Link>
       </form>
     </section>
   );

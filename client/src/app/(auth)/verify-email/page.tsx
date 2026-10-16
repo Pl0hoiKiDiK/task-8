@@ -1,6 +1,7 @@
 "use client";
 
 import { OtpField } from "@/components/auth/otp-field";
+import { authDescription, authForm, authFormError, authSecondaryAction, authTitle, authVerifyButton, verifyPanel } from "@/components/auth/auth-styles";
 import { useVerifyEmailForm } from "@/lib/auth/hooks/use-verify-email-form";
 
 export default function VerifyEmailPage() {
@@ -10,11 +11,11 @@ export default function VerifyEmailPage() {
     if (!isReady) return null;
     
     return (
-        <section className="auth-panel auth-panel-verify" aria-labelledby="verify-email-title">
-            <h1 id="verify-email-title">Email verification</h1>
-            <p>Enter the verification code we sent to your email.</p>
+        <section className={verifyPanel} aria-labelledby="verify-email-title">
+            <h1 id="verify-email-title" className={authTitle}>Email verification</h1>
+            <p className={authDescription}>Enter the verification code we sent to your email.</p>
 
-            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <form className={authForm} onSubmit={handleSubmit} noValidate>
                 <OtpField
                     value={digits}
                     onChange={setDigits}
@@ -24,15 +25,15 @@ export default function VerifyEmailPage() {
                 />
 
                 {error && (
-                    <p id="otp-error" role="alert" className="auth-form-error">
+                    <p id="otp-error" role="alert" className={authFormError}>
                         {error}
                     </p>
                 )}
 
-                <button className="primary-button" type="submit" disabled={loading || !canSubmit}>
+                <button className={authVerifyButton} type="submit" disabled={loading || !canSubmit}>
                     {loading ? "Confirming..." : "Confirm"}
                 </button>
-                <button className="auth-secondary-action" type="button" onClick={handleLater}>
+                <button className={authSecondaryAction} type="button" onClick={handleLater}>
                     Later
                 </button>
             </form>

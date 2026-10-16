@@ -2,6 +2,7 @@
 
 import { useSignupForm } from "@/lib/auth/hooks/use-signup-form";
 import { AuthField } from "@/components/auth/auth-field";
+import { authDescription, authForm, authFormError, authSecondaryAction, authTitle, authWideButton, signupPanel } from "@/components/auth/auth-styles";
 import Link from "next/link";
 
 
@@ -9,11 +10,11 @@ export default function SignUpPage() {
     const { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit } = useSignupForm();
 
     return (
-        <section className="signup-panel" aria-labelledby="sign-up-title">
-            <h1 id="sign-up-title">Sign up now</h1>
-            <p>Welcome! Sign up to continue</p>
+        <section className={signupPanel} aria-labelledby="sign-up-title">
+            <h1 id="sign-up-title" className={authTitle}>Sign up now</h1>
+            <p className={authDescription}>Welcome! Sign up to continue</p>
 
-            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <form className={authForm} onSubmit={handleSubmit} noValidate>
                 <AuthField
                     name="email"
                     label="Email"
@@ -50,12 +51,12 @@ export default function SignUpPage() {
                     error={errors.confirmPassword}
                 />
 
-                {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+                {formError && <p role="alert" className={authFormError}>{formError}</p>}
 
-                <button className="primary-button primary-button-signup" type="submit" disabled={loading || !canSubmit}>
+                <button className={authWideButton} type="submit" disabled={loading || !canSubmit}>
                     {loading ? "Creating..." : "Create account"}
                 </button>
-                <Link className="auth-secondary-action" href="/signin">I have an account</Link>
+                <Link className={authSecondaryAction} href="/signin">I have an account</Link>
             </form>
         </section>
     );
