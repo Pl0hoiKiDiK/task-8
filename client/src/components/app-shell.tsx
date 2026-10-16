@@ -25,17 +25,23 @@ const adminItems: NavItem[] = [
   { label: "Projects", href: "/admin/projects", icon: "projects" },
 ];
 
-function SidebarLink({ item, active, onNavigate }: { item: NavItem; active: boolean; onNavigate: () => void }) {
+function SidebarLink({ item, active, onNavigate, labelClass, menu = false }: {
+  item: NavItem;
+  active: boolean;
+  onNavigate: () => void;
+  labelClass: string;
+  menu?: boolean;
+}) {
   return (
     <Link
       href={item.href}
-      className={`sidebar-link${active ? " sidebar-link--active" : ""}${item.icon === "employees" && !active ? " sidebar-link--employees-inactive" : ""}`}
+      className={`flex w-full items-center gap-4 border-0 px-4 text-base leading-6 tracking-[.15px] whitespace-nowrap no-underline hover:bg-[var(--sidebar-active)] hover:text-[var(--text)] ${menu ? "h-10 rounded-none" : "h-14 rounded-r-[28px]"} ${active ? "bg-[var(--sidebar-active)] text-[var(--text)]" : menu ? "text-[var(--text)]" : "text-[var(--muted)]"}`}
       aria-current={active ? "page" : undefined}
       title={item.label}
       onClick={onNavigate}
     >
       <AppIcon name={item.icon} />
-      <span className="sidebar-label">{item.label}</span>
+      <span className={menu ? "" : labelClass}>{item.label}</span>
     </Link>
   );
 }
@@ -73,6 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const labelClass = `${desktopExpanded ? "" : "min-[901px]:hidden"} ${tabletExpanded ? "max-[900px]:inline" : "max-[900px]:hidden"}`;
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -93,78 +100,93 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, [profileOpen]);
 
+  function closeNavigation() {
+    setTabletExpanded(false);
+    setProfileOpen(false);
+  }
+
   async function signOut() {
     refreshTokenStorage.clear();
     dispatch(sessionCleared());
-    setProfileOpen(false);
+    closeNavigation();
     await client.clearStore().catch(() => undefined);
     router.replace("/signin");
   }
 
-  const closeTablet = () => setTabletExpanded(false);
   const visibleMainItems = role === "admin"
     ? mainItems.map((item) => ({ ...item, href: `/admin${item.href}` }))
     : mainItems;
 
   return (
-    <div className={`app-shell${desktopExpanded ? "" : " app-shell--collapsed"}${tabletExpanded ? " app-shell--tablet-open" : ""}`}>
-      {tabletExpanded && <button className="sidebar-backdrop" aria-label="Close navigation" onClick={closeTablet} />}
+    <div className="app-shell min-h-dvh">
+      {tabletExpanded && <button className="fixed inset-0 z-[19] border-0 bg-black/60 min-[901px]:hidden" type="button" aria-label="Close navigation" onClick={() => setTabletExpanded(false)} />}
 
-      <aside className="sidebar" aria-label="Main navigation">
-        <div className="sidebar-brand">
-          <AppIcon name="logo" className="sidebar-logo" />
-          <span className="sidebar-label">CV Builder</span>
+      <aside
+        className={`fixed inset-y-0 left-0 z-20 flex w-14 flex-col bg-[var(--surface)] transition-[width] duration-[180ms] print:hidden ${desktopExpanded ? "min-[901px]:w-[200px]" : "min-[901px]:w-14"} ${tabletExpanded ? "max-[900px]:w-[200px]" : "max-[900px]:w-14"}`}
+        aria-label="Main navigation"
+      >
+        <div className="flex h-14 shrink-0 items-center gap-4 px-4 text-base font-medium leading-6 tracking-[.15px] whitespace-nowrap">
+          <AppIcon name="logo" />
+          <span className={labelClass}>CV Builder</span>
         </div>
 
         <button
-          className="sidebar-collapse"
+          className="absolute top-[52px] -right-3 z-[25] hidden size-6 place-items-center rounded-full border-0 bg-[var(--surface)] text-[var(--muted)] min-[901px]:grid"
           type="button"
-          aria-label="Toggle navigation"
-          aria-expanded={tabletExpanded || desktopExpanded}
-          onClick={() => {
-            if (window.matchMedia("(max-width: 900px)").matches) setTabletExpanded((open) => !open);
-            else setDesktopExpanded((open) => !open);
-          }}
+          aria-label={desktopExpanded ? "Collapse navigation" : "Expand navigation"}
+          aria-expanded={desktopExpanded}
+          onClick={() => { setDesktopExpanded((open) => !open); setProfileOpen(false); }}
         >
-          <AppIcon name="chevron" className="sidebar-collapse-icon" />
+          <AppIcon name="chevron" className={desktopExpanded ? "" : "rotate-180"} />
+        </button>
+        <button
+          className="absolute top-[52px] -right-3 z-[25] grid size-6 place-items-center rounded-full border-0 bg-[var(--surface)] text-[var(--muted)] min-[901px]:hidden"
+          type="button"
+          aria-label={tabletExpanded ? "Close navigation" : "Open navigation"}
+          aria-expanded={tabletExpanded}
+          onClick={() => { setTabletExpanded((open) => !open); setProfileOpen(false); }}
+        >
+          <AppIcon name="chevron" />
         </button>
 
-        <nav className="sidebar-main" aria-label="Sections">
-          {visibleMainItems.map((item) => (
-            <SidebarLink key={item.href} item={item} active={activeSection === item.href} onNavigate={closeTablet} />
-          ))}
+        <nav className="min-h-0 flex-1 overflow-y-auto pt-3.5" aria-label="Sections">
+          <div className="flex flex-col gap-3.5">
+            {visibleMainItems.map((item) => (
+              <SidebarLink key={item.href} item={item} active={activeSection === item.href} onNavigate={closeNavigation} labelClass={labelClass} />
+            ))}
+          </div>
           {isProfile && role === "user" && (
-            <div className="sidebar-profile-settings">
-              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeTablet} />
+            <div className="mt-3.5 max-[900px]:hidden">
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeNavigation} labelClass={labelClass} />
             </div>
           )}
           {role === "admin" && (
-            <div className="sidebar-admin">
-              {adminItems.map((item) => <SidebarLink key={item.href} item={item} active={pathname === item.href} onNavigate={closeTablet} />)}
+            <div className="mt-7 flex flex-col gap-3.5 border-t border-[var(--border)] pt-3.5">
+              {adminItems.map((item) => <SidebarLink key={item.href} item={item} active={pathname === item.href} onNavigate={closeNavigation} labelClass={labelClass} />)}
             </div>
           )}
         </nav>
 
-        <div className="sidebar-bottom" ref={accountRef}>
+        <div className="relative shrink-0 pb-12 max-[900px]:pb-14" ref={accountRef}>
           {profileOpen && (
-            <nav id="account-menu" className="profile-menu" aria-label="Account">
-              <SidebarLink item={{ label: "Profile", href: `${prefix}/profile`, icon: "profile" }} active={pathname === `${prefix}/profile`} onNavigate={() => { closeTablet(); setProfileOpen(false); }} />
-              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={() => { closeTablet(); setProfileOpen(false); }} />
-              <button className="sidebar-link" type="button" onClick={signOut}>
-                <AppIcon name="logout" /><span className="sidebar-label">Log out</span>
+            <nav id="account-menu" className="absolute bottom-full left-0 z-30 mb-2 w-[200px] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--menu-surface)]" aria-label="Account">
+              <SidebarLink item={{ label: "Profile", href: `${prefix}/profile`, icon: "profile" }} active={pathname === `${prefix}/profile`} onNavigate={closeNavigation} labelClass={labelClass} menu />
+              <SidebarLink item={{ label: "Settings", href: `${prefix}/settings`, icon: "settings" }} active={pathname === `${prefix}/settings`} onNavigate={closeNavigation} labelClass={labelClass} menu />
+              <button className="flex h-10 w-full items-center gap-4 border-0 border-t border-[var(--border)] bg-transparent px-4 text-left text-base leading-6 tracking-[.15px] text-[var(--text)] hover:bg-[var(--sidebar-active)]" type="button" onClick={signOut}>
+                <AppIcon name="logout" /><span>Log out</span>
               </button>
             </nav>
           )}
-          <button className="sidebar-account" ref={accountButtonRef} type="button" aria-expanded={profileOpen} aria-controls={profileOpen ? "account-menu" : undefined} onClick={() => setProfileOpen((open) => !open)}>
-            <span className="account-avatar">R</span>
-            <span className="sidebar-label">Rostislav Harlanov</span>
+          <button className="flex w-full items-center gap-2 border-0 bg-transparent p-2 text-left text-base leading-6 tracking-[.15px] whitespace-nowrap text-[var(--text)]" ref={accountButtonRef} type="button" aria-expanded={profileOpen} aria-controls={profileOpen ? "account-menu" : undefined} onClick={() => setProfileOpen((open) => !open)}>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--red)] text-xl text-[#f5f5f7]">R</span>
+            <span className={labelClass}>Rostislav Harlanov</span>
           </button>
         </div>
       </aside>
 
-      <div className="app-content">
-        <header className={`app-header${isProfile ? " profile-header" : ""}${cvId ? " cv-details-header" : ""}`}>{title}</header>
-        <main className="app-main">{children}</main>
+      <div className={`min-w-0 transition-[margin-left] duration-[180ms] print:ml-0 ${desktopExpanded ? "min-[901px]:ml-[200px]" : "min-[901px]:ml-14"} max-[900px]:ml-14`}>
+        <header className={`flex h-14 min-w-0 items-center pr-11 pl-11 text-base leading-6 tracking-[.15px] text-[var(--muted)] print:hidden max-[600px]:pl-6 ${isProfile || cvId ? "max-[900px]:pl-9" : "max-[900px]:pl-14"}`}>{title}</header>
+        <main className="min-w-0 pt-1 pr-[26px] pb-10 pl-6 print:p-0 max-[900px]:px-6 max-[600px]:px-4">{children}</main>
       </div>
     </div>
   );
