@@ -11,3 +11,9 @@ export function decodeJwt(token: string): JwtClaims | null {
         return null;
     }
 }
+
+export function isJwtExpired(token: string, now = Date.now()): boolean {
+    const claims = decodeJwt(token);
+    if (!claims || typeof claims.exp !== "number") return true;
+    return claims.exp * 1000 <= now;
+}

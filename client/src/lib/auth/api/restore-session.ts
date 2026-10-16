@@ -30,7 +30,8 @@ export async function restoreSession(client: ApolloClient) {
 
         return { user: userData.user, accessToken: access_token };
     } catch (error) {
-        if (CombinedGraphQLErrors.is(error)) refreshTokenStorage.clear();
+        if (!CombinedGraphQLErrors.is(error)) throw error;
+        refreshTokenStorage.clear();
         return null;
     }
 }
