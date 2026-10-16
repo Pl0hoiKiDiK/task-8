@@ -16,19 +16,12 @@ import { restoreFinished, sessionStarted } from "@/lib/auth/model/auth-slice";
 import { restoreSession } from "@/lib/auth/api/restore-session";
 import { RequireAuth } from "@/components/auth/require-auth";
 
-import { ErrorLink } from "@apollo/client/link/error";
-import { CombinedGraphQLErrors, CombinedProtocolErrors } from "@apollo/client/errors";
-import { getMainDefinition } from "@apollo/client/utilities";
-import { setRequestFailed } from "@/lib/system/network-status";
+import { createNetworkRetryLink } from "@/lib/system/network-retry-link";
+
 import { NoInternetGate } from "@/components/system/no-internet-gate";
 import { UnsupportedDevice } from "@/components/system/unsupported-device";
 
-const errorLink = new ErrorLink(({ error, operation }) => {
-  const def = getMainDefinition(operation.query);
-  const isQuery = def.kind === "OperationDefinition" && def.operation === "query";
-  const isNetwork = !CombinedGraphQLErrors.is(error) && !CombinedProtocolErrors.is(error);
-  if (isQuery && isNetwork) setRequestFailed(true);
-})
+const retryLink = createNetworkRetryLink();
 
 
 function makeApolloClient(store: AppStore) {
@@ -44,7 +37,7 @@ function makeApolloClient(store: AppStore) {
 
   return new ApolloClient({
     cache: new InMemoryCache(),
-    link: errorLink.concat(authLink).concat(httpLink),
+    link: retryLink.concat(authLink).concat(httpLink),
   });
 }
 
@@ -57,9 +50,9 @@ function SessionRestorer() {
     if (started.current) return;
     started.current = true;
 
-    restoreSession(client).then((session) => {
-      dispatch(session ? sessionStarted(session) : restoreFinished());
-    });
+    restoreSession(client)
+      .then((session) => dispatch(session ? sessionStarted(session) : restoreFinished()))
+      .catch(() => dispatch(restoreFinished()));
   }, [client, dispatch]);
 
   return null;

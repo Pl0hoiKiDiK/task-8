@@ -1,6 +1,6 @@
 export function SadMonitorIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
-        <svg viewBox="0 0 162 122" fill="none" aria-hidden="true" {...props}>
+        <svg viewBox="0 0 162 122" width={160} height={121} fill="none" aria-hidden="true" {...props}>
             <path
                 d="M151 1H11C5.47715 1 1 5.47715 1 11V91C1 96.5229 5.47715 101 11 101H151C156.523 101 161 96.5229 161 91V11C161 5.47715 156.523 1 151 1Z"
                 stroke="currentColor"
