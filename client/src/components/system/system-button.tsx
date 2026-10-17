@@ -10,6 +10,7 @@ export function SystemButton(props: Omit<ButtonHTMLAttributes<HTMLButtonElement>
             uppercase text-white
             hover:brightness-110 active:brightness-90
 
+            cursor-pointer
             focus-visible:outline-2
             focus-visible:outline-offset-2
             focus-visible:outline-[var(--red)]"
