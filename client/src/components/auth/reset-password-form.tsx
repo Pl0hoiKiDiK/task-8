@@ -23,7 +23,7 @@ export function ResetPasswordForm({ token }: { token?: string }) {
             <p>Here you should write a new password and confirm it</p>
 
             {!token ? (
-                <div className="auth-form">``
+                <div className="auth-form">
                     <p role="alert" className="auth-error">LINK_EXPIRED_MESSAGE</p>
                 </div>
             ) : (
