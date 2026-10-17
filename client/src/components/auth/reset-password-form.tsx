@@ -24,7 +24,7 @@ export function ResetPasswordForm({ token }: { token?: string }) {
 
             {!token ? (
                 <div className="auth-form">
-                    <p role="alert" className="auth-error">LINK_EXPIRED_MESSAGE</p>
+                    <p role="alert" className="auth-error">This password reset link has expired</p>
                 </div>
             ) : (
                 <form className="auth-form" onSubmit={handleSubmit} noValidate>
