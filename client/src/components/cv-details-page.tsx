@@ -25,12 +25,12 @@ export function CvDetailsBreadcrumbs({ cvId, role, section }: { cvId: string; ro
   const { cvs } = useCvPreviewData();
   const cv = cvs.find((item) => item.id === cvId && (role === "admin" || item.employee === previewEmployeeEmail));
   return (
-    <nav className="cv-details-breadcrumbs" aria-label="Breadcrumb">
-      <Link href={role === "admin" ? "/admin/cvs" : "/cvs"}>CVs</Link>
-      <span aria-hidden="true">›</span>
-      <span className="cv-details-breadcrumb-name">{cv?.name ?? "CV"}</span>
-      <span aria-hidden="true">›</span>
-      <span aria-current="page">{sections.find((item) => item.value === section)?.label}</span>
+    <nav className="flex min-w-0 items-center gap-3.5 overflow-hidden whitespace-nowrap max-[600px]:gap-2" aria-label="Breadcrumb">
+      <Link className="shrink-0 text-[var(--muted)] no-underline hover:underline" href={role === "admin" ? "/admin/cvs" : "/cvs"}>CVs</Link>
+      <span className="shrink-0 text-2xl leading-5 text-[var(--border)]" aria-hidden="true">›</span>
+      <span className="min-w-0 truncate text-[var(--red)]">{cv?.name ?? "CV"}</span>
+      <span className="shrink-0 text-2xl leading-5 text-[var(--border)]" aria-hidden="true">›</span>
+      <span className="shrink-0" aria-current="page">{sections.find((item) => item.value === section)?.label}</span>
     </nav>
   );
 }
@@ -125,12 +125,12 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
 
   return (
     <section className="cv-details-page" aria-label="CV details">
-      <nav className="cv-details-tabs" aria-label="CV sections">
+      <nav className="flex h-[52px] max-w-full overflow-x-auto print:hidden" aria-label="CV sections">
         {sections.map((item) => (
           <Link
             key={item.value}
             href={item.value === "details" ? base : `${base}/${item.value}`}
-            className={`cv-details-tab${section === item.value ? " cv-details-tab--active" : ""}`}
+            className={`grid w-[150px] shrink-0 place-items-center text-sm font-medium leading-[18px] tracking-[.4px] uppercase no-underline hover:text-[var(--red)] max-[600px]:w-1/4 max-[600px]:shrink max-[600px]:text-xs ${section === item.value ? "border-b-2 border-[var(--red)] text-[var(--red)]" : "text-[var(--text)]"}`}
             aria-current={section === item.value ? "page" : undefined}
           >{item.label}</Link>
         ))}

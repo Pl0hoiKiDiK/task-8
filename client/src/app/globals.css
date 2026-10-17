@@ -40,9 +40,6 @@
 }
 
 @media print {
-  .sidebar, .app-header, .cv-details-tabs { display: none !important; }
-  .app-content { margin-left: 0 !important; }
-  .app-main { padding: 0 !important; }
   body { background: white !important; color: #2e2e2e !important; }
   .app-shell { --text: #2e2e2e; --muted: #626262; --border: #aeaeae; --surface: white; }
 }
@@ -101,36 +98,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
 .auth-panel-verify .primary-button { margin-top: 5px; }
 
-.app-shell { --sidebar-width: 200px; min-height: 100dvh; }
-.app-shell--collapsed { --sidebar-width: 56px; }
-.sidebar { width: var(--sidebar-width); position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; flex-direction: column; background: var(--surface); transition: width .18s ease; }
-.sidebar-brand { height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px; white-space: nowrap; font-size: 16px; font-weight: 500; line-height: 24px; letter-spacing: .15px; }
-.sidebar-logo { width: 24px; height: 24px; flex: none; }
-.sidebar-collapse { position: absolute; top: 52px; right: -12px; z-index: 25; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: var(--surface); color: var(--muted); }
-.sidebar-collapse-icon { transform: none; }
-.sidebar-main { flex: 1; overflow-y: auto; padding-top: 14px; }
-.sidebar-link { width: 100%; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 16px; border: 0; border-radius: 0 28px 28px 0; text-decoration: none; color: var(--muted); white-space: nowrap; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
-.sidebar-link + .sidebar-link { margin-top: 14px; }
-.sidebar-link .app-icon { width: 24px; height: 24px; }
-.sidebar-link:hover, .sidebar-link--active { background: var(--sidebar-active); color: var(--text); }
-.sidebar-admin { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border); }
-.sidebar-admin .sidebar-link + .sidebar-link { margin-top: 14px; }
-.sidebar-profile-settings { margin-top: 14px; }
-.sidebar-bottom { flex: none; padding-bottom: 48px; }
-.sidebar-account { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px; border: 0; background: transparent; color: var(--text); text-align: left; white-space: nowrap; font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-.account-avatar { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--red); color: #f5f5f7; font-size: 20px; }
-.profile-menu { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--menu-surface); }
-.profile-menu .sidebar-link { height: 40px; border-radius: 0; color: var(--text); }
-.profile-menu .sidebar-link + .sidebar-link { margin-top: 0; }
-.profile-menu .sidebar-link:last-child { border-top: 1px solid var(--border); }
-.app-content { min-width: 0; margin-left: var(--sidebar-width); transition: margin-left .18s ease; }
-.app-header { height: 56px; padding: 16px 44px; color: var(--muted); font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-.app-main { min-width: 0; padding: 4px 26px 40px 24px; }
-.app-shell--collapsed .sidebar-label { display: none; }
-.app-shell--collapsed .sidebar-brand { padding: 0 16px; }
-.app-shell--collapsed .sidebar-account { padding-left: 8px; }
-.app-shell--collapsed .sidebar-collapse-icon { transform: rotate(180deg); }
-
 .employees-toolbar { min-height: 56px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-left: 20px; }
 .search-field { width: 320px; height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid #aeaeae; border-radius: 40px; }
 .search-field .app-icon { width: 24px; height: 24px; }
@@ -155,16 +122,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .employees-table .employee-department { width: 14%; }
 .employees-table .employee-position { width: 17%; }
 
-.profile-header { display: flex; align-items: center; }
-.profile-breadcrumbs { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.profile-breadcrumbs a { color: var(--muted); text-decoration: none; }
-.profile-breadcrumbs > .app-icon { width: 20px; height: 20px; }
-.profile-breadcrumb-person { display: inline-flex; align-items: center; gap: 4px; color: var(--red); }
-.profile-breadcrumb-person .app-icon { width: 24px; height: 24px; }
 .my-profile-page { position: relative; }
-.my-profile-tabs { height: 52px; display: flex; }
-.my-profile-tab { width: 150px; display: grid; place-items: center; color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; line-height: 17.5px; letter-spacing: .4px; text-transform: uppercase; }
-.my-profile-tab--active { border-bottom: 2px solid var(--red); color: var(--red); font-weight: 600; }
 .my-profile-content { width: min(852px, 100%); margin: 12px auto 0; }
 .my-profile-avatar-row { height: 120px; display: flex; justify-content: center; align-items: center; gap: 76px; transform: translateX(20px); }
 .my-profile-avatar { width: 120px; height: 120px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #aeaeae; color: #f5f5f7; font-size: 40px; font-weight: 400; line-height: 48px; }
@@ -269,14 +227,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .profile-cv-dialog-submit { border: 0; background: var(--red); color: #f5f5f7; }
 .profile-cv-dialog-submit:disabled { cursor: not-allowed; }
 .profile-cv-dialog-message { margin: 24px 0 28px; font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-.cv-details-header { display: flex; align-items: center; }
-.cv-details-breadcrumbs { min-width: 0; display: flex; align-items: center; gap: 14px; white-space: nowrap; }
-.cv-details-breadcrumbs a { color: var(--muted); text-decoration: none; }
-.cv-details-breadcrumbs > span[aria-hidden] { color: var(--border); font-size: 24px; line-height: 20px; }
-.cv-details-breadcrumb-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--red); }
-.cv-details-tabs { height: 52px; display: flex; }
-.cv-details-tab { width: 150px; display: grid; place-items: center; color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; line-height: 18px; letter-spacing: .4px; text-transform: uppercase; }
-.cv-details-tab--active { border-bottom: 2px solid var(--red); color: var(--red); }
 .cv-details-form { width: min(852px, 100%); display: flex; flex-direction: column; gap: 36px; margin: 20px auto 0; }
 .cv-details-field { position: relative; }
 .cv-details-field label { position: absolute; left: 15px; top: -17px; color: var(--muted); font-size: 12px; line-height: 16px; }
@@ -314,30 +264,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 900px) {
-  .app-shell { --sidebar-width: 56px; }
-  .sidebar { width: 56px; }
-  .sidebar-label { display: none; }
-  .sidebar-brand { padding: 0 16px; }
-  .app-shell--tablet-open .sidebar-collapse { background: var(--surface); }
-  :root[data-theme="dark"] .app-shell--tablet-open .sidebar-collapse { background: #454545; }
-  .app-shell--tablet-open .sidebar-collapse-icon { transform: none; }
-  .sidebar-backdrop { position: fixed; inset: 0; z-index: 19; border: 0; background: #0009; }
-  .app-shell--tablet-open .sidebar { width: 200px; }
-  .app-shell--tablet-open .sidebar-label { display: inline; }
   .create-action { padding: 0 4px; }
   .create-action span:not(.app-icon) { display: none; }
-  .app-shell--tablet-open .sidebar-account { padding-left: 8px; }
-  .app-shell--tablet-open .sidebar-link { color: var(--muted); }
-  .app-shell--tablet-open .sidebar-link--active { color: var(--text); }
-  .sidebar-profile-settings { display: none; }
-  .app-header { padding-left: 56px; }
-  .app-main { padding-left: 24px; padding-right: 24px; }
-  .cv-details-header { padding-left: 36px; }
   .employees-table .employee-email, .employees-table .employee-position { display: none; }
   .employees-table .employee-department { width: 28%; }
   .search-field { width: 276px; }
-  .sidebar-bottom { padding-bottom: 56px; }
-  .profile-header { padding-left: 36px; }
   .my-profile-content { width: 100%; }
   .my-profile-avatar-row { gap: 38px; }
   .my-profile-form { grid-template-columns: minmax(0, 1fr); }
@@ -356,35 +287,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .user-skills-page--editable .admin-profile-actions { gap: 112px; padding-right: 24px; }
   .admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
   :root[data-theme="dark"] .user-skills-group h1 { color: #fff; }
-  :root[data-theme="dark"] .my-profile-tab--active { color: var(--red); }
   .signup-panel { margin-top: clamp(110px, 20vh, 180px); } 
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .app-shell--tablet-open .sidebar-collapse { background: #454545; }
-}
-
 @media (prefers-color-scheme: dark) and (max-width: 900px) {
-  :root:not([data-theme="light"]) .my-profile-tab--active { color: var(--red); }
   :root:not([data-theme="light"]) .user-skills-group h1 { color: #fff; }
 }
 
 @media (max-width: 600px) {
   .auth-panel { margin-top: clamp(72px, 20vh, 190px); }
-  .app-header { padding-left: 24px; }
-  .app-main { padding-left: 16px; padding-right: 16px; }
-  .cv-details-header { padding-left: 24px; }
-  .cv-details-tab { width: 25%; font-size: 12px; }
   .employees-toolbar { padding-left: 0; }
   .search-field { width: min(320px, 100%); }
   .employees-table th, .employees-table td { padding: 0 8px; }
   .employees-table th:first-child, .employees-table td:first-child { width: 52px; }
   .employees-table th:last-child, .employees-table td:last-child { width: 32px; padding-right: 0; }
-  .profile-breadcrumbs { gap: 4px; font-size: 13px; }
-  .profile-breadcrumb-person .app-icon { display: none; }
-  .my-profile-tabs { width: 100%; }
-  .my-profile-tab { width: 33.333%; }
-  .my-profile-tabs--four .my-profile-tab { width: 25%; }
   .profile-cvs-toolbar { padding-right: 8px; padding-left: 8px; }
   .profile-cvs-heading, .profile-cv-row { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) 28px; }
   .my-profile-avatar-row { gap: 20px; transform: none; }
