@@ -81,7 +81,7 @@ export function OtpField({ value, onChange, readOnly, invalid, describedBy }: Pr
                     ref={(element) => {
                         refs.current[index] = element;
                     }}
-                    className="h-12 min-w-0 basis-9 rounded-none border border-[#aeaeae] bg-transparent text-center text-base text-[var(--text)] focus-visible:border-[var(--text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--red)] aria-invalid:border-[var(--red)] sm:basis-12"
+                    className="h-12 min-w-0 basis-9 rounded-none border border-[#aeaeae] bg-transparent text-center text-base text-[var(--text)] aria-invalid:border-[var(--red)] sm:basis-12"
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"

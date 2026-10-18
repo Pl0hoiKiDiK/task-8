@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
+import { authInlineError } from "@/components/auth/auth-styles";
 
 type AuthFieldProps = {
     name: string,
@@ -34,11 +35,11 @@ export function AuthField({ name, label, type = "text", autoComplete, placeholde
                 onBlur={onBlur}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? errorId : undefined}
-                className={`h-12 w-full rounded-none border bg-transparent px-[11px] text-base leading-[23px] tracking-[.15px] text-[var(--text)] placeholder:text-[var(--placeholder)] focus-visible:border-[var(--text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--red)] aria-invalid:border-[var(--red)] ${isPassword ? "pr-12" : ""} border-[#aeaeae]`}
+                className={`h-12 w-full rounded-none border border-[#aeaeae] bg-transparent px-[11px] text-base leading-[23px] tracking-[.15px] text-[var(--text)] placeholder:text-[var(--placeholder)] aria-invalid:border-[var(--red)] ${isPassword ? "pr-12" : ""}`}
             />
             {isPassword && (
                 <button
-                    className="absolute inset-y-0 right-2 grid w-10 place-items-center border-0 bg-transparent text-[var(--muted)] hover:text-[var(--text)]"
+                    className="absolute top-0 right-2 grid h-12 w-10 place-items-center border-0 bg-transparent text-[var(--muted)] hover:text-[var(--text)]"
                     type="button"
                     aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
                     aria-pressed={visible}
@@ -47,7 +48,7 @@ export function AuthField({ name, label, type = "text", autoComplete, placeholde
                     <AppIcon name="eye" className="size-6" />
                 </button>
             )}
-            {error && <p id={errorId} role="alert" className="mt-2 text-sm leading-5 tracking-[.25px] text-[var(--red)]">{error}</p>}
+            {error && <p id={errorId} role="alert" className={`mt-2 ${authInlineError}`}>{error}</p>}
         </div>
     );
 }

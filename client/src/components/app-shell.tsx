@@ -98,6 +98,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     dispatch(sessionCleared());
     setProfileOpen(false);
     await client.clearStore().catch(() => undefined);
+    try {
+      sessionStorage.setItem("cv-builder-logout-notice", "1");
+    } catch {
+      // Signing out must still work when browser storage is unavailable.
+    }
     router.replace("/signin");
   }
 

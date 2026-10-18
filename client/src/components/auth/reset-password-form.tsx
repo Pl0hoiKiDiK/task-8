@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AuthField } from "@/components/auth/auth-field";
-import { authCompactButton, authDescription, authForm, authFormError, authSecondaryAction, authTitle, resetPanel } from "@/components/auth/auth-styles";
+import { authCompactButton, authDescription, authExpiredDescription, authForm, authFormError, authSecondaryAction, authTitle, resetPanel } from "@/components/auth/auth-styles";
 import { useResetPasswordForm } from "@/lib/auth/hooks/use-reset-password-form";
 
 export function ResetPasswordForm({ token }: { token?: string }) {
@@ -21,11 +21,12 @@ export function ResetPasswordForm({ token }: { token?: string }) {
     return (
         <section className={resetPanel} aria-labelledby="reset-password-title">
             <h1 id="reset-password-title" className={authTitle}>Reset password</h1>
-            <p className={authDescription}>Here you should write a new password and confirm it</p>
+            <p className={token ? authDescription : authExpiredDescription} role={token ? undefined : "alert"}>
+                {token ? "Here you should write a new password and confirm it" : "This password reset link has expired"}
+            </p>
 
             {!token ? (
                 <div className={authForm}>
-                    <p role="alert" className="text-sm leading-5 text-[var(--red)]">This password reset link has expired</p>
                     <Link className={authSecondaryAction} href="/signin">Go to sign in</Link>
                 </div>
             ) : (

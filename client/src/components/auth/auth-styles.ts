@@ -22,4 +22,8 @@ export const authVerifyButton = `${authPrimaryButton} mt-[5px] w-40`;
 
 export const authSecondaryAction = "-mt-4 inline-block border-0 bg-transparent text-sm leading-[24.5px] font-medium tracking-[.4px] text-[var(--muted)] uppercase no-underline hover:text-[var(--red)]";
 
-export const authFormError = "-mt-6 text-sm leading-5 tracking-[.25px] text-[var(--red)]";
+export const authInlineError = "text-sm leading-5 tracking-[.25px] text-[var(--red)]";
+
+export const authFormError = `-mt-6 ${authInlineError}`;
+
+export const authExpiredDescription = `mt-5 mb-[42px] ${authInlineError}`;
