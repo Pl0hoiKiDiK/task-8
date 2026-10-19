@@ -57,10 +57,33 @@ describe("RequireAuth", () => {
         expect(screen.queryByText("secret")).toBeNull();
         expect(replace).toHaveBeenCalledWith("/admin/employees");
     });
-    it("public-path prefix is not a loophole: /signin-evil is private", () => {
-        pathname = "/signin-evil";
-        const store = mk(); store.dispatch(restoreFinished());
-        view(store);
-        expect(replace).toHaveBeenCalledWith("/signin");
+    it.each(["/signin-evil", "/no-such-page", "/employees-evil", "/admin-evil/x"])(
+        "guest on unknown URL %s - 404 is public: content shown, no redirect to /signin", (p) => {
+            pathname = p;
+            const store = mk(); store.dispatch(restoreFinished());
+            view(store);
+            expect(screen.getByText("secret")).toBeTruthy();
+            expect(replace).not.toHaveBeenCalled();
+        });
+    it("unknown URL while session is restoring - content (404) is shown immediately", () => {
+        pathname = "/no-such-page";
+        view();
+        expect(screen.getByText("secret")).toBeTruthy();
+        expect(replace).not.toHaveBeenCalled();
     });
+    it.each(["Employee", "Admin"] as const)("%s on unknown URL - 404 shown, no redirect", (role) => {
+        pathname = "/no-such-page";
+        const store = mk(); login(store, role);
+        view(store);
+        expect(screen.getByText("secret")).toBeTruthy();
+        expect(replace).not.toHaveBeenCalled();
+    });
+    it.each(["/", "/employees", "/employees/5", "/cvs/3/skills", "/profile/languages", "/settings", "/skills", "/languages", "/admin", "/admin/profile/cvs"])(
+        "guest on known private URL %s - /signin, content hidden", (p) => {
+            pathname = p;
+            const store = mk(); store.dispatch(restoreFinished());
+            view(store);
+            expect(screen.queryByText("secret")).toBeNull();
+            expect(replace).toHaveBeenCalledWith("/signin");
+        });
 });

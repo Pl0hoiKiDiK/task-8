@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRedirectPath } from "./access";
+import { getRedirectPath, isPrivatePath } from "./access";
 
 describe("getRedirectPath", () => {
     it("sends admin from employee pages to admin copies", () => {
@@ -41,4 +41,11 @@ describe("getRedirectPath", () => {
         expect(getRedirectPath("/profile", "Admin")).toBeNull();
         expect(getRedirectPath("/settings", "Admin")).toBeNull();
     });
+});
+
+describe("isPrivatePath", () => {
+    it.each(["/", "/employees", "/employees/12", "/cvs", "/cvs/1/skills", "/profile", "/profile/skills", "/settings", "/skills", "/languages", "/admin", "/admin/employees", "/admin/cvs/1/projects"])(
+        "%s - private section", (p) => expect(isPrivatePath(p)).toBe(true));
+    it.each(["/no-such-page", "/employees-evil", "/admin-panel", "/signin", "/foo/employees", "/Employees"])(
+        "%s - unknown URL (404), not a private section", (p) => expect(isPrivatePath(p)).toBe(false));
 });
