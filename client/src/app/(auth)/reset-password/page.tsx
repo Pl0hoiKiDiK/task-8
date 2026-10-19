@@ -1,6 +1,5 @@
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
-import { decodeJwt } from "@/lib/auth/model/jwt";
-import { redirect } from "next/dist/client/components/navigation";
+import { redirect } from "next/navigation";
 import { isJwtExpired } from "@/lib/auth/model/jwt";
 
 export default async function ResetPasswordPage({

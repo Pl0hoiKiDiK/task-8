@@ -16,7 +16,7 @@ describe("verify email errors", () => {
             .toBe("Invalid verification code");
     });
     it("expired → Verification code has expired", () => {
-        expect(getAuthErrorMessage(gqlError("Unauthorized"), VERIFY_ERROR_OVERRIDES))
+        expect(getAuthErrorMessage(gqlError("unauthorized"), VERIFY_ERROR_OVERRIDES))
             .toBe("Verification code has expired");
     });
 });
