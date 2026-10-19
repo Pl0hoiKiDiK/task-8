@@ -5,6 +5,12 @@ const matches = (pathname: string, base: string) =>
 
 const ADMIN_MIRRORED = ["/employees", "/cvs"]
 
+const PRIVATE_BASES = ["/employees", "/cvs", "/profile", "/settings", "/skills", "/languages", "/admin"]
+
+export function isPrivatePath(pathname: string): boolean {
+    return pathname === "/" || PRIVATE_BASES.some((base) => matches(pathname, base))
+}
+
 export function getRedirectPath(pathname: string, role: UserRole): string | null {
     if (role === "Admin") {
         if (ADMIN_MIRRORED.some((base) => matches(pathname, base))) return `/admin${pathname}`
