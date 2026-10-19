@@ -98,29 +98,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
 .auth-panel-verify .primary-button { margin-top: 5px; }
 
-.employees-toolbar { min-height: 56px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-left: 20px; }
 .search-field { width: 320px; height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid #aeaeae; border-radius: 40px; }
 .search-field .app-icon { width: 24px; height: 24px; }
 .search-field input { min-width: 0; flex: 1; border: 0; outline: none; background: transparent; color: var(--text); font-size: 16px; line-height: 23px; letter-spacing: .15px; }
 .search-field input::placeholder { color: var(--placeholder); opacity: 1; }
 .create-action { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 18px; border: 0; background: none; color: var(--red); font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
 .create-action .app-icon { width: 24px; height: 24px; }
-.employees-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.employees-table th { height: 52px; padding: 0 16px; border-bottom: 1px solid var(--border); text-align: left; font-size: 14px; font-weight: 500; line-height: 24px; letter-spacing: .15px; }
-.employees-table td { height: 73px; padding: 0 16px; border-bottom: 1px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; line-height: 20px; letter-spacing: .15px; }
-.employees-table th:first-child, .employees-table td:first-child { width: 80px; }
-.employees-table th:last-child, .employees-table td:last-child { width: 48px; padding-right: 20px; text-align: right; overflow: visible; }
-.employee-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--border); color: var(--surface); font-size: 20px; }
-.employee-row-action { display: inline-grid; place-items: center; width: 32px; height: 40px; padding: 0; border: 0; background: none; color: var(--muted); }
-.employee-row-action .app-icon { width: 24px; height: 24px; }
-.employee-row-action--arrow .app-icon { transform: rotate(180deg); }
 .sort-indicator { width: 18px; height: 18px; margin-left: 6px; }
-.employee-actions { position: relative; z-index: 3; display: inline-block; }
-.employee-actions-menu { position: absolute; top: 32px; right: 0; z-index: 5; width: 90px; padding: 4px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--menu-surface); box-shadow: 0 4px 12px #0002; text-align: left; }
-.employee-actions-menu button { display: block; width: 100%; padding: 7px 14px; border: 0; background: none; color: var(--text); font-size: 14px; line-height: 18px; text-align: left; cursor: default; }
-.employees-table .employee-email { width: 27%; }
-.employees-table .employee-department { width: 14%; }
-.employees-table .employee-position { width: 17%; }
 
 .my-profile-page { position: relative; }
 .my-profile-content { width: min(852px, 100%); margin: 12px auto 0; }
@@ -266,8 +250,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 900px) {
   .create-action { padding: 0 4px; }
   .create-action span:not(.app-icon) { display: none; }
-  .employees-table .employee-email, .employees-table .employee-position { display: none; }
-  .employees-table .employee-department { width: 28%; }
   .search-field { width: 276px; }
   .my-profile-content { width: 100%; }
   .my-profile-avatar-row { gap: 38px; }
@@ -296,11 +278,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 @media (max-width: 600px) {
   .auth-panel { margin-top: clamp(72px, 20vh, 190px); }
-  .employees-toolbar { padding-left: 0; }
   .search-field { width: min(320px, 100%); }
-  .employees-table th, .employees-table td { padding: 0 8px; }
-  .employees-table th:first-child, .employees-table td:first-child { width: 52px; }
-  .employees-table th:last-child, .employees-table td:last-child { width: 32px; padding-right: 0; }
   .profile-cvs-toolbar { padding-right: 8px; padding-left: 8px; }
   .profile-cvs-heading, .profile-cv-row { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) 28px; }
   .my-profile-avatar-row { gap: 20px; transform: none; }
