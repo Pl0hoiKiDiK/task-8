@@ -1,6 +1,6 @@
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { decodeJwt } from "@/lib/auth/model/jwt";
-import { redirect } from "next/dist/client/components/navigation";
+import { redirect } from "next/navigation";
 
 export default async function ResetPasswordPage({
     searchParams,
@@ -13,6 +13,8 @@ export default async function ResetPasswordPage({
     if (!token) redirect("/forgot-password")
 
     const claims = decodeJwt(token)
+    // The reset link must be checked against the time of this request.
+    // eslint-disable-next-line react-hooks/purity
     const isExpired = !claims || claims.exp * 1000 < Date.now();
     
     return <ResetPasswordForm token={isExpired ? undefined : token} />;
