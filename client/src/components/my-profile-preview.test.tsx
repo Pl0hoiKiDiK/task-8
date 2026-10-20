@@ -4,7 +4,8 @@ import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { useAppSelector } from "@/lib/hooks";
 import { MyProfilePreview } from "@/components/my-profile-preview";
 import { DELETE_AVATAR } from "@/lib/cv-api";
-import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, PROFILE_DEPARTMENTS_QUERY, PROFILE_POSITIONS_QUERY, type ProfileUser } from "@/lib/profile/api";
+import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, type ProfileUser } from "@/lib/profile/api";
+import { DEPARTMENTS_QUERY as PROFILE_DEPARTMENTS_QUERY, POSITIONS_QUERY as PROFILE_POSITIONS_QUERY } from "@/lib/catalog-api";
 
 vi.mock("@apollo/client/react", () => ({ useApolloClient: vi.fn(), useMutation: vi.fn(), useQuery: vi.fn() }));
 vi.mock("@/lib/hooks", () => ({ useAppSelector: vi.fn() }));
@@ -96,12 +97,12 @@ describe("My Profile", () => {
 
   it("loads all department pages without requesting extra position pages", async () => {
     clientQuery.mockImplementation(({ query, variables }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
-      ? { departments: { items: variables.page === 1 ? [{ id: "d1", name: "React" }] : [{ id: "d2", name: "DevOps" }], total_pages: 2 } }
+      ? { departments: { items: variables.params.page === 1 ? [{ id: "d1", name: "React" }] : [{ id: "d2", name: "DevOps" }], total_pages: 2 } }
       : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
     render(<MyProfilePreview />);
     await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
     expect(screen.getByRole("option", { name: "DevOps" })).toBeInTheDocument();
-    expect(clientQuery.mock.calls.map(([request]) => [request.query, request.variables.page])).toEqual([
+    expect(clientQuery.mock.calls.map(([request]) => [request.query, request.variables.params.page])).toEqual([
       [PROFILE_DEPARTMENTS_QUERY, 1], [PROFILE_POSITIONS_QUERY, 1], [PROFILE_DEPARTMENTS_QUERY, 2],
     ]);
   });

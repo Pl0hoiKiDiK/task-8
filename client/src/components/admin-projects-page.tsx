@@ -5,9 +5,9 @@ import { useApolloClient } from "@apollo/client/react";
 import { AdminCatalogPage, type CatalogSort } from "@/components/admin-catalog-page";
 import { type CatalogProject, formatProjectDate } from "@/components/cv-projects-data";
 import { SkillDialog } from "@/components/skill-dialogs";
-import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { loadProjects, toCatalogProject, type ApiProject } from "@/lib/cv-api";
 import { gql } from "@apollo/client";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 const CREATE_PROJECT = gql`mutation CreateCatalogProject($project: CreateProjectInput!) {
   createProject(project: $project) { id name domain description environment start_date end_date }
@@ -49,28 +49,23 @@ function filterAndSortProjects(items: CatalogProject[], search: string, sort: Ca
 
 export function AdminProjectsPage() {
   const client = useApolloClient();
-  const { reload } = useCvPreviewData();
   const loadItems = useCallback(() => loadProjects(client), [client]);
-  const refreshCvs = () => { void reload().catch(() => undefined); };
   return <AdminCatalogPage<CatalogProject>
     singular="Project" plural="Projects" layout="projects"
     initialItems={[]} loadItems={loadItems}
     createItem={async (item) => {
       const { data } = await client.mutate<{ createProject: ApiProject }>({ mutation: CREATE_PROJECT, variables: { project: toInput(item) } });
       if (!data?.createProject) throw new Error("Project was not created");
-      refreshCvs();
       return toCatalogProject(data.createProject);
     }}
     updateItem={async (item) => {
       const { data } = await client.mutate<{ updateProject: ApiProject }>({ mutation: UPDATE_PROJECT, variables: { project: { projectId: item.id, ...toInput(item) } } });
       if (!data?.updateProject) throw new Error("Project was not updated");
-      refreshCvs();
       return toCatalogProject(data.updateProject);
     }}
     deleteItem={async (id) => {
       const { data } = await client.mutate<{ deleteProject: { affected: number } }>({ mutation: DELETE_PROJECT, variables: { project: { projectId: id } } });
       if (!data?.deleteProject.affected) throw new Error("Project was not deleted");
-      refreshCvs();
     }}
     columns={[
       { key: "name", label: "Name", sortable: true, render: (project) => <div className="min-w-0"><strong className="block break-words">{project.name}</strong><p className="mt-1 break-words text-sm text-[var(--muted)]">{project.description}</p><div className="mt-2 flex flex-wrap gap-1">{project.environment.map((technology) => <span className="max-w-full break-all rounded-full border border-[var(--border)] px-2 py-0.5 text-xs" key={technology}>{technology}</span>)}</div></div> },
@@ -134,7 +129,7 @@ function ProjectFormDialog({ project, onClose, onSave }: {
     if (saving || Object.keys(errors).length) return;
     setSaving(true); setRequestError("");
     try { await onSave(fields); onClose(); }
-    catch { setRequestError("Something went wrong. Please try again later"); }
+    catch (error) { setRequestError(getApiErrorMessage(error)); }
     finally { setSaving(false); }
   }
 
@@ -174,7 +169,7 @@ function ProjectDeleteDialog({ project, onClose, onDelete }: { project: CatalogP
     if (deleting) return;
     setDeleting(true); setError("");
     try { await onDelete(); onClose(); }
-    catch { setError("Something went wrong. Please try again later"); }
+    catch (caught) { setError(getApiErrorMessage(caught)); }
     finally { setDeleting(false); }
   }
   return <SkillDialog title="Delete project" onClose={onClose}>

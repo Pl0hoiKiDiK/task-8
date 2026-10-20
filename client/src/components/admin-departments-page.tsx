@@ -10,6 +10,7 @@ import {
   type AdminDepartment,
 } from "@/components/admin-departments-data";
 import { CREATE_DEPARTMENT, DELETE_DEPARTMENT, DEPARTMENTS_QUERY, loadAllCatalogItems, UPDATE_DEPARTMENT } from "@/lib/catalog-api";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 export function AdminDepartmentsPage() {
   const client = useApolloClient();
@@ -67,8 +68,8 @@ function AdminDepartmentFormDialog({ department, departments, onClose, onSave }:
     try {
       await onSave(name.trim());
       onClose();
-    } catch {
-      setSystemError("Something went wrong. Please try again later");
+    } catch (caught) {
+      setSystemError(getApiErrorMessage(caught));
     } finally {
       setSaving(false);
     }
@@ -113,9 +114,7 @@ function AdminDepartmentDeleteDialog({ department, onClose, onDelete }: {
       await onDelete();
       onClose();
     } catch (caught) {
-      setError(caught instanceof Error && caught.message === "departmentInUse"
-        ? "Department cannot be deleted because it is currently in use"
-        : "Something went wrong. Please try again later");
+      setError(getApiErrorMessage(caught));
     } finally {
       setDeleting(false);
     }

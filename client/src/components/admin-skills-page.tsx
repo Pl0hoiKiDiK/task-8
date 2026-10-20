@@ -6,6 +6,7 @@ import { AdminCatalogPage } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
 import { filterAndSortSkills, skillNameExists, type AdminSkill } from "@/components/admin-skills-data";
 import { CREATE_SKILL, DELETE_SKILL, loadAllCatalogItems, SKILL_CATEGORIES_QUERY, SKILLS_QUERY, UPDATE_SKILL, type ApiSkill, type ApiSkillCategory } from "@/lib/catalog-api";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 function fromApi(skill: ApiSkill): AdminSkill {
   return { id: skill.id, name: skill.name, category: skill.category.name, categoryId: skill.category.id, categoryType: skill.category.parent?.name ?? skill.category.name };
@@ -80,7 +81,7 @@ function AdminSkillFormDialog({ skill, skills, categories, onClose, onSave }: {
     setSaving(true);
     setSystemError("");
     try { await onSave(name.trim(), category); onClose(); }
-    catch { setSystemError(skill ? "Failed to update skill. Please try again." : "Failed to create skill. Please try again."); }
+    catch (error) { setSystemError(getApiErrorMessage(error)); }
     finally { setSaving(false); }
   }
 
@@ -120,7 +121,7 @@ function AdminSkillDeleteDialog({ skill, onClose, onDelete }: { skill: AdminSkil
     setDeleting(true);
     setError("");
     try { await onDelete(); onClose(); }
-    catch { setError("Failed to delete skill. Please try again."); }
+    catch (caught) { setError(getApiErrorMessage(caught)); }
     finally { setDeleting(false); }
   }
   return <SkillDialog title="Delete skill" onClose={onClose}>

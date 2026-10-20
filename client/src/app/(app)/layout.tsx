@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { AppShell } from "@/components/app-shell";
-import { CvPreviewProvider } from "@/components/profile-cvs-data";
-import { LanguagePreviewProvider } from "@/components/profile-languages-data";
+import { AppDataBoundary } from "@/components/app-data-boundary";
 
 export default function ApplicationLayout({ children }: { children: ReactNode }) {
-  return <CvPreviewProvider><LanguagePreviewProvider><AppShell>{children}</AppShell></LanguagePreviewProvider></CvPreviewProvider>;
+  return <AppDataBoundary>{children}</AppDataBoundary>;
 }

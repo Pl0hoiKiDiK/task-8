@@ -15,7 +15,9 @@ const API_MESSAGES: Record<string, string> = {
     cannotDeleteVerifiedUser: "Verified users cannot be deleted",
 
     departmentNotFound: "Department not found",
+    departmentInUse: "Department cannot be deleted because it is currently in use",
     positionNotFound: "Position not found",
+    positionInUse: "Position cannot be deleted because it is currently in use",
 
     profileNotFound: "Profile not found",
     skillHasBeenAdded: "Skill already exists",

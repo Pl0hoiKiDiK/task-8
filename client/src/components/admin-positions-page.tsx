@@ -4,38 +4,33 @@ import { useCallback, useState, type FormEvent } from "react";
 import { useApolloClient } from "@apollo/client/react";
 import { AdminCatalogPage } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
-import { useCvPreviewData } from "@/components/profile-cvs-data";
 import {
   positionNameExists,
   filterAndSortPositions,
   type AdminPosition,
 } from "@/components/admin-positions-data";
 import { CREATE_POSITION, DELETE_POSITION, loadAllCatalogItems, POSITIONS_QUERY, UPDATE_POSITION } from "@/lib/catalog-api";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 export function AdminPositionsPage() {
   const client = useApolloClient();
-  const { reloadProjectRoles } = useCvPreviewData();
   const loadItems = useCallback(() => loadAllCatalogItems(client, POSITIONS_QUERY, "positions"), [client]);
-  const refreshRoles = () => { void reloadProjectRoles().catch(() => undefined); };
   return <AdminCatalogPage<AdminPosition>
     singular="Position" plural="Positions" layout="compact"
     initialItems={[]} loadItems={loadItems}
     createItem={async ({ name }) => {
       const { data } = await client.mutate<{ createPosition: AdminPosition }>({ mutation: CREATE_POSITION, variables: { position: { name } } });
       if (!data?.createPosition) throw new Error("Position was not created");
-      refreshRoles();
       return data.createPosition;
     }}
     updateItem={async ({ id, name }) => {
       const { data } = await client.mutate<{ updatePosition: AdminPosition }>({ mutation: UPDATE_POSITION, variables: { position: { positionId: id, name } } });
       if (!data?.updatePosition) throw new Error("Position was not updated");
-      refreshRoles();
       return data.updatePosition;
     }}
     deleteItem={async (id) => {
       const { data } = await client.mutate<{ deletePosition: { affected: number } }>({ mutation: DELETE_POSITION, variables: { position: { positionId: id } } });
       if (!data?.deletePosition.affected) throw new Error("Position was not deleted");
-      refreshRoles();
     }}
     columns={[{ key: "name", label: "Name", sortable: true, render: (item) => item.name }]}
     filterAndSort={(items, search, sort) => filterAndSortPositions(items, search, sort?.direction ?? null)}
@@ -73,8 +68,8 @@ function AdminPositionFormDialog({ position, positions, onClose, onSave }: {
     try {
       await onSave(name.trim());
       onClose();
-    } catch {
-      setSystemError("Something went wrong. Please try again later");
+    } catch (caught) {
+      setSystemError(getApiErrorMessage(caught));
     } finally {
       setSaving(false);
     }
@@ -119,9 +114,7 @@ function AdminPositionDeleteDialog({ position, onClose, onDelete }: {
       await onDelete();
       onClose();
     } catch (caught) {
-      setError(caught instanceof Error && caught.message === "positionInUse"
-        ? "Position cannot be deleted because it is currently in use"
-        : "Something went wrong. Please try again later");
+      setError(getApiErrorMessage(caught));
     } finally {
       setDeleting(false);
     }

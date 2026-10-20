@@ -13,6 +13,7 @@ import {
   type LanguageSort,
 } from "@/components/admin-languages-data";
 import { CREATE_LANGUAGE, DELETE_LANGUAGE, LANGUAGES_QUERY, loadAllCatalogItems, UPDATE_LANGUAGE, type ApiLanguage } from "@/lib/catalog-api";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 function fromApi(language: ApiLanguage): AdminLanguage {
   return { id: language.id, name: language.name, iso: language.iso2, nativeName: language.native_name ?? "" };
@@ -86,8 +87,8 @@ function AdminLanguageFormDialog({ language, languages, onClose, onSave }: {
     try {
       await onSave(normalizeLanguageFields(fields));
       onClose();
-    } catch {
-      setSystemError(language ? "Failed to update language. Please try again." : "Failed to create language. Please try again.");
+    } catch (error) {
+      setSystemError(getApiErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -149,8 +150,8 @@ function AdminLanguageDeleteDialog({ language, onClose, onDelete }: {
     try {
       await onDelete();
       onClose();
-    } catch {
-      setError("Failed to delete language. Please try again.");
+    } catch (caught) {
+      setError(getApiErrorMessage(caught));
     } finally {
       setDeleting(false);
     }

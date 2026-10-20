@@ -2,6 +2,7 @@ import { gql, type ApolloClient, type TypedDocumentNode } from "@apollo/client";
 
 export type CatalogPage<T> = { items: T[]; total_pages: number };
 type PageVariables = { params: { page: number; limit: number } };
+export const MAX_CATALOG_PAGES = 50;
 
 export async function loadAllCatalogItems<T>(
   client: ApolloClient,
@@ -9,17 +10,20 @@ export async function loadAllCatalogItems<T>(
   field: string,
 ): Promise<T[]> {
   const items: T[] = [];
-  for (let page = 1; ; page += 1) {
+  for (let page = 1; page <= MAX_CATALOG_PAGES; page += 1) {
     const { data } = await client.query({
       query,
       variables: { params: { page, limit: 100 } },
       fetchPolicy: "network-only",
     });
     const result = data?.[field];
-    if (!result) throw new Error(`Missing ${field} data`);
+    if (!result || !Array.isArray(result.items) || !Number.isSafeInteger(result.total_pages) || result.total_pages < 0 || result.total_pages > MAX_CATALOG_PAGES) {
+      throw new Error(`Invalid ${field} pagination`);
+    }
     items.push(...result.items);
     if (page >= result.total_pages) return items;
   }
+  throw new Error(`Too many pages for ${field}`);
 }
 
 export const DEPARTMENTS_QUERY: TypedDocumentNode<Record<string, CatalogPage<{ id: string; name: string }>>, PageVariables> = gql`

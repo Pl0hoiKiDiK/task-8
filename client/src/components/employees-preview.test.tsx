@@ -182,6 +182,6 @@ describe("employees page", () => {
     render(<EmployeesPreview admin />);
     fireEvent.click(screen.getByRole("button", { name: "Create user" }));
     await waitFor(() => expect(within(screen.getByRole("dialog", { name: "Create user" })).getByRole("combobox", { name: "Department" })).toBeEnabled());
-    expect(mocks.options).toHaveBeenCalledTimes(1);
+    expect(mocks.options).toHaveBeenCalledTimes(2);
   });
 });

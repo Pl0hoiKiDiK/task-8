@@ -1,11 +1,8 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { AdminPositionsPage } from "./admin-positions-page";
 import { CREATE_POSITION, DELETE_POSITION, POSITIONS_QUERY, UPDATE_POSITION } from "@/lib/catalog-api";
-
-const { reload } = vi.hoisted(() => ({ reload: vi.fn().mockResolvedValue(undefined) }));
-vi.mock("@/components/profile-cvs-data", () => ({ useCvPreviewData: () => ({ reloadProjectRoles: reload }) }));
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
@@ -14,8 +11,7 @@ beforeAll(() => {
 afterEach(cleanup);
 
 describe("admin positions API", () => {
-  it("loads positions and keeps the CV role list current after changes", async () => {
-    reload.mockClear();
+  it("loads positions and updates the catalog after changes", async () => {
     const mocks = [
       { request: { query: POSITIONS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { positions: { items: [{ id: "1", name: "Frontend Developer" }], total_pages: 1 } } } },
       { request: { query: CREATE_POSITION, variables: { position: { name: "QA Engineer" } } }, result: { data: { createPosition: { id: "2", name: "QA Engineer" } } } },
@@ -38,6 +34,5 @@ describe("admin positions API", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
     fireEvent.click(within(screen.getByRole("dialog", { name: "Delete position" })).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(screen.queryByRole("button", { name: "Actions for Senior QA Engineer" })).not.toBeInTheDocument());
-    expect(reload).toHaveBeenCalledTimes(3);
   });
 });

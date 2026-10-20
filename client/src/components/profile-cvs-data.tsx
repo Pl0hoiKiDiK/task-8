@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useApolloClient } from "@apollo/client/react";
 import { loadAllCatalogItems, POSITIONS_QUERY, SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
 import {
@@ -25,6 +25,7 @@ export type CvRecord = {
 };
 export type CvFields = Pick<CvRecord, "name" | "education" | "description">;
 type LoadState = "loading" | "ready" | "error";
+export type CvDataScope = "all" | "cvs" | "profile-skills" | "profile-languages" | "cv-details" | "cv-skills" | "cv-projects" | "cv-preview";
 
 type CvData = {
   currentUserId: string;
@@ -61,8 +62,9 @@ type CvData = {
 
 const CvDataContext = createContext<CvData | null>(null);
 
-export function CvPreviewProvider({ children, targetUserId, targetUserEmail, targetIsVerified }: {
+export function CvPreviewProvider({ children, scope = "all", targetUserId, targetUserEmail, targetIsVerified }: {
   children: ReactNode;
+  scope?: CvDataScope;
   targetUserId?: string;
   targetUserEmail?: string;
   targetIsVerified?: boolean;
@@ -83,8 +85,8 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
   const [skillCatalog, setSkillCatalog] = useState<CvSkill[]>([]);
   const [ownerSkills, setOwnerSkills] = useState<Record<string, CvSkill[]>>({});
   const [profile, setProfile] = useState<ApiProfile | null>(null);
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [categories, setCategories] = useState<Map<string, string>>(new Map());
+  const [loadState, setLoadState] = useState<LoadState>(scope === "cv-details" || scope === "cv-skills" ? "ready" : "loading");
+  const categories = useRef<Map<string, string> | null>(null);
 
   const reloadProjectRoles = useCallback(async () => {
     setProjectRolesState("loading");
@@ -102,18 +104,56 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
     if (!userId) return;
     setLoadState("loading");
     try {
-      const profileRequest = targetUserId && targetUserId !== ownUserId
+      const loadProfile = () => targetUserId && targetUserId !== ownUserId
         ? client.query({ query: PROFILE_QUERY, variables: { userId }, fetchPolicy: "network-only" }).then((result) => result.data?.profile)
         : client.query({ query: ME_QUERY, fetchPolicy: "network-only" }).then((result) => result.data?.me);
+      if (scope === "cvs") {
+        setCvs((await loadCvs(client)).map(toCvRecord));
+        setLoadState("ready");
+        return;
+      }
+      if (scope === "profile-languages") {
+        const result = await loadProfile();
+        if (!result) throw new Error("Missing profile data");
+        setProfile(result);
+        setLoadState("ready");
+        return;
+      }
+      if (scope === "profile-skills") {
+        const [result, categoryResult, skills] = await Promise.all([
+          loadProfile(),
+          client.query({ query: SKILL_CATEGORIES_QUERY, fetchPolicy: "network-only" }),
+          loadAllCatalogItems(client, SKILLS_QUERY, "skills"),
+        ]);
+        if (!result || !categoryResult.data?.skillCategories) throw new Error("Missing profile data");
+        const names = new Map(categoryResult.data.skillCategories.map((item) => [item.id, item.name]));
+        const assigned = toCvSkills(result.skills, names);
+        categories.current = names;
+        setProfile(result);
+        setUserSkills(assigned);
+        setOwnerSkills((current) => ({ ...current, [userId]: assigned }));
+        setSkillCatalog(skills.map((skill) => ({ name: skill.name, category: skill.category.name, categoryId: skill.category.id, mastery: "Novice" as SkillMastery })));
+        setLoadState("ready");
+        return;
+      }
+      if (scope === "cv-projects" || scope === "cv-preview") {
+        setProjectCatalog(await loadProjects(client));
+        setLoadState("ready");
+        return;
+      }
+      if (scope === "cv-details" || scope === "cv-skills") {
+        setLoadState("ready");
+        return;
+      }
       const [records, projects, profileResult, categoriesResult, skills] = await Promise.all([
         loadCvs(client), loadProjects(client),
-        profileRequest,
+        loadProfile(),
         client.query({ query: SKILL_CATEGORIES_QUERY, fetchPolicy: "network-only" }),
         loadAllCatalogItems(client, SKILLS_QUERY, "skills"),
       ]);
       if (!profileResult || !categoriesResult.data?.skillCategories) throw new Error("Missing profile data");
       const categoryNames = new Map(categoriesResult.data.skillCategories.map((item) => [item.id, item.name]));
-      setCategories(categoryNames);
+      categories.current = categoryNames;
       setCvs(records.map(toCvRecord));
       setCvSkills(Object.fromEntries(records.map((cv) => [cv.id, toCvSkills(cv.skills, categoryNames)])));
       setCvLanguages(Object.fromEntries(records.map((cv) => [cv.id, cv.languages])));
@@ -128,7 +168,7 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
       setLoadState("error");
       throw error;
     }
-  }, [client, ownUserId, targetIsVerified, targetUserEmail, targetUserId, userId]);
+  }, [client, ownUserId, scope, targetIsVerified, targetUserEmail, targetUserId, userId]);
 
   useEffect(() => {
     if (auth.status !== "ready" || !userId) return;
@@ -138,28 +178,45 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
 
   useEffect(() => {
     if (auth.status !== "ready" || !userId) return;
+    if (scope !== "all" && scope !== "cv-projects") return;
     const timer = window.setTimeout(() => { void reloadProjectRoles().catch(() => undefined); }, 0);
     return () => window.clearTimeout(timer);
-  }, [auth.status, reloadProjectRoles, userId]);
+  }, [auth.status, reloadProjectRoles, scope, userId]);
 
   const loadCv = useCallback(async (cvId: string) => {
-    const { data } = await client.query({ query: CV_QUERY, variables: { cvId }, fetchPolicy: "network-only" });
+    const [cvResult, categoryResult] = await Promise.all([
+      client.query({ query: CV_QUERY, variables: { cvId }, fetchPolicy: "network-only" }),
+      categories.current ? Promise.resolve(null) : client.query({ query: SKILL_CATEGORIES_QUERY, fetchPolicy: "network-only" }),
+    ]);
+    const data = cvResult.data;
     if (!data?.cv) throw new Error("CV was not found");
+    const categoryNames = categoryResult?.data?.skillCategories
+      ? new Map(categoryResult.data.skillCategories.map((item) => [item.id, item.name]))
+      : categories.current ?? new Map<string, string>();
+    categories.current = categoryNames;
     const cv: ApiCv = data.cv;
     setCvs((current) => current.some((item) => item.id === cv.id)
       ? current.map((item) => item.id === cv.id ? toCvRecord(cv) : item)
       : [...current, toCvRecord(cv)]);
-    setCvSkills((current) => ({ ...current, [cv.id]: toCvSkills(cv.skills, categories) }));
+    setCvSkills((current) => ({ ...current, [cv.id]: toCvSkills(cv.skills, categoryNames) }));
     setCvLanguages((current) => ({ ...current, [cv.id]: cv.languages }));
     setCvProjects((current) => ({ ...current, [cv.id]: toCvProjects(cv) }));
-  }, [categories, client]);
+  }, [client]);
 
   const loadOwnerSkills = useCallback(async (ownerId: string) => {
     if (!ownerId || ownerSkills[ownerId]) return;
-    const { data } = await client.query({ query: PROFILE_QUERY, variables: { userId: ownerId }, fetchPolicy: "network-only" });
+    const [profileResult, categoryResult] = await Promise.all([
+      client.query({ query: PROFILE_QUERY, variables: { userId: ownerId }, fetchPolicy: "network-only" }),
+      categories.current ? Promise.resolve(null) : client.query({ query: SKILL_CATEGORIES_QUERY, fetchPolicy: "network-only" }),
+    ]);
+    const data = profileResult.data;
     if (!data?.profile) throw new Error("Profile was not found");
-    setOwnerSkills((current) => ({ ...current, [ownerId]: toCvSkills(data.profile.skills, categories) }));
-  }, [categories, client, ownerSkills]);
+    const categoryNames = categoryResult?.data?.skillCategories
+      ? new Map(categoryResult.data.skillCategories.map((item) => [item.id, item.name]))
+      : categories.current ?? new Map<string, string>();
+    categories.current = categoryNames;
+    setOwnerSkills((current) => ({ ...current, [ownerId]: toCvSkills(data.profile.skills, categoryNames) }));
+  }, [client, ownerSkills]);
 
   async function mutateAndReload(mutation: Parameters<typeof client.mutate>[0]["mutation"], variables: Record<string, unknown>, cvId?: string) {
     await client.mutate({ mutation, variables });

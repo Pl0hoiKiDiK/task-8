@@ -8,7 +8,8 @@ import { useAppSelector } from "@/lib/hooks";
 import type { AuthUser } from "@/lib/auth/model/auth-slice";
 import { getAuthErrorMessage } from "@/lib/auth/model/errors";
 import { DELETE_AVATAR } from "@/lib/cv-api";
-import { PROFILE_USER_QUERY, loadCatalogs, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, UPLOAD_PROFILE_AVATAR_MUTATION, SEND_PROFILE_VERIFICATION_MUTATION, type CatalogItem, type ProfileUser } from "@/lib/profile/api";
+import { PROFILE_USER_QUERY, loadCatalogs, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, UPLOAD_PROFILE_AVATAR_MUTATION, type CatalogItem, type ProfileUser } from "@/lib/profile/api";
+import { SEND_VERIFICATION_MUTATION } from "@/lib/auth/api/graphql";
 
 const avatarLimit = 500_000;
 const imageTypes = new Set(["image/png", "image/jpeg", "image/gif"]);
@@ -58,7 +59,7 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
   const [updateUser] = useMutation(UPDATE_PROFILE_USER_MUTATION);
   const [uploadAvatar] = useMutation(UPLOAD_PROFILE_AVATAR_MUTATION);
   const [deleteAvatar] = useMutation(DELETE_AVATAR);
-  const [sendVerification] = useMutation(SEND_PROFILE_VERIFICATION_MUTATION);
+  const [sendVerification] = useMutation(SEND_VERIFICATION_MUTATION);
   const [draft, setDraft] = useState<Draft>(blank);
   const [touched, setTouched] = useState<Partial<Record<keyof Draft, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);

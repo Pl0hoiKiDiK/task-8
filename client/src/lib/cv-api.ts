@@ -95,12 +95,6 @@ export const ME_QUERY: TypedDocumentNode<{ me: ApiProfile }> = gql`
     }
   }
 `;
-export const PROFILE_USER_QUERY: TypedDocumentNode<{ user: { id: string; role: "Employee" | "Admin"; department: { id: string; name: string } | null; position: { id: string; name: string } | null } }, { userId: string }> = gql`
-  query ProfileUserDetails($userId: ID!) { user(userId: $userId) { id role department { id name } position { id name } } }
-`;
-export const UPDATE_USER_ASSIGNMENT = gql`mutation UpdateUserAssignment($user: UpdateUserInput!) { updateUser(user: $user) { id } }`;
-export const UPDATE_PROFILE = gql`mutation UpdateProfile($profile: UpdateProfileInput!) { updateProfile(profile: $profile) { id first_name last_name full_name } }`;
-export const UPLOAD_AVATAR = gql`mutation UploadAvatar($avatar: UploadAvatarInput!) { uploadAvatar(avatar: $avatar) }`;
 export const DELETE_AVATAR = gql`mutation DeleteAvatar($avatar: DeleteAvatarInput!) { deleteAvatar(avatar: $avatar) }`;
 export const ADD_PROFILE_SKILL = gql`mutation AddProfileSkill($skill: AddProfileSkillInput!) { addProfileSkill(skill: $skill) { id } }`;
 export const UPDATE_PROFILE_SKILL = gql`mutation UpdateProfileSkill($skill: UpdateProfileSkillInput!) { updateProfileSkill(skill: $skill) { id } }`;

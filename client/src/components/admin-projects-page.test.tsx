@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { AdminProjectsPage } from "./admin-projects-page";
@@ -14,9 +14,6 @@ const updateProject = gql`mutation UpdateCatalogProject($project: UpdateProjectI
 const deleteProject = gql`mutation DeleteCatalogProject($project: DeleteProjectInput!) {
   deleteProject(project: $project) { affected }
 }`;
-
-const { reload } = vi.hoisted(() => ({ reload: vi.fn().mockResolvedValue(undefined) }));
-vi.mock("@/components/profile-cvs-data", () => ({ useCvPreviewData: () => ({ reload }) }));
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
@@ -63,11 +60,9 @@ describe("admin projects", () => {
     expect(within(dialog).getByText("TypeScript")).toBeVisible();
     fireEvent.click(within(dialog).getByRole("button", { name: "Create" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Actions for Dashboard" })).toBeVisible());
-    expect(reload).toHaveBeenCalled();
   });
 
   it("prefills a project, updates its environment and deletes it after confirmation", async () => {
-    reload.mockClear();
     const original = { id: "1", name: "Portal", domain: "Finance", description: "Internal portal", environment: ["React"], start_date: "2025-01-01", end_date: "2025-09-01" };
     const updated = { ...original, environment: ["TypeScript"] };
     const mocks = [
@@ -90,6 +85,5 @@ describe("admin projects", () => {
     expect(screen.getByRole("dialog", { name: "Delete project" })).toHaveTextContent("Portal");
     fireEvent.click(within(screen.getByRole("dialog", { name: "Delete project" })).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(screen.queryByRole("button", { name: "Actions for Portal" })).not.toBeInTheDocument());
-    expect(reload).toHaveBeenCalledTimes(2);
   });
 });

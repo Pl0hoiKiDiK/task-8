@@ -54,17 +54,6 @@ export const EMPLOYEE_QUERY: TypedDocumentNode<{ user: Employee }, { userId: str
   }
 `;
 
-type Catalog = { items: { id: string; name: string }[]; total_pages: number };
-export const EMPLOYEE_OPTIONS_QUERY: TypedDocumentNode<
-  { departments: Catalog; positions: Catalog },
-  { params: { page: number; limit: number } }
-> = gql`
-  query EmployeeOptions($params: SearchPaginationInput) {
-    departments(params: $params) { items { id name } total_pages }
-    positions(params: $params) { items { id name } total_pages }
-  }
-`;
-
 export type EmployeeFormValues = {
   email: string;
   password: string;
@@ -81,24 +70,6 @@ export const CREATE_EMPLOYEE_MUTATION: TypedDocumentNode<
 > = gql`
   mutation CreateEmployee($user: CreateUserInput!) {
     createUser(user: $user) { id }
-  }
-`;
-
-export const UPDATE_EMPLOYEE_MUTATION: TypedDocumentNode<
-  { updateUser: { id: string } },
-  { user: { userId: string; departmentId: string; positionId: string; role: EmployeeFormValues["role"] } }
-> = gql`
-  mutation UpdateEmployee($user: UpdateUserInput!) {
-    updateUser(user: $user) { id }
-  }
-`;
-
-export const UPDATE_EMPLOYEE_PROFILE_MUTATION: TypedDocumentNode<
-  { updateProfile: { id: string } },
-  { profile: { userId: string; first_name: string; last_name: string } }
-> = gql`
-  mutation UpdateEmployeeProfile($profile: UpdateProfileInput!) {
-    updateProfile(profile: $profile) { id }
   }
 `;
 

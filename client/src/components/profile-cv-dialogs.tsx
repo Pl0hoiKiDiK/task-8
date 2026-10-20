@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { CvFields, CvRecord } from "@/components/profile-cvs-data";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 function CvDialog({ title, onClose, children, initialFocus, returnFocus }: {
   title: string;
@@ -84,8 +85,8 @@ export function CvFormDialog({ cv, onClose, onSave, saveLabel = "Update" }: {
     try {
       await onSave({ name: fields.name.trim(), education: fields.education.trim(), description: fields.description.trim() });
       onClose();
-    } catch {
-      setRequestError(cv ? "Failed to update CV. Please try again." : "Failed to create CV. Please try again.");
+    } catch (error) {
+      setRequestError(`Failed to ${cv ? "update" : "create"} CV. ${getApiErrorMessage(error)}`);
     } finally { setSaving(false); }
   }
 
@@ -153,7 +154,7 @@ export function CvDeleteDialog({ cv, onClose, onConfirm }: {
     setDeleting(true);
     setError("");
     try { await onConfirm(); onClose(); }
-    catch { setError("Failed to delete CV. Please try again."); }
+    catch (caught) { setError(`Failed to delete CV. ${getApiErrorMessage(caught)}`); }
     finally { setDeleting(false); }
   }
   return (
