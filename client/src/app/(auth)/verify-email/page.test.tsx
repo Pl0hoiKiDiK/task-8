@@ -6,7 +6,8 @@ import { asGuest, asUser, makeStore, withStore, type TestStore } from "@/lib/aut
 
 const replace = vi.fn();
 const verify = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+const searchParams = vi.hoisted(() => ({ value: "" }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }), useSearchParams: () => new URLSearchParams(searchParams.value) }));
 vi.mock("@apollo/client/react", () => ({ useMutation: () => [verify, { loading: false }] }));
 
 import VerifyEmailPage from "./page";
@@ -20,7 +21,7 @@ const cell = (i: number) => screen.getByLabelText(`Digit ${i + 1} of 6`) as HTML
 const confirm = () => screen.getByRole("button", { name: /confirm|confirming/i }) as HTMLButtonElement;
 const paste = (code: string) => fireEvent.paste(cell(0), { clipboardData: { getData: () => code } });
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => { vi.clearAllMocks(); searchParams.value = ""; });
 
 describe("VerifyEmailPage", () => {
     it("guest: page is empty, redirect to /signin", () => {
@@ -47,6 +48,11 @@ describe("VerifyEmailPage", () => {
         expect(confirm().disabled).toBe(true);
         paste("123456");
         expect(confirm().disabled).toBe(false);
+    });
+    it("shows confirmation when a verification email was sent", () => {
+        searchParams.value = "sent=1";
+        view((s) => asUser(s, "Employee", false));
+        expect(screen.getByRole("status")).toHaveTextContent("Verification email sent");
     });
     it("correct code: request with 6 digits, user marked as verified, redirect to home", async () => {
         verify.mockResolvedValue({});

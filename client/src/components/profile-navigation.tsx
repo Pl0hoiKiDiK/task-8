@@ -1,20 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { useSearchParams, useSelectedLayoutSegment } from "next/navigation";
+import { useQuery } from "@apollo/client/react";
 import { AppIcon } from "@/components/app-icon";
+import { useAppSelector } from "@/lib/hooks";
+import { PROFILE_USER_QUERY } from "@/lib/profile/api";
 
 type ProfileSection = "Profile" | "Skills" | "Languages" | "CVs";
 type ProfileRole = "user" | "admin";
 
 export function ProfileBreadcrumbs({ role, section }: { role: ProfileRole; section: ProfileSection }) {
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const userId = useSearchParams().get("userId") || currentUser?.id || "";
+  const { data } = useQuery(PROFILE_USER_QUERY, { variables: { userId }, skip: !userId });
+  const profile = data?.user.profile;
+  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || data?.user.email || currentUser?.email || "Profile";
   return (
     <nav className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap max-[600px]:gap-1 max-[600px]:text-[13px]" aria-label="Breadcrumb">
       <Link className="shrink-0 text-[var(--muted)] no-underline hover:underline" href={role === "admin" ? "/admin/employees" : "/employees"}>Employees</Link>
       <AppIcon name="arrow-nav" className="!size-5" />
       <span className="inline-flex min-w-0 items-center gap-1 text-[var(--red)]">
         <span className="max-[600px]:hidden"><AppIcon name="person-red" /></span>
-        <span className="truncate">Rostislav Harlanov</span>
+        <span className="truncate">{name}</span>
       </span>
       <AppIcon name="arrow-nav" className="!size-5" />
       <span className="shrink-0" aria-current="page">{section}</span>
@@ -35,7 +43,7 @@ export function ProfileTabs({ basePath, showCvs = false }: { basePath: "/profile
     <nav className="flex h-[52px] max-w-full overflow-x-auto" aria-label="User details sections">
       {tabs.map((tab) => {
         const active = segment === tab.segment;
-        return <Link key={tab.href} href={tab.href} className={`grid w-[150px] shrink-0 place-items-center text-sm font-medium leading-[17.5px] tracking-[.4px] uppercase no-underline hover:text-[var(--red)] max-[600px]:w-auto max-[600px]:flex-1 ${active ? "border-b-2 border-[var(--red)] font-semibold text-[var(--red)]" : "text-[var(--text)]"}`} aria-current={active ? "page" : undefined}>{tab.label}</Link>;
+        return <Link key={tab.href} href={tab.href} className={`grid w-[150px] shrink-0 place-items-center text-sm font-medium leading-[17.5px] tracking-[.4px] uppercase no-underline hover:text-[var(--red)] max-[700px]:w-auto max-[700px]:flex-1 ${active ? "border-b-2 border-[var(--red)] font-semibold text-[var(--red)]" : "text-[var(--text)]"}`} aria-current={active ? "page" : undefined}>{tab.label}</Link>;
       })}
     </nav>
   );

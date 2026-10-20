@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useApolloClient } from "@apollo/client/react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { AppIcon, type IconName } from "@/components/app-icon";
 import { ProfileBreadcrumbs } from "@/components/profile-navigation";
 import { CvDetailsBreadcrumbs, type CvSection } from "@/components/cv-details-page";
 import { refreshTokenStorage, sessionCleared } from "@/lib/auth/model/auth-slice";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { PROFILE_USER_QUERY } from "@/lib/profile/api";
 
 type NavItem = { label: string; href: string; icon: IconName };
 
@@ -62,6 +63,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const client = useApolloClient();
   const dispatch = useAppDispatch();
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const { data: accountData } = useQuery(PROFILE_USER_QUERY, {
+    variables: { userId: currentUser?.id ?? "" },
+    skip: !currentUser?.id,
+  });
+  const accountProfile = accountData?.user.profile;
+  const accountName = [accountProfile?.first_name?.trim(), accountProfile?.last_name?.trim()].filter(Boolean).join(" ");
+  const accountLabel = accountName || currentUser?.email || "Account";
+  const accountInitial = (accountProfile?.first_name?.trim()[0] || currentUser?.email[0] || "?").toUpperCase();
   const accountRef = useRef<HTMLDivElement>(null);
   const accountButtonRef = useRef<HTMLButtonElement>(null);
   const role = pathname.startsWith("/admin/") ? "admin" : "user";
@@ -72,7 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const cvSection = (cvPath?.[2] ?? "details") as CvSection;
   const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") || pathname.includes("/cvs/") ? "CVs" : "Profile";
   const title = isProfile
-    ? <ProfileBreadcrumbs role={role} section={profileSection} />
+    ? <Suspense fallback={<span>Profile</span>}><ProfileBreadcrumbs role={role} section={profileSection} /></Suspense>
     : cvId ? <CvDetailsBreadcrumbs cvId={cvId} role={role === "admin" ? "admin" : "employee"} section={cvSection} />
     : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
   const activeSection = isProfile ? `${prefix}/employees` : cvId ? `${prefix}/cvs` : pathname;
@@ -183,8 +193,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           )}
           <button className="flex w-full items-center gap-2 border-0 bg-transparent p-2 text-left text-base leading-6 tracking-[.15px] whitespace-nowrap text-[var(--text)]" ref={accountButtonRef} type="button" aria-expanded={profileOpen} aria-controls={profileOpen ? "account-menu" : undefined} onClick={() => setProfileOpen((open) => !open)}>
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--red)] text-xl text-[#f5f5f7]">R</span>
-            <span className={labelClass}>Rostislav Harlanov</span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--red)] bg-cover bg-center text-xl text-[#f5f5f7]" role="img" aria-label={accountProfile?.avatar ? `${accountLabel}'s avatar` : `${accountLabel}'s initial`} style={accountProfile?.avatar ? { backgroundImage: `url(${JSON.stringify(accountProfile.avatar)})` } : undefined}>{!accountProfile?.avatar && accountInitial}</span>
+            <span className={`${labelClass} min-w-0 truncate`} title={accountLabel}>{accountLabel}</span>
           </button>
         </div>
       </aside>
