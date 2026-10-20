@@ -19,8 +19,8 @@ const columns: { field: SortField; label: string; width?: string }[] = [
   { field: "department", label: "Department", width: "w-[14%] max-[900px]:w-[28%]" },
   { field: "position", label: "Position", width: "w-[17%] max-[900px]:hidden" },
 ];
-const headerCell = "h-[52px] border-b border-[var(--border)] px-4 text-left text-sm font-medium max-[600px]:px-2";
-const bodyCell = "h-[73px] border-b border-[var(--border)] px-4 text-sm whitespace-nowrap max-[600px]:px-2";
+const headerCell = "h-[52px] border-b border-[var(--border)] px-4 text-left text-sm font-medium leading-6 tracking-[.15px] whitespace-nowrap max-[600px]:px-2";
+const bodyCell = "h-[73px] overflow-hidden border-b border-[var(--border)] px-4 text-ellipsis whitespace-nowrap text-sm leading-5 tracking-[.15px] max-[600px]:px-2";
 
 function displayName(employee: Employee) {
   return [employee.profile.first_name, employee.profile.last_name].filter(Boolean).join(" ") || employee.email;

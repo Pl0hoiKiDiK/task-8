@@ -12,7 +12,7 @@ import {
 
 export function AdminDepartmentsPage() {
   return <AdminCatalogPage<AdminDepartment>
-    singular="Department" plural="Departments" className="admin-departments"
+    singular="Department" plural="Departments" layout="compact"
     initialItems={initialAdminDepartments}
     columns={[{ key: "name", label: "Name", sortable: true, render: (item) => item.name }]}
     filterAndSort={(items, search, sort) => filterAndSortDepartments(items, search, sort?.direction ?? null)}
@@ -61,8 +61,8 @@ function AdminDepartmentFormDialog({ department, departments, onClose, onSave }:
   }
 
   return <SkillDialog title={department ? "Edit department" : "Create department"} onClose={onClose}>
-    <form className="admin-department-dialog-form" onSubmit={submit} noValidate>
-      <div className="admin-department-field">
+    <form className="mt-6 flex flex-col gap-9 [&>div:last-child]:-mt-2.5" onSubmit={submit} noValidate>
+      <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:leading-4 [&>label]:text-[var(--muted)] [&>input]:block [&>input]:h-12 [&>input]:w-full [&>input]:rounded-none [&>input]:border [&>input]:border-[var(--border)] [&>input]:bg-transparent [&>input]:px-[11px] [&>input]:text-sm [&>input]:leading-6 [&>input]:tracking-[.15px] [&>input]:text-[var(--text)] [&>input]:placeholder:text-[var(--placeholder)] [&>[aria-invalid=true]]:border-[var(--red)]">
         <label htmlFor="admin-department-name" className={name ? undefined : "sr-only"}>Department</label>
         <input id="admin-department-name" type="text" placeholder="Department" value={name} disabled={saving}
           aria-invalid={touched && Boolean(error)} aria-describedby={touched && error ? "admin-department-name-error" : undefined}
@@ -70,12 +70,12 @@ function AdminDepartmentFormDialog({ department, departments, onClose, onSave }:
             if (event.relatedTarget instanceof HTMLElement && event.currentTarget.closest("dialog")?.contains(event.relatedTarget)) setTouched(true);
           }}
           onChange={(event) => { setName(event.target.value); setTouched(true); setSystemError(""); }} />
-        {touched && error && <span id="admin-department-name-error" className="cv-skill-field-error">{error}</span>}
+        {touched && error && <span id="admin-department-name-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">{error}</span>}
       </div>
-      {systemError && <p className="cv-skill-system-error" role="alert">{systemError}</p>}
-      <div className="profile-cv-dialog-actions">
-        <button type="button" className="profile-cv-dialog-cancel" disabled={saving} onClick={onClose}>Cancel</button>
-        <button type="submit" className="profile-cv-dialog-submit" disabled={saving}>
+      {systemError && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{systemError}</p>}
+      <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+        <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={saving} onClick={onClose}>Cancel</button>
+        <button type="submit" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={saving}>
           {saving ? "Saving..." : department ? "Save" : "Create"}
         </button>
       </div>
@@ -108,11 +108,11 @@ function AdminDepartmentDeleteDialog({ department, onClose, onDelete }: {
   }
 
   return <SkillDialog title="Delete department" onClose={onClose}>
-    <p className="profile-cv-dialog-message">Are you sure you want to delete department <strong>{department.name}</strong>?</p>
-    {error && <p className="cv-skill-system-error" role="alert">{error}</p>}
-    <div className="profile-cv-dialog-actions">
-      <button type="button" className="profile-cv-dialog-cancel" disabled={deleting} onClick={onClose}>Cancel</button>
-      <button type="button" className="profile-cv-dialog-submit" disabled={deleting} onClick={confirm}>
+    <p className="mt-6 mb-7 text-base leading-6 tracking-[.15px]">Are you sure you want to delete department <strong>{department.name}</strong>?</p>
+    {error && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{error}</p>}
+    <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+      <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={deleting} onClick={onClose}>Cancel</button>
+      <button type="button" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={deleting} onClick={confirm}>
         {deleting ? "Deleting..." : "Confirm"}
       </button>
     </div>
