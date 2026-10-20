@@ -14,20 +14,21 @@ import { ResetPasswordForm } from "./reset-password-form";
 beforeEach(() => { state.passwordChanged = false; });
 
 describe("ResetPasswordForm", () => {
-    it("token exists - form with two fields", () => {
+    it("token exists? - form with two fields", () => {
         render(<ResetPasswordForm token="t" />);
         expect(screen.getByLabelText("New password")).toBeTruthy();
         expect(screen.getByLabelText("Confirm password")).toBeTruthy();
     });
-    it("token is missing or expired - clear message, not constant name", () => {
+    it("token not exists / expired - readable message", () => {
         render(<ResetPasswordForm token={undefined} />);
         expect(screen.getByRole("alert").textContent).toBe("This password reset link has expired");
+        expect(screen.queryByText(/Here you should write a new password/)).toBeNull();
     });
-    it("token is missing - no form", () => {
+    it("token not exists - form not shows", () => {
         render(<ResetPasswordForm token={undefined} />);
         expect(screen.queryByLabelText("New password")).toBeNull();
     });
-    it("password has been changed, auto-login failed - link to sign in", () => {
+    it("password changed, autologin faild - sign in ref", () => {
         state.passwordChanged = true;
         render(<ResetPasswordForm token="t" />);
         expect(screen.getByRole("status").textContent).toMatch(/password has been changed/i);

@@ -14,7 +14,7 @@ export function NoInternetGate({ children }: { children: ReactNode }) {
             {noInternet && (
                 <ErrorScreen title="Oops" action={<SystemButton onClick={retryFailedRequests}>Retry</SystemButton>}>
                     Something went wrong. We’re already working on fixing it.<br />
-                    Please try again or go back
+                    Please try again
                 </ErrorScreen>
             )}
         </>

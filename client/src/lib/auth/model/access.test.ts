@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getRedirectPath, isPrivatePath } from "./access";
+import { getRedirectPath, isPrivatePath } from "./access";
 
 describe("getRedirectPath", () => {
     it("sends admin from employee pages to admin copies", () => {
@@ -48,4 +49,15 @@ describe("isPrivatePath", () => {
         "%s - private section", (p) => expect(isPrivatePath(p)).toBe(true));
     it.each(["/no-such-page", "/employees-evil", "/admin-panel", "/signin", "/foo/employees", "/Employees"])(
         "%s - unknown URL (404), not a private section", (p) => expect(isPrivatePath(p)).toBe(false));
+});
+
+});
+
+
+describe("isPrivatePath", () => {
+    it.each(["/", "/employees", "/employees/12", "/cvs", "/cvs/1/skills", "/profile", "/profile/skills", "/settings", "/skills", "/languages", "/admin", "/admin/employees", "/admin/cvs/1/projects", "/admin/profile/cvs/7", "/admin/departments", "/employees/"])(
+        "%s — private section", (p) => expect(isPrivatePath(p)).toBe(true));
+    it.each(["/no-such-page", "/employees-evil", "/admin-panel", "/signin", "/foo/employees", "/Employees",
+        "/profile/unknown", "/profile/skills/x", "/employees/1/unknown", "/cvs/1/unknown", "/settings/x", "/admin/unknown", "/admin/profile/unknown", "/projects", "/departments"])(
+            "%s — unknown URL (404) / section not closed", (p) => expect(isPrivatePath(p)).toBe(false));
 });
