@@ -6,6 +6,11 @@ import type { CvRecord } from "./profile-cvs-data";
 
 const mocks = vi.hoisted(() => ({
   entries: [] as CvProjectEntry[],
+  roles: ["Frontend Developer", "Backend Developer"],
+  loadState: "ready",
+  rolesState: "ready",
+  reload: vi.fn(),
+  reloadRoles: vi.fn(),
   add: vi.fn(),
   update: vi.fn(),
   remove: vi.fn(),
@@ -20,12 +25,19 @@ const catalog = [
 vi.mock("@/components/profile-cvs-data", () => ({
   useCvPreviewData: () => ({
     cvProjects: { "cv-1": mocks.entries }, projectCatalog: catalog,
+    projectRoles: mocks.roles, projectRolesState: mocks.rolesState, reloadProjectRoles: mocks.reloadRoles,
+    loadState: mocks.loadState, reload: mocks.reload,
     addCvProject: mocks.add, updateCvProject: mocks.update, removeCvProject: mocks.remove,
   }),
 }));
 
 beforeEach(() => {
   mocks.entries = [];
+  mocks.roles = ["Frontend Developer", "Backend Developer"];
+  mocks.loadState = "ready";
+  mocks.rolesState = "ready";
+  mocks.reload.mockReset().mockResolvedValue(undefined);
+  mocks.reloadRoles.mockReset().mockResolvedValue(undefined);
   mocks.add.mockReset().mockResolvedValue(undefined);
   mocks.update.mockReset().mockResolvedValue(undefined);
   mocks.remove.mockReset().mockResolvedValue(undefined);
@@ -71,6 +83,40 @@ describe("CV projects", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Add" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("Failed to add project");
     expect(within(dialog).getByLabelText("Name")).toHaveValue("project-1");
+  });
+
+  it("uses catalog positions as roles and keeps an assigned role during editing", () => {
+    mocks.roles = ["QA Engineer"];
+    mocks.entries = [{ projectId: "project-1", startDate: "2023-01-01", endDate: "2024-06-30", roles: ["Former Position"], responsibilities: [] }];
+    render(<CvProjectsPage cv={cv} />);
+    fireEvent.click(screen.getByRole("button", { name: "Add project" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Roles/ }));
+    expect(screen.getByRole("checkbox", { name: "QA Engineer" })).toBeVisible();
+    expect(screen.queryByRole("checkbox", { name: "Former Position" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close Add project" }));
+    fireEvent.click(screen.getByRole("button", { name: "Actions for Analytics" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Update" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Roles/ }));
+    expect(screen.getByRole("checkbox", { name: "Former Position" })).toBeChecked();
+  });
+
+  it("shows load failure and retries without displaying an empty project list", () => {
+    mocks.loadState = "error";
+    render(<CvProjectsPage cv={cv} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to load projects");
+    expect(screen.queryByText("No projects added yet")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.reload).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the project list available when positions fail to load", () => {
+    mocks.rolesState = "error";
+    render(<CvProjectsPage cv={cv} />);
+    expect(screen.getByRole("button", { name: "Add project" })).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent("No projects added yet");
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to load positions");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.reloadRoles).toHaveBeenCalledOnce();
   });
 
   it("shows responsibilities, searches by domain, updates and removes an assigned project", async () => {

@@ -5,7 +5,8 @@ import { useApolloClient } from "@apollo/client/react";
 import { AdminCatalogPage, type CatalogSort } from "@/components/admin-catalog-page";
 import { type CatalogProject, formatProjectDate } from "@/components/cv-projects-data";
 import { SkillDialog } from "@/components/skill-dialogs";
-import { loadProjects, PROJECTS_QUERY, toCatalogProject, type ApiProject } from "@/lib/cv-api";
+import { useCvPreviewData } from "@/components/profile-cvs-data";
+import { loadProjects, toCatalogProject, type ApiProject } from "@/lib/cv-api";
 import { gql } from "@apollo/client";
 
 const CREATE_PROJECT = gql`mutation CreateCatalogProject($project: CreateProjectInput!) {
@@ -48,27 +49,28 @@ function filterAndSortProjects(items: CatalogProject[], search: string, sort: Ca
 
 export function AdminProjectsPage() {
   const client = useApolloClient();
+  const { reload } = useCvPreviewData();
   const loadItems = useCallback(() => loadProjects(client), [client]);
-  const refreshCvs = () => client.refetchQueries({ include: [PROJECTS_QUERY] });
+  const refreshCvs = () => { void reload().catch(() => undefined); };
   return <AdminCatalogPage<CatalogProject>
     singular="Project" plural="Projects" className="admin-projects"
     initialItems={[]} loadItems={loadItems}
     createItem={async (item) => {
       const { data } = await client.mutate<{ createProject: ApiProject }>({ mutation: CREATE_PROJECT, variables: { project: toInput(item) } });
       if (!data?.createProject) throw new Error("Project was not created");
-      void refreshCvs().catch(() => undefined);
+      refreshCvs();
       return toCatalogProject(data.createProject);
     }}
     updateItem={async (item) => {
       const { data } = await client.mutate<{ updateProject: ApiProject }>({ mutation: UPDATE_PROJECT, variables: { project: { projectId: item.id, ...toInput(item) } } });
       if (!data?.updateProject) throw new Error("Project was not updated");
-      void refreshCvs().catch(() => undefined);
+      refreshCvs();
       return toCatalogProject(data.updateProject);
     }}
     deleteItem={async (id) => {
       const { data } = await client.mutate<{ deleteProject: { affected: number } }>({ mutation: DELETE_PROJECT, variables: { project: { projectId: id } } });
       if (!data?.deleteProject.affected) throw new Error("Project was not deleted");
-      void refreshCvs().catch(() => undefined);
+      refreshCvs();
     }}
     columns={[
       { key: "name", label: "Name", sortable: true, render: (project) => <div className="min-w-0"><strong className="block break-words">{project.name}</strong><p className="mt-1 break-words text-sm text-[var(--muted)]">{project.description}</p><div className="mt-2 flex flex-wrap gap-1">{project.environment.map((technology) => <span className="max-w-full break-all rounded-full border border-[var(--border)] px-2 py-0.5 text-xs" key={technology}>{technology}</span>)}</div></div> },

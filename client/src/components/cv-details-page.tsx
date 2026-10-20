@@ -143,8 +143,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
           >{item.label}</Link>
         ))}
       </nav>
-      {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> : section === "skills" ? <CvSkillsPage key={cv.id} cv={cv} /> : section === "projects" ? <CvProjectsPage key={cv.id} cv={cv} /> : section === "preview" ? <CvPreviewPage key={cv.id} cv={cv} /> :
-        <p className="cv-details-section-placeholder">{sections.find((item) => item.value === section)?.label} content will be added here.</p>}
+      {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> : section === "skills" ? <CvSkillsPage key={cv.id} cv={cv} /> : section === "projects" ? <CvProjectsPage key={cv.id} cv={cv} /> : <CvPreviewPage key={cv.id} cv={cv} />}
     </section>
   );
 }

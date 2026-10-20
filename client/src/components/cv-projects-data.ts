@@ -50,11 +50,6 @@ export const projectCatalog: CatalogProject[] = [
   },
 ];
 
-export const projectRoleOptions = [
-  "Frontend Developer", "AI Developer", "Backend Developer", "Software Engineer",
-  "Systems Analyst", "UX Designer", "DevOps Engineer", "QA Engineer",
-];
-
 export const initialCvProjects: Record<string, CvProjectEntry[]> = {
   "preview-cv-1": [
     {

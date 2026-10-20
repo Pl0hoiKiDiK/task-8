@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type Re
 import { createPortal } from "react-dom";
 import { AppIcon } from "@/components/app-icon";
 import {
-  filterAndSortCvProjects, formatProjectDate, projectRoleOptions, validateCvProject,
+  filterAndSortCvProjects, formatProjectDate, validateCvProject,
   type CatalogProject, type CvProjectEntry, type CvProjectFields, type ProjectSortKey, type SortDirection,
 } from "@/components/cv-projects-data";
 import { useCvPreviewData, type CvRecord } from "@/components/profile-cvs-data";
@@ -51,12 +51,13 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? <span id={id} className="mt-1 block text-xs text-[var(--red)]" role="alert">{message}</span> : null;
 }
 
-function ProjectFormDialog({ kind, cvId, entry, assigned, projectCatalog, onClose, onSave }: {
+function ProjectFormDialog({ kind, cvId, entry, assigned, projectCatalog, projectRoles, onClose, onSave }: {
   kind: "add" | "update";
   cvId: string;
   entry?: CvProjectEntry;
   assigned: CvProjectEntry[];
   projectCatalog: CatalogProject[];
+  projectRoles: string[];
   onClose: () => void;
   onSave: (cvId: string, fields: CvProjectFields) => void | Promise<void>;
 }) {
@@ -159,7 +160,7 @@ function ProjectFormDialog({ kind, cvId, entry, assigned, projectCatalog, onClos
             <span aria-hidden="true">⌄</span>
           </button>
           {rolesOpen && <div id="cv-project-role-options" className="mt-1 max-h-48 w-full overflow-y-auto border border-[var(--border)] bg-[var(--project-dialog-surface)] p-2">
-            {projectRoleOptions.map((role) => <label key={role} className="flex cursor-pointer items-center gap-3 px-2 py-1 text-sm hover:bg-[var(--sidebar-active)]">
+            {[...new Set([...projectRoles, ...(entry?.roles ?? [])])].map((role) => <label key={role} className="flex cursor-pointer items-center gap-3 px-2 py-1 text-sm hover:bg-[var(--sidebar-active)]">
               <input type="checkbox" checked={fields.roles.includes(role)} onChange={() => toggleRole(role)} className="accent-[var(--red)]" />{role}
             </label>)}
           </div>}
@@ -210,7 +211,7 @@ function RemoveProjectDialog({ project, onClose, onConfirm }: {
 }
 
 export function CvProjectsPage({ cv }: { cv: CvRecord }) {
-  const { cvProjects, projectCatalog, addCvProject, updateCvProject, removeCvProject } = useCvPreviewData();
+  const { cvProjects, projectCatalog, projectRoles, projectRolesState, reloadProjectRoles, loadState, reload, addCvProject, updateCvProject, removeCvProject } = useCvPreviewData();
   const entries = cvProjects[cv.id] ?? emptyProjects;
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<ProjectSortKey>("name");
@@ -270,6 +271,9 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
     </button>;
   }
 
+  if (loadState === "loading" && projectCatalog.length === 0) return <p role="status">Loading projects…</p>;
+  if (loadState === "error") return <div role="alert">Failed to load projects. <button type="button" onClick={() => { void reload().catch(() => undefined); }}>Retry</button></div>;
+
   return <section aria-label="CV projects" className="mx-auto w-full max-w-[1190px] pt-2 text-[var(--text)]">
     <div className="mb-5 flex items-center justify-between gap-4">
       <label className="flex h-12 w-80 max-w-[calc(100%-60px)] items-center gap-2 rounded-full border border-[var(--border)] px-3 focus-within:border-[var(--red)]">
@@ -278,11 +282,14 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
         <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search"
           className="h-full min-w-0 flex-1 border-0 bg-transparent !outline-none placeholder:text-[var(--placeholder)]" />
       </label>
-      <button type="button" aria-label="Add project" onClick={() => setDialog({ kind: "add" })}
+      <button type="button" aria-label="Add project" disabled={projectRolesState !== "ready" || projectRoles.length === 0} onClick={() => setDialog({ kind: "add" })}
         className="flex min-h-11 items-center gap-3 px-2 text-sm font-medium uppercase text-[var(--red)] hover:underline active:opacity-70">
         <AppIcon name="plus" /><span className="max-[900px]:hidden">Add project</span>
       </button>
     </div>
+    {projectRolesState === "loading" && <p role="status" className="mb-4 text-sm text-[var(--muted)]">Loading positions…</p>}
+    {projectRolesState === "error" && <p role="alert" className="mb-4 text-sm text-[var(--red)]">Failed to load positions. <button type="button" onClick={() => { void reloadProjectRoles().catch(() => undefined); }}>Retry</button></p>}
+    {projectRolesState === "ready" && projectRoles.length === 0 && <p role="status" className="mb-4 text-sm text-[var(--muted)]">No positions available for CV projects</p>}
     <div className="overflow-x-auto">
       <table className="w-full min-w-[760px] table-fixed border-collapse text-sm">
         <thead><tr className="border-b border-[var(--border)] text-left">
@@ -336,8 +343,8 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
       {entries.length === 0 && <p role="status" className="py-12 text-center text-[var(--muted)]">No projects added yet</p>}
       {entries.length > 0 && shown.length === 0 && <p role="status" className="py-12 text-center text-[var(--muted)]">No projects found</p>}
     </div>
-    {dialog?.kind === "add" && <ProjectFormDialog kind="add" cvId={cv.id} assigned={entries} projectCatalog={projectCatalog} onClose={() => setDialog(null)} onSave={addCvProject} />}
-    {dialog?.kind === "update" && <ProjectFormDialog kind="update" cvId={cv.id} entry={dialog.entry} assigned={entries} projectCatalog={projectCatalog} onClose={() => setDialog(null)} onSave={updateCvProject} />}
+    {dialog?.kind === "add" && <ProjectFormDialog kind="add" cvId={cv.id} assigned={entries} projectCatalog={projectCatalog} projectRoles={projectRoles} onClose={() => setDialog(null)} onSave={addCvProject} />}
+    {dialog?.kind === "update" && <ProjectFormDialog kind="update" cvId={cv.id} entry={dialog.entry} assigned={entries} projectCatalog={projectCatalog} projectRoles={projectRoles} onClose={() => setDialog(null)} onSave={updateCvProject} />}
     {dialog?.kind === "remove" && <RemoveProjectDialog project={projectCatalog.find((item) => item.id === dialog.entry.projectId)!} onClose={() => setDialog(null)} onConfirm={() => removeCvProject(cv.id, dialog.entry.projectId)} />}
   </section>;
 }

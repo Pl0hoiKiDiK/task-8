@@ -4,7 +4,7 @@ import { MockedProvider } from "@apollo/client/testing/react";
 import { Provider } from "react-redux";
 import { sessionStarted } from "@/lib/auth/model/auth-slice";
 import { CVS_QUERY, ME_QUERY, PROJECTS_QUERY } from "@/lib/cv-api";
-import { SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
+import { POSITIONS_QUERY, SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
 import { makeStore } from "@/lib/store";
 import { CvPreviewProvider } from "@/components/profile-cvs-data";
 import { ProfileCvsPreview } from "@/components/profile-cvs-preview";
@@ -22,6 +22,7 @@ const mocks = [
   { request: { query: ME_QUERY }, result: { data: { me: { id: "user-1", created_at: "2026-01-01", first_name: "A", last_name: "B", full_name: "A B", avatar: null, email: "employee@example.com", is_verified: true, skills: [], languages: [] } } } },
   { request: { query: SKILL_CATEGORIES_QUERY }, result: { data: { skillCategories: [] } } },
   { request: { query: SKILLS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { skills: { items: [], total_pages: 0 } } } },
+  { request: { query: POSITIONS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { positions: { items: [], total_pages: 0 } } } },
 ];
 
 function renderPage(view: "profile" | "admin" | "employee") {

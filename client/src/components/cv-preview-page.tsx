@@ -12,7 +12,7 @@ export function CvPreviewPage({ cv }: { cv: CvRecord }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
-  const { cvProjects, cvSkills, cvLanguages, projectCatalog } = useCvPreviewData();
+  const { cvProjects, cvSkills, cvLanguages, projectCatalog, loadState, reload } = useCvPreviewData();
   const ownerResult = useQuery(PROFILE_QUERY, { variables: { userId: cv.ownerId ?? "" }, skip: !cv.ownerId });
   const languages = cvLanguages[cv.id] ?? [];
   const entries = cvProjects[cv.id] ?? [];
@@ -72,6 +72,12 @@ export function CvPreviewPage({ cv }: { cv: CvRecord }) {
       }
     } finally { setExporting(false); }
   }
+
+  if (loadState === "loading" || ownerResult.loading) return <p role="status">Loading CV preview…</p>;
+  if (loadState === "error" || ownerResult.error) return <div role="alert">Failed to load CV preview. <button type="button" onClick={() => {
+    if (loadState === "error") void reload().catch(() => undefined);
+    if (ownerResult.error) void ownerResult.refetch().catch(() => undefined);
+  }}>Retry</button></div>;
 
   return <section ref={sectionRef} aria-label="CV preview" className="mx-auto w-full max-w-[920px] pb-12 pt-6 text-[var(--text)] print:max-w-none print:pb-0 print:pt-0">
     <div className="mb-8 flex flex-wrap items-start justify-between gap-4">

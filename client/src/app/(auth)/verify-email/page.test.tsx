@@ -20,7 +20,7 @@ const cell = (i: number) => screen.getByLabelText(`Digit ${i + 1} of 6`) as HTML
 const confirm = () => screen.getByRole("button", { name: /confirm|confirming/i }) as HTMLButtonElement;
 const paste = (code: string) => fireEvent.paste(cell(0), { clipboardData: { getData: () => code } });
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => { vi.clearAllMocks(); window.history.replaceState({}, "", "/verify-email"); });
 
 describe("VerifyEmailPage", () => {
     it("guest: page is empty, redirect to /signin", () => {
@@ -47,6 +47,11 @@ describe("VerifyEmailPage", () => {
         expect(confirm().disabled).toBe(true);
         paste("123456");
         expect(confirm().disabled).toBe(false);
+    });
+    it("confirms that a verification email was requested from the profile", () => {
+        window.history.replaceState({}, "", "/verify-email?sent=1");
+        view((s) => asUser(s, "Employee", false));
+        expect(screen.getByRole("status")).toHaveTextContent("Verification email has been sent");
     });
     it("correct code: request with 6 digits, user marked as verified, redirect to home", async () => {
         verify.mockResolvedValue({});

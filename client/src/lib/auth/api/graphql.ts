@@ -55,6 +55,12 @@ export const VERIFY_EMAIL_MUTATION: TypedDocumentNode<{ verifyMail: null }, { ma
   }
 `;
 
+export const SEND_VERIFICATION_MUTATION: TypedDocumentNode<{ sendVerification: null }, { email: string }> = gql`
+  mutation SendVerification($email: String!) {
+    sendVerification(email: $email)
+  }
+`;
+
 export const UPDATE_TOKEN_MUTATION: TypedDocumentNode<{ updateToken: { access_token: string; refresh_token: string } }> = gql`
   mutation UpdateToken {
     updateToken {

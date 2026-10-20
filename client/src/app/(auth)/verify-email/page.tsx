@@ -9,11 +9,13 @@ export default function VerifyEmailPage() {
         useVerifyEmailForm();
 
     if (!isReady) return null;
+    const emailRequested = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sent") === "1";
     
     return (
         <section className={verifyPanel} aria-labelledby="verify-email-title">
             <h1 id="verify-email-title" className={authTitle}>Email verification</h1>
             <p className={authDescription}>Enter the verification code we sent to your email.</p>
+            {emailRequested && <p role="status">Verification email has been sent.</p>}
 
             <form className={authForm} onSubmit={handleSubmit} noValidate>
                 <OtpField

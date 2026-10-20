@@ -5,7 +5,7 @@ import type { ComponentProps } from "react";
 import { Provider } from "react-redux";
 import { sessionStarted } from "@/lib/auth/model/auth-slice";
 import { ADD_PROFILE_LANGUAGE, CVS_QUERY, ME_QUERY, PROJECTS_QUERY } from "@/lib/cv-api";
-import { LANGUAGES_QUERY, SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
+import { LANGUAGES_QUERY, POSITIONS_QUERY, SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
 import { makeStore } from "@/lib/store";
 import { CvPreviewProvider } from "@/components/profile-cvs-data";
 import { LanguagePreviewProvider } from "@/components/profile-languages-data";
@@ -25,6 +25,7 @@ function loadMocks(languages: typeof initial) {
     { request: { query: ME_QUERY }, result: { data: { me: { id: "user-1", created_at: "2026-01-01", first_name: "A", last_name: "B", full_name: "A B", avatar: null, email: "user@example.com", is_verified: true, skills: [], languages } } } },
     { request: { query: SKILL_CATEGORIES_QUERY }, result: { data: { skillCategories: [] } } },
     { request: { query: SKILLS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { skills: { items: [], total_pages: 0 } } } },
+    { request: { query: POSITIONS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { positions: { items: [], total_pages: 0 } } } },
   ];
 }
 function renderPage(mocks: ComponentProps<typeof MockedProvider>["mocks"]) {

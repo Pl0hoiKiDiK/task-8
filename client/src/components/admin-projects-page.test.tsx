@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing/react";
 import { AdminProjectsPage } from "./admin-projects-page";
@@ -8,6 +8,15 @@ import { gql } from "@apollo/client";
 const createProject = gql`mutation CreateCatalogProject($project: CreateProjectInput!) {
   createProject(project: $project) { id name domain description environment start_date end_date }
 }`;
+const updateProject = gql`mutation UpdateCatalogProject($project: UpdateProjectInput!) {
+  updateProject(project: $project) { id name domain description environment start_date end_date }
+}`;
+const deleteProject = gql`mutation DeleteCatalogProject($project: DeleteProjectInput!) {
+  deleteProject(project: $project) { affected }
+}`;
+
+const { reload } = vi.hoisted(() => ({ reload: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/components/profile-cvs-data", () => ({ useCvPreviewData: () => ({ reload }) }));
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
@@ -54,5 +63,33 @@ describe("admin projects", () => {
     expect(within(dialog).getByText("TypeScript")).toBeVisible();
     fireEvent.click(within(dialog).getByRole("button", { name: "Create" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Actions for Dashboard" })).toBeVisible());
+    expect(reload).toHaveBeenCalled();
+  });
+
+  it("prefills a project, updates its environment and deletes it after confirmation", async () => {
+    reload.mockClear();
+    const original = { id: "1", name: "Portal", domain: "Finance", description: "Internal portal", environment: ["React"], start_date: "2025-01-01", end_date: "2025-09-01" };
+    const updated = { ...original, environment: ["TypeScript"] };
+    const mocks = [
+      { request: { query: PROJECTS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { projects: { items: [original], total_pages: 1 } } } },
+      { request: { query: updateProject, variables: { project: { projectId: "1", name: "Portal", domain: "Finance", description: "Internal portal", environment: ["TypeScript"], start_date: "2025-01-01", end_date: "2025-09-01" } } }, result: { data: { updateProject: updated } } },
+      { request: { query: deleteProject, variables: { project: { projectId: "1" } } }, result: { data: { deleteProject: { affected: 1 } } } },
+    ];
+    render(<MockedProvider mocks={mocks}><AdminProjectsPage /></MockedProvider>);
+    fireEvent.click(await screen.findByRole("button", { name: "Actions for Portal" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
+    const edit = screen.getByRole("dialog", { name: "Update project" });
+    expect(within(edit).getByRole("textbox", { name: "Name" })).toHaveValue("Portal");
+    fireEvent.click(within(edit).getByRole("button", { name: "Remove React" }));
+    fireEvent.change(within(edit).getByRole("textbox", { name: "Environment" }), { target: { value: "TypeScript" } });
+    fireEvent.click(within(edit).getByRole("button", { name: "Add" }));
+    fireEvent.click(within(edit).getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(screen.getByText("TypeScript")).toBeVisible());
+    fireEvent.click(screen.getByRole("button", { name: "Actions for Portal" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+    expect(screen.getByRole("dialog", { name: "Delete project" })).toHaveTextContent("Portal");
+    fireEvent.click(within(screen.getByRole("dialog", { name: "Delete project" })).getByRole("button", { name: "Confirm" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Actions for Portal" })).not.toBeInTheDocument());
+    expect(reload).toHaveBeenCalledTimes(2);
   });
 });

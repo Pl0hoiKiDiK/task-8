@@ -7,13 +7,14 @@ import type { CvRecord } from "./profile-cvs-data";
 const mocks = vi.hoisted(() => ({
   skills: [] as CvSkill[],
   owner: [] as CvSkill[],
+  ownerLoaded: true,
   load: vi.fn(), add: vi.fn(), update: vi.fn(), remove: vi.fn(),
 }));
 const cv: CvRecord = { id: "cv-1", name: "Frontend CV", education: "University", description: "Summary", employee: "ada@example.com", ownerId: "user-1" };
 
 vi.mock("@/components/profile-cvs-data", () => ({
   useCvPreviewData: () => ({
-    cvSkills: { "cv-1": mocks.skills }, ownerSkills: { "user-1": mocks.owner },
+    cvSkills: { "cv-1": mocks.skills }, ownerSkills: mocks.ownerLoaded ? { "user-1": mocks.owner } : {},
     loadOwnerSkills: mocks.load, addCvSkill: mocks.add,
     updateCvSkill: mocks.update, removeCvSkills: mocks.remove,
   }),
@@ -21,6 +22,7 @@ vi.mock("@/components/profile-cvs-data", () => ({
 
 beforeEach(() => {
   mocks.skills = [];
+  mocks.ownerLoaded = true;
   mocks.owner = [
     { name: "React", category: "Frontend", mastery: "Expert" },
     { name: "TypeScript", category: "Languages", mastery: "Proficient" },
@@ -34,7 +36,6 @@ describe("CV skills", () => {
   it("offers only owner skills not already on the CV and adds the chosen skill", async () => {
     mocks.skills = [{ name: "React", category: "Frontend", mastery: "Expert" }];
     render(<CvSkillsPage cv={cv} />);
-    await waitFor(() => expect(mocks.load).toHaveBeenCalledWith("user-1"));
     fireEvent.click(screen.getByRole("button", { name: "Add skill" }));
     const dialog = screen.getByRole("dialog", { name: "Add skill" });
     const skill = within(dialog).getByRole("combobox", { name: "Skill" });
@@ -59,6 +60,16 @@ describe("CV skills", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Add" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("Failed to add skill");
     expect(within(dialog).getByRole("combobox", { name: "Skill" })).toHaveValue("React");
+  });
+
+  it("shows a retry action when the CV owner's skills cannot be loaded", async () => {
+    mocks.ownerLoaded = false;
+    mocks.load.mockRejectedValueOnce(new Error("API failed"));
+    render(<CvSkillsPage cv={cv} />);
+    expect(screen.getByRole("button", { name: "Add skill" })).toBeDisabled();
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to load available skills");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(mocks.load).toHaveBeenCalledTimes(2));
   });
 
   it("updates mastery and removes multiple selected skills", async () => {

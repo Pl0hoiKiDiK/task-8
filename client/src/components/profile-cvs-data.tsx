@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useApolloClient } from "@apollo/client/react";
-import { loadAllCatalogItems, SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
+import { loadAllCatalogItems, POSITIONS_QUERY, SKILL_CATEGORIES_QUERY, SKILLS_QUERY } from "@/lib/catalog-api";
 import {
   ADD_CV_PROJECT, ADD_CV_SKILL, ADD_PROFILE_SKILL, CREATE_CV, CV_QUERY, DELETE_CV,
   DELETE_CV_SKILL, DELETE_PROFILE_SKILL, loadCvs, loadProjects, ME_QUERY, PROFILE_QUERY,
@@ -43,6 +43,9 @@ type CvData = {
   removeCvSkills: (cvId: string, names: string[]) => Promise<void>;
   cvProjects: Record<string, CvProjectEntry[]>;
   projectCatalog: CatalogProject[];
+  projectRoles: string[];
+  projectRolesState: LoadState;
+  reloadProjectRoles: () => Promise<void>;
   addCvProject: (cvId: string, fields: CvProjectFields) => Promise<void>;
   updateCvProject: (cvId: string, fields: CvProjectFields) => Promise<void>;
   removeCvProject: (cvId: string, projectId: string) => Promise<void>;
@@ -74,12 +77,26 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
   const [cvLanguages, setCvLanguages] = useState<Record<string, ProfileLanguage[]>>({});
   const [cvProjects, setCvProjects] = useState<Record<string, CvProjectEntry[]>>({});
   const [projectCatalog, setProjectCatalog] = useState<CatalogProject[]>([]);
+  const [projectRoles, setProjectRoles] = useState<string[]>([]);
+  const [projectRolesState, setProjectRolesState] = useState<LoadState>("loading");
   const [userSkills, setUserSkills] = useState<CvSkill[]>([]);
   const [skillCatalog, setSkillCatalog] = useState<CvSkill[]>([]);
   const [ownerSkills, setOwnerSkills] = useState<Record<string, CvSkill[]>>({});
   const [profile, setProfile] = useState<ApiProfile | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [categories, setCategories] = useState<Map<string, string>>(new Map());
+
+  const reloadProjectRoles = useCallback(async () => {
+    setProjectRolesState("loading");
+    try {
+      const positions = await loadAllCatalogItems(client, POSITIONS_QUERY, "positions");
+      setProjectRoles(positions.map((position) => position.name));
+      setProjectRolesState("ready");
+    } catch (error) {
+      setProjectRolesState("error");
+      throw error;
+    }
+  }, [client]);
 
   const reload = useCallback(async () => {
     if (!userId) return;
@@ -118,6 +135,12 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
     const timer = window.setTimeout(() => { void reload().catch(() => undefined); }, 0);
     return () => window.clearTimeout(timer);
   }, [auth.status, reload, userId]);
+
+  useEffect(() => {
+    if (auth.status !== "ready" || !userId) return;
+    const timer = window.setTimeout(() => { void reloadProjectRoles().catch(() => undefined); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [auth.status, reloadProjectRoles, userId]);
 
   const loadCv = useCallback(async (cvId: string) => {
     const { data } = await client.query({ query: CV_QUERY, variables: { cvId }, fetchPolicy: "network-only" });
@@ -202,7 +225,8 @@ export function CvPreviewProvider({ children, targetUserId, targetUserEmail, tar
   return <CvDataContext.Provider value={{
     currentUserId: userId, currentUserEmail: userEmail, cvs, loadState, reload, loadCv,
     createCv, updateCv, deleteCv, cvSkills, cvLanguages, addCvSkill, updateCvSkill, removeCvSkills,
-    cvProjects, projectCatalog, addCvProject, updateCvProject, removeCvProject,
+    cvProjects, projectCatalog, projectRoles, projectRolesState, reloadProjectRoles,
+    addCvProject, updateCvProject, removeCvProject,
     userSkills, skillCatalog, ownerSkills, loadOwnerSkills,
     addUserSkill, updateUserSkill, removeUserSkills, profile,
   }}>{children}</CvDataContext.Provider>;

@@ -1,14 +1,16 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useApolloClient, useQuery } from "@apollo/client/react";
 import { AppIcon } from "@/components/app-icon";
 import { useCvPreviewData } from "@/components/profile-cvs-data";
+import { SEND_VERIFICATION_MUTATION } from "@/lib/auth/api/graphql";
 import { DEPARTMENTS_QUERY, loadAllCatalogItems, POSITIONS_QUERY } from "@/lib/catalog-api";
 import { DELETE_AVATAR, PROFILE_USER_QUERY, UPDATE_PROFILE, UPDATE_USER_ASSIGNMENT, UPLOAD_AVATAR } from "@/lib/cv-api";
 
 export function MyProfilePreview({ canEdit = true, isOwner = true }: { canEdit?: boolean; isOwner?: boolean }) {
+  const router = useRouter();
   const client = useApolloClient();
   const { currentUserId, currentUserEmail, profile, loadState, reload } = useCvPreviewData();
   const userResult = useQuery(PROFILE_USER_QUERY, { variables: { userId: currentUserId }, skip: !currentUserId });
@@ -20,6 +22,7 @@ export function MyProfilePreview({ canEdit = true, isOwner = true }: { canEdit?:
   const [catalogAttempt, setCatalogAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -105,6 +108,17 @@ export function MyProfilePreview({ canEdit = true, isOwner = true }: { canEdit?:
     finally { setUploading(false); }
   }
 
+  async function sendVerification() {
+    if (!isOwner || profile?.is_verified || sendingVerification || !currentUserEmail) return;
+    setSendingVerification(true); setError("");
+    try {
+      await client.mutate({ mutation: SEND_VERIFICATION_MUTATION, variables: { email: currentUserEmail } });
+      router.push("/verify-email?sent=1");
+    } catch {
+      setError("Failed to send verification email. Please try again.");
+    } finally { setSendingVerification(false); }
+  }
+
   if (loadState === "loading" || userResult.loading || catalogState === "loading") return <p role="status">Loading profile…</p>;
   if (loadState === "error" || !profile || userResult.error || catalogState === "error") return <div role="alert">Could not load profile. <button type="button" onClick={() => { void reload().catch(() => undefined); if (currentUserId) void userResult.refetch().catch(() => undefined); setCatalogState("loading"); setCatalogAttempt((attempt) => attempt + 1); }}>Retry</button></div>;
 
@@ -138,7 +152,7 @@ export function MyProfilePreview({ canEdit = true, isOwner = true }: { canEdit?:
         <label className="my-profile-field my-profile-field--select"><span>Department</span><select value={departmentId} required disabled={!canEdit} aria-invalid={canEdit && !departmentId} onChange={(event) => setDraft((current) => ({ ...current, departmentId: event.target.value }))}><option value="">Select department</option>{departments.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{canEdit && !departmentId && <span className="cv-skill-field-error">Department is required</span>}</label>
         <label className="my-profile-field my-profile-field--select"><span>Position</span><select value={positionId} required disabled={!canEdit} aria-invalid={canEdit && !positionId} onChange={(event) => setDraft((current) => ({ ...current, positionId: event.target.value }))}><option value="">Select position</option>{positions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{canEdit && !positionId && <span className="cv-skill-field-error">Position is required</span>}</label>
         {(canEdit || isOwner) && <div className="my-profile-actions">
-          {isOwner && !profile.is_verified && <Link className="my-profile-verify" href="/verify-email">Verify email</Link>}
+          {isOwner && !profile.is_verified && <button type="button" className="my-profile-verify" disabled={sendingVerification} onClick={() => { void sendVerification(); }}>{sendingVerification ? "Sending..." : "Verify email"}</button>}
           {canEdit && <button type="submit" className="my-profile-update" disabled={!dirty || !valid || saving}>{saving ? "Updating..." : "Update"}</button>}
         </div>}
       </form>
