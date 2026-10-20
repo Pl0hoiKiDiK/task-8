@@ -19,8 +19,8 @@ describe("getRedirectPath", () => {
 
 describe("isPrivatePath", () => {
     it.each(["/", "/employees", "/employees/12", "/cvs", "/cvs/1/skills", "/profile", "/profile/skills", "/settings", "/skills", "/languages", "/admin", "/admin/employees", "/admin/cvs/1/projects", "/admin/profile/cvs/7", "/admin/departments", "/employees/"])(
-        "%s — закрытый раздел", (p) => expect(isPrivatePath(p)).toBe(true));
+        "%s — private section", (p) => expect(isPrivatePath(p)).toBe(true));
     it.each(["/no-such-page", "/employees-evil", "/admin-panel", "/signin", "/foo/employees", "/Employees",
         "/profile/unknown", "/profile/skills/x", "/employees/1/unknown", "/cvs/1/unknown", "/settings/x", "/admin/unknown", "/admin/profile/unknown", "/projects", "/departments"])(
-            "%s — неизвестный URL (404) / не закрытый раздел", (p) => expect(isPrivatePath(p)).toBe(false));
+            "%s — unknown URL (404) / section not closed", (p) => expect(isPrivatePath(p)).toBe(false));
 });

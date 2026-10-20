@@ -20,11 +20,11 @@ export function ResetPasswordForm({ token }: { token?: string }) {
     return (
         <section className="auth-panel" aria-labelledby="reset-password-title">
             <h1 id="reset-password-title">Reset password</h1>
-            <p>Here you should write a new password and confirm it</p>
+            {token && <p>Here you should write a new password and confirm it</p>}
 
             {!token ? (
-                <div className="auth-form">``
-                    <p role="alert" className="auth-error">LINK_EXPIRED_MESSAGE</p>
+                <div className="auth-form">
+                    <p role="alert" className="auth-error">This password reset link has expired</p>
                 </div>
             ) : (
                 <form className="auth-form" onSubmit={handleSubmit} noValidate>
