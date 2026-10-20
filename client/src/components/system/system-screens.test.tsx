@@ -38,10 +38,11 @@ describe("NoInternetGate", () => {
 });
 
 describe("UnsupportedDevice", () => {
-    it("hidden by the hidden attribute and shown by the max-md:block class", () => {
+    it("hidden by default and shown below the md breakpoint", () => {
         const { container } = render(<UnsupportedDevice />);
         const wrapper = container.firstElementChild as HTMLElement;
-        expect(wrapper.hasAttribute("hidden")).toBe(true);
+        expect(wrapper.hasAttribute("hidden")).toBe(false);
+        expect(wrapper.className).toContain("hidden");
         expect(wrapper.className).toContain("max-md:block");
     });
 });

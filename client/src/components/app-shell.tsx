@@ -78,14 +78,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const prefix = role === "admin" ? "/admin" : "";
   const isProfile = pathname === `${prefix}/profile` || pathname.startsWith(`${prefix}/profile/`);
   const cvPath = !isProfile ? pathname.match(/^\/(?:admin\/)?cvs\/([^/]+)(?:\/(skills|projects|preview))?\/?$/) : null;
+  const isEmployeeDetails = /^\/(?:admin\/)?employees\/[^/]+\/?$/.test(pathname);
   const cvId = cvPath?.[1];
   const cvSection = (cvPath?.[2] ?? "details") as CvSection;
   const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") || pathname.includes("/cvs/") ? "CVs" : "Profile";
   const title = isProfile
     ? <Suspense fallback={<span>Profile</span>}><ProfileBreadcrumbs role={role} section={profileSection} /></Suspense>
     : cvId ? <CvDetailsBreadcrumbs cvId={cvId} role={role === "admin" ? "admin" : "employee"} section={cvSection} />
+    : isEmployeeDetails ? "User Details"
     : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
-  const activeSection = isProfile ? `${prefix}/employees` : cvId ? `${prefix}/cvs` : pathname;
+  const activeSection = isProfile || isEmployeeDetails ? `${prefix}/employees` : cvId ? `${prefix}/cvs` : pathname;
   const [desktopExpanded, setDesktopExpanded] = useState(true);
   const [tabletExpanded, setTabletExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
