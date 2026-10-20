@@ -12,10 +12,11 @@ type AuthFieldProps = {
     value: string,
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
     onBlur: (event: React.FocusEvent<HTMLInputElement>) => void,
+    disabled?: boolean,
     error?: string,
 }
 
-export function AuthField({ name, label, type = "text", autoComplete, placeholder, value, onChange, onBlur, error }: AuthFieldProps) {
+export function AuthField({ name, label, type = "text", autoComplete, placeholder, value, onChange, onBlur, disabled, error }: AuthFieldProps) {
     const [visible, setVisible] = useState(false);
     const isPassword = type === "password";
     const errorId = `${name}-error`;
@@ -32,6 +33,8 @@ export function AuthField({ name, label, type = "text", autoComplete, placeholde
                 value={value}
                 onChange={onChange}
                 onBlur={onBlur}
+                disabled={disabled}
+                className="disabled:cursor-not-allowed disabled:bg-(--sidebar-active)! disabled:text-(--muted)!"
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? errorId : undefined}
             />
