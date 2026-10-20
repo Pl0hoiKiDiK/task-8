@@ -1,19 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useLoginForm } from "@/lib/auth/hooks/use-login-form";
 import { AuthField } from "@/components/auth/auth-field";
+import { authCompactButton, authDescription, authForm, authFormError, authPanel, authSecondaryAction, authTitle } from "@/components/auth/auth-styles";
 
 import Link from "next/link";
 
 export default function SignInPage() {
   const { values, errors, formError, loading, canSubmit, handleChange, handleBlur, handleSubmit } = useLoginForm();
+  const [loggedOut, setLoggedOut] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("cv-builder-logout-notice") !== "1") return;
+      sessionStorage.removeItem("cv-builder-logout-notice");
+    } catch {
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoggedOut(true);
+  }, []);
 
   return (
-    <section className="auth-panel" aria-labelledby="sign-in-title">
-      <h1 id="sign-in-title">Welcome back</h1>
-      <p>Hello again! Sign in to continue</p>
+    <section className={authPanel} aria-labelledby="sign-in-title">
+      <h1 id="sign-in-title" className={authTitle}>Welcome back</h1>
+      <p className={authDescription}>Hello again! Sign in to continue</p>
 
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      {loggedOut && <p role="status" className="mb-5 text-sm text-[var(--text)]">You have successfully logged out.</p>}
+
+      <form className={authForm} onSubmit={handleSubmit} noValidate>
         <AuthField
           name="email"
           label="Email"
@@ -38,12 +54,12 @@ export default function SignInPage() {
           error={errors.password}
         />
 
-        {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+        {formError && <p role="alert" className={authFormError}>{formError}</p>}
 
-        <button className="primary-button" type="submit" disabled={loading || !canSubmit}>
+        <button className={authCompactButton} type="submit" disabled={loading || !canSubmit}>
           {loading ? "Signing in..." : "Sign in"}
         </button>
-        <Link href="/forgot-password">Forgot password?</Link>
+        <Link className={authSecondaryAction} href="/forgot-password">Forgot password?</Link>
       </form>
     </section>
   );

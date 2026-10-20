@@ -52,51 +52,10 @@ body { margin: 0; background: var(--surface); color: var(--text); font-family: v
 .app-icon--plus, .app-icon--person-red, .app-icon--delete { color: var(--red); }
 .app-icon--arrow-nav { color: #aeaeae; }
 .app-icon--cross-green { color: #335d35; }
-button, input, select { font: inherit; }
+button, input, select { font-family: inherit; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
-.auth-layout { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; }
-.auth-tabs { display: flex; height: 56px; flex: none; justify-content: center; }
-.auth-tab { width: 150px; display: grid; place-items: center; color: var(--text); font-size: 14px; font-weight: 500; line-height: 17.5px; letter-spacing: .4px; text-transform: uppercase; }
-.auth-tab--active { color: var(--red); font-weight: 600; border-bottom: 2px solid var(--red); }
-
-.auth-panel, .signup-panel { width: min(560px, calc(100% - 48px)); text-align: center; }
-.auth-panel { margin-top: clamp(100px, 24.5vh, 220px); }
-.signup-panel { margin-top: clamp(64px, 20vh, 180px); }
-.auth-panel h1, .signup-panel h1 { margin: 0; font-size: 34px; font-weight: 400; line-height: 42px; letter-spacing: .25px; }
-.auth-panel > p, .signup-panel > p { margin: 20px 0 42px; font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-
-.auth-form { display: flex; flex-direction: column; align-items: center; gap: 36px; }
-.auth-form > input, .password-field input { width: 100%; height: 48px; padding: 0 11px; border: 1px solid #aeaeae; border-radius: 0; outline-offset: 1px; color: var(--text); background: transparent; font-size: 16px; line-height: 23px; letter-spacing: .15px; }
-.auth-form input::placeholder { color: var(--placeholder); opacity: 1; }
-.password-field { width: 100%; position: relative; }
-.password-field input { padding-right: 48px; }
-.password-toggle { position: absolute; top: 0; right: 8px; width: 40px; height: 48px; border: 0; background: none; color: var(--muted); display: grid; place-items: center; }
-.password-toggle .app-icon { width: 24px; height: 24px; }
-.primary-button { width: 160px; height: 48px; margin-top: 8px; border: 0; border-radius: 24px; background: var(--red); color: #f5f5f7; box-shadow: 0 2px 3px #0003; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
-.primary-button-signup { width: 220px }
-.primary-button:disabled { opacity: .6; cursor: not-allowed; }
-.auth-secondary-action { margin-top: -16px; color: var(--muted); font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
-
-.otp { display: flex; gap: 16px; justify-content: center; }
-.otp-cell { flex: 0 1 48px; min-width: 0; height: 48px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); text-align: center; font-size: 16px; }
-
-.auth-form > input:focus-visible,
-.password-field input:focus-visible,
-.otp-cell:focus-visible { outline: none; border-color: var(--text); }
-
-.auth-form > input[aria-invalid="true"],
-.password-field input[aria-invalid="true"],
-.otp-cell[aria-invalid="true"] { border-color: var(--red); }
-.otp-cell[aria-invalid="true"]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
-
-.auth-error,
-.auth-form-error { margin: 8px 0 0; color: var(--red); font-size: 14px; line-height: 20px; letter-spacing: .25px; }
-.auth-form-error { margin-top: -24px; }
-
-.auth-panel-verify { margin-top: clamp(100px, 30.3vh, 273px); }
-.auth-panel-verify .primary-button { margin-top: 5px; }
 
 .search-field { width: 320px; height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid #aeaeae; border-radius: 40px; }
 .search-field .app-icon { width: 24px; height: 24px; }
@@ -106,34 +65,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .create-action .app-icon { width: 24px; height: 24px; }
 .sort-indicator { width: 18px; height: 18px; margin-left: 6px; }
 
-.my-profile-page { position: relative; }
-.my-profile-content { width: min(852px, 100%); margin: 12px auto 0; }
-.my-profile-avatar-row { height: 120px; display: flex; justify-content: center; align-items: center; gap: 76px; transform: translateX(20px); }
-.my-profile-avatar { width: 120px; height: 120px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #aeaeae; color: #f5f5f7; font-size: 40px; font-weight: 400; line-height: 48px; }
-.my-profile-upload { width: 280px; }
-.my-profile-upload button { display: flex; align-items: center; gap: 12px; padding: 0; border: 0; background: none; color: var(--text); font-size: 20px; font-weight: 500; line-height: 32px; letter-spacing: .15px; white-space: nowrap; cursor: default; }
-.my-profile-upload-icon { width: 35px; height: 35px; }
-.my-profile-upload p { margin: 0; color: var(--text); opacity: .6; font-size: 16px; font-weight: 400; line-height: 28px; letter-spacing: .15px; white-space: nowrap; }
-.my-profile-identity { margin-top: 32px; text-align: center; }
-.my-profile-identity h1 { margin: 0 0 8px; font-size: 24px; font-weight: 400; line-height: 32.02px; }
-.my-profile-identity p { margin: 0; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
-.my-profile-identity .my-profile-email { color: var(--muted); }
-.my-profile-form { margin-top: 48px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 20px; }
-.my-profile-field { min-width: 0; display: block; }
-.my-profile-field > span { display: block; padding-left: 16px; color: var(--muted); font-size: 12px; line-height: 16px; }
-.my-profile-field input, .my-profile-select-value { width: 100%; height: 48px; padding: 0 12px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; }
-.my-profile-select-value { display: flex; align-items: center; justify-content: space-between; }
-.my-profile-select-arrow { width: 24px; height: 24px; }
-.my-profile-select-arrow { transform: rotate(-90deg); color: var(--muted); }
-.my-profile-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 24px; margin-top: 16px; }
-.my-profile-actions button { width: 160px; height: 48px; border-radius: 24px; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; cursor: default; }
-.my-profile-verify { border: 1px solid var(--muted); background: transparent; color: #626262; }
-.my-profile-update { border: 0; background: var(--red); color: #f5f5f7; }
-.my-profile-toast { position: fixed; top: 24px; right: 24px; z-index: 30; width: 360px; min-height: 100px; display: flex; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid #335d35; border-radius: 12px; background: #66bb6a; color: #335d35; }
-.my-profile-toast strong { display: block; font-size: 20px; font-weight: 500; line-height: 24px; letter-spacing: .15px; }
-.my-profile-toast p { margin: 6px 0 0; font-size: 14px; font-weight: 400; line-height: 20.02px; letter-spacing: .15px; }
-.my-profile-toast button { align-self: flex-start; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; }
-.my-profile-toast button .app-icon { width: 24px; height: 24px; }
 .user-skills-content { width: min(900px, 100%); margin: 32px 0 0 min(145px, max(0px, calc((100% - 900px) / 2))); padding: 0 24px; }
 .admin-profile-content--empty { padding-top: 64px; }
 .admin-profile-empty { margin: 0; color: var(--text); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: .15px; text-align: center; }
@@ -232,15 +163,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .profile-cv-dialog { background: #424242; } :root:not([data-theme="light"]) .profile-cv-dialog::backdrop { background: #0006; } }
 :root[data-theme="dark"] .profile-cv-more .app-icon--more { color: #f5f5f7; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .profile-cv-more .app-icon--more { color: #f5f5f7; } }
-:root[data-theme="dark"] .my-profile-avatar { background: #626262; color: #2e2e2e; }
-:root[data-theme="dark"] .my-profile-verify { color: #e2e2e4; border-color: #e2e2e4; }
 :root[data-theme="dark"] .user-skill-bar--yellow { --skill-track: #7f5c00; }
 :root[data-theme="dark"] .user-skill-bar--green { --skill-fill: #66bb6a; --skill-track: #335d35; }
 :root[data-theme="dark"] .user-skill-bar--gray { --skill-track: #3b3b3b; }
 :root[data-theme="dark"] .user-skill-bar--blue { --skill-fill: #29b6f6; --skill-track: #145b7b; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .my-profile-avatar { background: #626262; color: #2e2e2e; }
-  :root:not([data-theme="light"]) .my-profile-verify { color: #e2e2e4; border-color: #e2e2e4; }
   :root:not([data-theme="light"]) .user-skill-bar--yellow { --skill-track: #7f5c00; }
   :root:not([data-theme="light"]) .user-skill-bar--green { --skill-fill: #66bb6a; --skill-track: #335d35; }
   :root:not([data-theme="light"]) .user-skill-bar--gray { --skill-track: #3b3b3b; }
@@ -251,10 +178,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .create-action { padding: 0 4px; }
   .create-action span:not(.app-icon) { display: none; }
   .search-field { width: 276px; }
-  .my-profile-content { width: 100%; }
-  .my-profile-avatar-row { gap: 38px; }
-  .my-profile-form { grid-template-columns: minmax(0, 1fr); }
-  .my-profile-toast { top: auto; bottom: 24px; right: 24px; width: min(360px, calc(100vw - 104px)); }
   .user-skills-content { width: 100%; margin-top: 26px; padding: 0 22px; }
   .user-skills-page--editable .admin-profile-content--empty { margin-top: 32px; }
   .user-skills-content.admin-profile-content--empty { padding-top: 64px; }
@@ -269,7 +192,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .user-skills-page--editable .admin-profile-actions { gap: 112px; padding-right: 24px; }
   .admin-profile-content--empty .admin-profile-actions { margin-top: 48px; }
   :root[data-theme="dark"] .user-skills-group h1 { color: #fff; }
-  .signup-panel { margin-top: clamp(110px, 20vh, 180px); } 
 }
 
 @media (prefers-color-scheme: dark) and (max-width: 900px) {
@@ -277,16 +199,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 600px) {
-  .auth-panel { margin-top: clamp(72px, 20vh, 190px); }
   .search-field { width: min(320px, 100%); }
   .profile-cvs-toolbar { padding-right: 8px; padding-left: 8px; }
   .profile-cvs-heading, .profile-cv-row { grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) 28px; }
-  .my-profile-avatar-row { gap: 20px; transform: none; }
-  .my-profile-upload { width: auto; min-width: 0; }
-  .my-profile-upload button { gap: 4px; font-size: 16px; }
-  .my-profile-upload p { font-size: 12px; white-space: normal; }
-  .my-profile-actions { gap: 12px; }
-  .my-profile-actions button { min-width: 0; }
 }
 
 .cv-skills-content { width: min(852px, 100%); margin: 32px 0 0 min(169px, max(0px, calc((100% - 852px) / 2))); }

@@ -14,6 +14,8 @@ export function GuestOnly({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (status === "ready" && wasAuthenticated === null) {
+            // Capture the initial session once; signup may authenticate before opening verification.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setWasAuthenticated(user !== null);
         }
     }, [status, user, wasAuthenticated]);

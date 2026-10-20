@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AuthField } from "@/components/auth/auth-field";
+import { authDescription, authForm, authFormError, authPanel, authSecondaryAction, authTitle, authWideButton } from "@/components/auth/auth-styles";
 import { useForgotPasswordForm } from "@/lib/auth/hooks/use-forgot-password-form";
 
 export default function ForgotPasswordPage() {
@@ -10,20 +11,20 @@ export default function ForgotPasswordPage() {
 
     if (sentTo) {
         return (
-            <section className="auth-panel" aria-labelledby="forgot-password-title">
-                <h1 id="forgot-password-title">Check your email</h1>
-                <p role="status">We sent password reset instructions to {sentTo}</p>
-                <Link className="auth-secondary-action" href="/signin">Back to sign in</Link>
+            <section className={authPanel} aria-labelledby="forgot-password-title">
+                <h1 id="forgot-password-title" className={authTitle}>Check your email</h1>
+                <p role="status" className={authDescription}>We sent password reset instructions to {sentTo}</p>
+                <Link className={authSecondaryAction} href="/signin">Back to sign in</Link>
             </section>
         );
     }
 
     return (
-        <section className="auth-panel" aria-labelledby="forgot-password-title">
-            <h1 id="forgot-password-title">Forgot password</h1>
-            <p>We will send you an email with further instructions</p>
+        <section className={authPanel} aria-labelledby="forgot-password-title">
+            <h1 id="forgot-password-title" className={authTitle}>Forgot password</h1>
+            <p className={authDescription}>We will send you an email with further instructions</p>
 
-            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <form className={authForm} onSubmit={handleSubmit} noValidate>
                 <AuthField
                     name="email"
                     label="Email"
@@ -36,12 +37,12 @@ export default function ForgotPasswordPage() {
                     error={emailError}
                 />
 
-                {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+                {formError && <p role="alert" className={authFormError}>{formError}</p>}
 
-                <button className="primary-button primary-button-signup" type="submit" disabled={loading || !canSubmit}>
+                <button className={authWideButton} type="submit" disabled={loading || !canSubmit}>
                     {loading ? "Sending..." : "Reset password"}
                 </button>
-                <Link className="auth-secondary-action" href="/signin">Cancel</Link>
+                <Link className={authSecondaryAction} href="/signin">Cancel</Link>
             </form>
         </section>
     );

@@ -16,6 +16,14 @@ import { restoreFinished, sessionStarted } from "@/lib/auth/model/auth-slice";
 import { restoreSession } from "@/lib/auth/api/restore-session";
 import { RequireAuth } from "@/components/auth/require-auth";
 
+import { createNetworkRetryLink } from "@/lib/system/network-retry-link";
+
+import { NoInternetGate } from "@/components/system/no-internet-gate";
+import { UnsupportedDevice } from "@/components/system/unsupported-device";
+
+const retryLink = createNetworkRetryLink();
+
+
 function makeApolloClient(store: AppStore) {
   const httpLink = new HttpLink({
     uri: process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://localhost:3001/api/graphql",
@@ -29,7 +37,7 @@ function makeApolloClient(store: AppStore) {
 
   return new ApolloClient({
     cache: new InMemoryCache(),
-    link: authLink.concat(httpLink),
+    link: retryLink.concat(authLink).concat(httpLink),
   });
 }
 
@@ -42,9 +50,9 @@ function SessionRestorer() {
     if (started.current) return;
     started.current = true;
 
-    restoreSession(client).then((session) => {
-      dispatch(session ? sessionStarted(session) : restoreFinished());
-    });
+    restoreSession(client)
+      .then((session) => dispatch(session ? sessionStarted(session) : restoreFinished()))
+      .catch(() => dispatch(restoreFinished()));
   }, [client, dispatch]);
 
   return null;
@@ -57,7 +65,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ReduxProvider store={store}>
       <ApolloNextAppProvider makeClient={() => makeApolloClient(store)}>
         <SessionRestorer />
-        <RequireAuth>{children}</RequireAuth>
+        <UnsupportedDevice />
+        <div className="contents max-md:hidden">
+          <NoInternetGate>
+            <RequireAuth>{children}</RequireAuth>
+          </NoInternetGate>
+        </div>
       </ApolloNextAppProvider>
     </ReduxProvider>
   );

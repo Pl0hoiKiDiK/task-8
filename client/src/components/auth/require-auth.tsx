@@ -1,6 +1,6 @@
 "use client"
 
-import { getRedirectPath } from "@/lib/auth/model/access";
+import { getRedirectPath, isPrivatePath } from "@/lib/auth/model/access";
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,7 +13,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     const router = useRouter();
     const { status, user } = useAppSelector((s) => s.auth)
 
-    const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    const isPublic =
+        PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`)) || !isPrivatePath(pathname);
     const ready = status === "ready"
 
     const redirectTo = user ? getRedirectPath(pathname, user.role) : null
