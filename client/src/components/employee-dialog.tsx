@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useApolloClient, useMutation } from "@apollo/client/react";
+import { AppIcon } from "@/components/app-icon";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 import {
   CREATE_EMPLOYEE_MUTATION,
   DELETE_EMPLOYEE_MUTATION,
   EMPLOYEES_QUERY,
-  EMPLOYEE_OPTIONS_QUERY,
   UPDATE_EMPLOYEE_MUTATION,
   UPDATE_EMPLOYEE_PROFILE_MUTATION,
   type Employee,
   type EmployeeFormValues,
 } from "@/lib/employees/api";
+import { loadEmployeeOptions, type EmployeeOptions } from "@/lib/employees/load-options";
 
 export type EmployeeDialogState = { type: "create" } | { type: "update" | "delete"; employee: Employee };
 
@@ -20,13 +22,21 @@ const emptyForm: EmployeeFormValues = {
   departmentId: "", positionId: "", role: "Employee",
 };
 
-const fieldClass = "h-11 w-full rounded border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-60";
-const labelClass = "flex flex-col gap-1.5 text-sm font-medium";
-const secondaryButton = "rounded-full border border-[var(--border)] px-6 py-2.5 text-sm font-medium uppercase hover:bg-[var(--sidebar-active)]";
-const primaryButton = "rounded-full bg-[var(--red)] px-6 py-2.5 text-sm font-medium uppercase text-white hover:opacity-85 active:opacity-70 disabled:cursor-not-allowed disabled:opacity-50";
+/* Размеры из макета: desktop 860px (2 колонки, поля 400x48, gap 12/36), tablet 620px (1 колонка). */
+const controlClass =
+  "h-12 w-full border border-(--border) bg-transparent px-3 text-base text-(--text) outline-offset-1 placeholder:text-(--placeholder) " +
+  "disabled:cursor-not-allowed disabled:bg-(--sidebar-active) disabled:text-(--muted) aria-invalid:border-(--red)";
+const errorClass = "absolute left-1 top-full mt-0.5 text-xs leading-4 text-(--red)";
+const systemErrorClass = "text-sm text-(--red)";
+const cancelClass =
+  "h-12 w-40 rounded-full border border-(--text) bg-transparent text-sm font-medium uppercase tracking-wider text-(--text) disabled:opacity-50";
+const submitClass =
+  "h-12 w-40 rounded-full bg-(--red) text-sm font-medium uppercase tracking-wider text-[#f5f5f7] shadow-md disabled:opacity-50";
 
-function validate(values: EmployeeFormValues, updating: boolean) {
-  const errors: Partial<Record<keyof EmployeeFormValues, string>> = {};
+type Errors = Partial<Record<keyof EmployeeFormValues, string>>;
+
+function validate(values: EmployeeFormValues, updating: boolean): Errors {
+  const errors: Errors = {};
   if (!updating) {
     if (!values.email.trim()) errors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) errors.email = "Invalid email address";
@@ -43,14 +53,68 @@ function validate(values: EmployeeFormValues, updating: boolean) {
   return errors;
 }
 
+function employeeName(employee: Employee) {
+  return [employee.profile.first_name, employee.profile.last_name].filter(Boolean).join(" ") || employee.email;
+}
+
+function DialogField({ id, label, type = "text", value, onChange, onBlur, error, disabled, maxLength }: {
+  id: string; label: string; type?: "text" | "email" | "password"; value: string;
+  onChange: (value: string) => void; onBlur: () => void; error?: string; disabled?: boolean; maxLength?: number;
+}) {
+  const [visible, setVisible] = useState(false);
+  const isPassword = type === "password";
+  return (
+    <div className="relative">
+      <label className="sr-only" htmlFor={id}>{label}</label>
+      <input id={id} type={isPassword && visible ? "text" : type} placeholder={label} autoComplete={isPassword ? "new-password" : "off"}
+        className={`${controlClass} ${isPassword ? "pr-12" : ""}`} value={value} disabled={disabled} maxLength={maxLength}
+        aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined}
+        onChange={(event) => onChange(event.target.value)} onBlur={onBlur} />
+      {isPassword && <button type="button" disabled={disabled} aria-pressed={visible} aria-label={`${visible ? "Hide" : "Show"} password`}
+        className="absolute top-0 right-2 grid h-12 w-10 place-items-center border-0 bg-transparent text-(--muted) hover:text-(--text) disabled:opacity-50"
+        onClick={() => setVisible((current) => !current)}><AppIcon name="eye" className="size-6" /></button>}
+      {error && <span id={`${id}-error`} role="alert" className={errorClass}>{error}</span>}
+    </div>
+  );
+}
+
+function Chevron() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="pointer-events-none absolute top-6 right-3 size-6 -translate-y-1/2 text-(--muted)" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function DialogShell({ title, pending, onClose, children }: { title: string; pending: boolean; onClose: () => void; children: ReactNode }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    dialog.showModal();
+    dialog.querySelector<HTMLElement>("input:not(:disabled), select:not(:disabled), [data-autofocus]")?.focus();
+    return () => { if (dialog.open) dialog.close(); };
+  }, []);
+  return (
+    <dialog ref={ref} aria-labelledby="employee-dialog-title" onCancel={(event) => { event.preventDefault(); if (!pending) onClose(); }}
+      className="m-auto max-h-[calc(100dvh-32px)] w-[min(620px,calc(100vw-32px))] max-w-none overflow-y-auto border-0 bg-(--surface) p-6 text-(--text) shadow-2xl backdrop:bg-black/50 lg:w-215">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 id="employee-dialog-title" className="text-xl leading-8 font-medium">{title}</h2>
+        <button type="button" aria-label={`Close ${title}`} disabled={pending} onClick={onClose} className="grid size-8 place-items-center text-2xl leading-none text-(--text) disabled:opacity-50">×</button>
+      </div>
+      {children}
+    </dialog>
+  );
+}
+
 export function EmployeeDialog({ state, onClose, onSaved }: {
   state: EmployeeDialogState;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const client = useApolloClient();
   const updating = state.type === "update";
+  const deleting = state.type === "delete";
   const [values, setValues] = useState<EmployeeFormValues>(() => state.type === "create" ? emptyForm : {
     email: state.employee.email,
     password: "",
@@ -61,166 +125,137 @@ export function EmployeeDialog({ state, onClose, onSaved }: {
     role: state.employee.role,
   });
   const [touched, setTouched] = useState<(keyof EmployeeFormValues)[]>([]);
-  const [options, setOptions] = useState<{ departments: { id: string; name: string }[]; positions: { id: string; name: string }[] } | null>(null);
+  const [options, setOptions] = useState<EmployeeOptions | null>(null);
   const [optionsError, setOptionsError] = useState(false);
   const [optionsAttempt, setOptionsAttempt] = useState(0);
   const [requestError, setRequestError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const savedName = useRef<{ first: string; last: string } | null>(null);
   const [createUser, { loading: creating }] = useMutation(CREATE_EMPLOYEE_MUTATION);
   const [updateUser, { loading: saving }] = useMutation(UPDATE_EMPLOYEE_MUTATION);
   const [updateProfile, { loading: savingProfile }] = useMutation(UPDATE_EMPLOYEE_PROFILE_MUTATION);
-  const [deleteUser, { loading: deleting }] = useMutation(DELETE_EMPLOYEE_MUTATION);
-  const pending = creating || saving || savingProfile || deleting;
+  const [deleteUser, { loading: removing }] = useMutation(DELETE_EMPLOYEE_MUTATION);
+  const pending = creating || saving || savingProfile || removing;
   const errors = validate(values, updating);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    dialog?.showModal();
-    return () => { if (dialog?.open) dialog.close(); };
-  }, []);
+  const invalid = Object.keys(errors).length > 0;
 
   useEffect(() => {
     if (state.type === "delete") return;
     let active = true;
-    async function loadOptions() {
-      setOptionsError(false);
-      try {
-        const departments: { id: string; name: string }[] = [];
-        const positions: { id: string; name: string }[] = [];
-        let page = 1;
-        let pages = 1;
-        while (page <= pages) {
-          const result = await client.query({
-            query: EMPLOYEE_OPTIONS_QUERY,
-            variables: { params: { page, limit: 100 } },
-            fetchPolicy: "network-only",
-          });
-          if (!result.data) throw new Error("Could not load options");
-          departments.push(...result.data.departments.items);
-          positions.push(...result.data.positions.items);
-          pages = Math.max(result.data.departments.total_pages, result.data.positions.total_pages);
-          page += 1;
-        }
-        if (active) setOptions({ departments, positions });
-      } catch {
-        if (active) setOptionsError(true);
-      }
-    }
-    void loadOptions();
+    setOptionsError(false);
+    loadEmployeeOptions(client)
+      .then((loaded) => { if (active) setOptions(loaded); })
+      .catch(() => { if (active) setOptionsError(true); });
     return () => { active = false; };
   }, [client, state.type, optionsAttempt]);
 
-  function setField<K extends keyof EmployeeFormValues>(field: K, value: EmployeeFormValues[K]) {
-    setValues((current) => ({ ...current, [field]: value }));
+  function touch(field: keyof EmployeeFormValues) {
     setTouched((current) => current.includes(field) ? current : [...current, field]);
   }
+  function setField<K extends keyof EmployeeFormValues>(field: K, value: EmployeeFormValues[K]) {
+    setValues((current) => ({ ...current, [field]: value }));
+    touch(field);
+    setRequestError("");
+  }
+  const shown = (field: keyof EmployeeFormValues) => touched.includes(field) ? errors[field] : undefined;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
+    if (!deleting && (invalid || !options)) {
+      setTouched(["email", "password", "first_name", "last_name", "departmentId", "positionId", "role"]);
+      return;
+    }
     setRequestError("");
-    let profileSaved = false;
+    let step: "profile" | "user" | "other" = "other";
     try {
       if (state.type === "delete") {
         const result = await deleteUser({ variables: { userId: state.employee.id } });
-        if (!result.data?.deleteUser.affected) throw new Error("User was not deleted");
+        if (!result.data?.deleteUser.affected) { setRequestError("The user was not deleted. Please try again."); return; }
       } else {
-        if (Object.keys(errors).length || !options) return;
         const first_name = values.first_name.trim();
         const last_name = values.last_name.trim();
-        if (updating) {
-          if (first_name !== state.employee.profile.first_name || last_name !== state.employee.profile.last_name) {
+        if (state.type === "update") {
+          const known = savedName.current ?? { first: state.employee.profile.first_name ?? "", last: state.employee.profile.last_name ?? "" };
+          if (first_name !== known.first || last_name !== known.last) {
+            step = "profile";
             await updateProfile({ variables: { profile: { userId: state.employee.id, first_name, last_name } } });
-            profileSaved = true;
+            savedName.current = { first: first_name, last: last_name };
           }
           if (values.departmentId !== state.employee.department?.id || values.positionId !== state.employee.position?.id || values.role !== state.employee.role) {
-            await updateUser({ variables: { user: {
-              userId: state.employee.id,
-              departmentId: values.departmentId, positionId: values.positionId, role: values.role,
-            } } });
+            step = "user";
+            await updateUser({ variables: { user: { userId: state.employee.id, departmentId: values.departmentId, positionId: values.positionId, role: values.role } } });
           }
         } else {
-          await createUser({ variables: { user: {
-            auth: { email: values.email.trim(), password: values.password },
-            profile: { first_name, last_name },
-            departmentId: values.departmentId, positionId: values.positionId, role: values.role,
-          } } });
+          await createUser({
+            variables: {
+              user: {
+                auth: { email: values.email.trim(), password: values.password },
+                profile: { first_name, last_name },
+                departmentId: values.departmentId, positionId: values.positionId, role: values.role,
+              }
+            }
+          });
         }
       }
       onSaved();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Request failed. Please try again.";
-      setRequestError(message.includes("cannotDeleteVerifiedUser") ? "The server does not allow deleting verified users."
-        : profileSaved ? `Name was saved, but other changes failed: ${message}` : message);
-      if (profileSaved) void client.refetchQueries({ include: [EMPLOYEES_QUERY] });
+      const message = getApiErrorMessage(error);
+      if (step === "user" && savedName.current) {
+        setRequestError(`Name was saved, but department, position or role were not: ${message}`);
+        void client.refetchQueries({ include: [EMPLOYEES_QUERY] });
+      } else setRequestError(message);
     }
   }
 
-  const input = (field: keyof EmployeeFormValues, label: string, type = "text", disabled = false) => (
-    <label className={labelClass} key={field}>
-      {label}
-      <input className={fieldClass} type={type} value={field === "password" && updating ? "Password cannot be changed here" : values[field]}
-        disabled={disabled} maxLength={field === "first_name" || field === "last_name" ? 100 : undefined}
-        aria-invalid={Boolean(touched.includes(field) && errors[field])}
-        onChange={(event) => setField(field, event.target.value)}
-        onBlur={() => setTouched((current) => current.includes(field) ? current : [...current, field])} />
-      {touched.includes(field) && errors[field] && <span className="text-[var(--red)]" role="alert">{errors[field]}</span>}
-    </label>
+  const title = state.type === "create" ? "Create user" : state.type === "update" ? "Update user" : "Delete user";
+  const text = (field: "email" | "first_name" | "last_name", label: string, type: "text" | "email" = "text", disabled = false) => (
+    <DialogField id={`employee-dialog-${field}`} label={label} type={type} value={values[field]} disabled={disabled || pending}
+      maxLength={field === "email" ? undefined : 100} error={shown(field)} onChange={(value) => setField(field, value)} onBlur={() => touch(field)} />
   );
-
-  const select = (field: "departmentId" | "positionId", label: string, items: { id: string; name: string }[]) => (
-    <label className={labelClass}>
-      {label}
-      <select className={fieldClass} value={values[field]} disabled={!options}
-        aria-invalid={Boolean(touched.includes(field) && errors[field])}
-        onChange={(event) => setField(field, event.target.value)}
-        onBlur={() => setTouched((current) => current.includes(field) ? current : [...current, field])}>
-        <option value="">Select {label.toLowerCase()}</option>
-        {items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-      </select>
-      {touched.includes(field) && errors[field] && <span className="text-[var(--red)]" role="alert">{errors[field]}</span>}
-    </label>
-  );
-
-  return <dialog ref={dialogRef} aria-labelledby="employee-dialog-title" onCancel={(event) => { if (pending) event.preventDefault(); else onClose(); }}
-    className="m-auto max-h-[90dvh] w-[min(540px,calc(100vw-32px))] overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 text-[var(--text)] shadow-xl backdrop:bg-black/60">
-    <form onSubmit={submit} noValidate>
-      <h2 id="employee-dialog-title" className="mb-5 text-2xl font-medium">{state.type === "create" ? "Create user" : state.type === "update" ? "Update user" : "Delete user"}</h2>
-      {state.type === "delete" ? <p>Are you sure you want to delete user {state.employee.profile.first_name} {state.employee.profile.last_name}?</p> : <div className="grid gap-4 sm:grid-cols-2">
-        {input("email", "Email", "email", updating)}
-        <label className={labelClass}>Password
-          <span className="flex gap-2">
-            <input className={fieldClass} type={updating || showPassword ? "text" : "password"} value={updating ? "Password cannot be changed here" : values.password}
-              disabled={updating} aria-invalid={Boolean(touched.includes("password") && errors.password)}
-              onChange={(event) => setField("password", event.target.value)}
-              onBlur={() => setTouched((current) => current.includes("password") ? current : [...current, "password"])} />
-            {!updating && <button type="button" className="rounded border border-[var(--border)] px-2 text-sm" aria-label={showPassword ? "Hide password" : "Show password"}
-              onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? "Hide" : "Show"}</button>}
-          </span>
-          {touched.includes("password") && errors.password && <span className="text-[var(--red)]" role="alert">{errors.password}</span>}
-        </label>
-        {input("first_name", "First Name")}
-        {input("last_name", "Last Name")}
-        {select("departmentId", "Department", options?.departments ?? [])}
-        {select("positionId", "Position", options?.positions ?? [])}
-        <label className={labelClass}>Role
-          <select className={fieldClass} value={values.role} onChange={(event) => setField("role", event.target.value as EmployeeFormValues["role"])}>
-            <option value="Employee">Employee</option><option value="Admin">Admin</option>
-          </select>
-          {touched.includes("role") && errors.role && <span className="text-[var(--red)]" role="alert">{errors.role}</span>}
-        </label>
-      </div>}
-      {state.type !== "delete" && !options && !optionsError && <p className="mt-4" role="status">Loading departments and positions…</p>}
-      {state.type !== "delete" && options && (!options.departments.length || !options.positions.length) &&
-        <p className="mt-4 text-[var(--muted)]" role="status">No departments or positions are available for assignment. User creation and updates require both.</p>}
-      {optionsError && <p className="mt-4 text-[var(--red)]" role="alert">Could not load departments and positions. <button type="button" className="underline" onClick={() => setOptionsAttempt((current) => current + 1)}>Retry</button></p>}
-      {requestError && <p className="mt-4 text-[var(--red)]" role="alert">{requestError}</p>}
-      <div className="mt-6 flex justify-end gap-3">
-        <button type="button" className={secondaryButton} disabled={pending} onClick={onClose}>Cancel</button>
-        <button type="submit" className={primaryButton} disabled={pending || (state.type !== "delete" && (!options || Object.keys(errors).length > 0))}>
-          {pending ? "Saving…" : state.type === "create" ? "Create" : state.type === "update" ? "Save" : "Confirm"}
-        </button>
+  const select = (field: "departmentId" | "positionId" | "role", label: string, items: { id: string; name: string }[], allowEmpty = true) => {
+    const id = `employee-dialog-${field}`;
+    const message = shown(field);
+    return (
+      <div className="relative">
+        <select id={id} aria-label={label} className={`${controlClass} appearance-none pr-10 ${values[field] ? "" : "text-(--placeholder)"}`}
+          value={values[field]} disabled={pending || (field !== "role" && !options)} aria-invalid={Boolean(message)} aria-describedby={message ? `${id}-error` : undefined}
+          onChange={(event) => setField(field, event.target.value as EmployeeFormValues[typeof field])} onBlur={() => touch(field)}>
+          {allowEmpty && <option value="">{label}</option>}
+          {items.map((item) => <option key={item.id} value={item.id} className="text-(--text)">{item.name}</option>)}
+        </select>
+        <Chevron />
+        {message && <span id={`${id}-error`} role="alert" className={errorClass}>{message}</span>}
       </div>
-    </form>
-  </dialog>;
+    );
+  };
+
+  return (
+    <DialogShell title={title} pending={pending} onClose={onClose}>
+      <form onSubmit={submit} noValidate>
+        {state.type === "delete"
+          ? <p className="text-base">Are you sure you want to delete user <strong>{employeeName(state.employee)}</strong>?</p>
+          : <div className="grid grid-cols-1 gap-x-3 gap-y-9 lg:grid-cols-2">
+            {text("email", "Email", "email", updating)}
+            <DialogField id="employee-dialog-password" label="Password" type="password" value={updating ? "••••••" : values.password}
+              disabled={updating || pending} error={shown("password")} onChange={(value) => setField("password", value)} onBlur={() => touch("password")} />
+            {text("first_name", "First Name")}
+            {text("last_name", "Last Name")}
+            {select("departmentId", "Department", options?.departments ?? [])}
+            {select("positionId", "Position", options?.positions ?? [])}
+            {select("role", "Role", [{ id: "Employee", name: "Employee" }, { id: "Admin", name: "Admin" }], false)}
+          </div>}
+        {!deleting && !options && !optionsError && <p className="mt-4" role="status">Loading departments and positions…</p>}
+        {!deleting && options && (!options.departments.length || !options.positions.length) &&
+          <p className="mt-4 text-(--muted)" role="status">No departments or positions are available for assignment. User creation and updates require both.</p>}
+        {optionsError && <p className={`${systemErrorClass} mt-4`} role="alert">Could not load departments and positions. <button type="button" className="underline" onClick={() => setOptionsAttempt((current) => current + 1)}>Retry</button></p>}
+        {requestError && <p className={`${systemErrorClass} mt-4`} role="alert">{requestError}</p>}
+        <div className="mt-8 flex justify-end gap-4">
+          <button type="button" data-autofocus={deleting ? "" : undefined} className={cancelClass} disabled={pending} onClick={onClose}>Cancel</button>
+          <button type="submit" className={submitClass} disabled={pending || (!deleting && (!options || invalid))}>
+            {pending ? (deleting ? "Deleting…" : "Saving…") : state.type === "create" ? "Create" : state.type === "update" ? "Update" : "Confirm"}
+          </button>
+        </div>
+      </form>
+    </DialogShell>
+  );
 }

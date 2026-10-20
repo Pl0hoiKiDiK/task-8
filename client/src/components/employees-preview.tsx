@@ -73,9 +73,13 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
       const items: Employee[] = [];
       try {
         for (let nextPage = 2; nextPage <= data!.users.total_pages; nextPage += 1) {
-          const result = await client.query({ query: EMPLOYEES_QUERY, variables: { params: {
-            search: querySearch, sort_by: "created_at", sort_order: "DESC", page: nextPage, limit: 100,
-          } }, fetchPolicy: "network-only" });
+          const result = await client.query({
+            query: EMPLOYEES_QUERY, variables: {
+              params: {
+                search: querySearch, sort_by: "created_at", sort_order: "DESC", page: nextPage, limit: 100,
+              }
+            }, fetchPolicy: "network-only"
+          });
           if (!result.data) throw new Error("Could not load employees");
           items.push(...result.data.users.items);
         }
