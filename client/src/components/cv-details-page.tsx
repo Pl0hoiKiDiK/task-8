@@ -88,21 +88,21 @@ function CvDetailsForm({ cv }: { cv: CvRecord }) {
       onBlur: () => setTouched((current) => ({ ...current, [key]: true })),
     };
     return (
-      <div className="cv-details-field" key={key}>
+      <div className="relative [&>label]:absolute [&>label]:-top-[17px] [&>label]:left-[15px] [&>label]:text-xs [&>label]:leading-4 [&>label]:text-[var(--muted)] [&>input]:block [&>input]:h-12 [&>input]:w-full [&>input]:rounded-none [&>input]:border [&>input]:border-[#aeaeae] [&>input]:bg-transparent [&>input]:px-[11px] [&>input]:text-base [&>input]:leading-6 [&>input]:tracking-[.15px] [&>input]:text-[var(--text)] [&>textarea]:block [&>textarea]:h-[185px] [&>textarea]:w-full [&>textarea]:resize-y [&>textarea]:rounded-none [&>textarea]:border [&>textarea]:border-[#aeaeae] [&>textarea]:bg-transparent [&>textarea]:px-[11px] [&>textarea]:pt-[19px] [&>textarea]:text-base [&>textarea]:leading-6 [&>textarea]:tracking-[.15px] [&>textarea]:text-[var(--text)] [&>[aria-invalid=true]]:border-[var(--red)]" key={key}>
         <label htmlFor={id}>{label}</label>
         {key === "description" ? <textarea {...shared} /> : <input {...shared} type="text" maxLength={255} />}
-        {error && <span className="cv-details-field-error" id={`${id}-error`}>{error}</span>}
+        {error && <span className="mt-1 block text-xs leading-4 text-[var(--red)]" id={`${id}-error`}>{error}</span>}
       </div>
     );
   }
 
   return (
-    <form className="cv-details-form" onSubmit={save} noValidate>
+    <form className="mx-auto mt-5 flex w-[min(852px,100%)] flex-col gap-9" onSubmit={save} noValidate>
       {field("name", "Name")}
       {field("education", "Education")}
       {field("description", "Description")}
-      {saveError && <p className="cv-details-save-error" role="alert">{saveError}</p>}
-      <button className="cv-details-update" type="submit" disabled={!dirty || !valid || saving}>{saving ? "Updating..." : "Update"}</button>
+      {saveError && <p className="-mt-4 mb-0 text-sm text-[var(--red)]" role="alert">{saveError}</p>}
+      <button className="h-12 w-40 self-end rounded-3xl border-0 bg-[var(--red)] text-sm font-medium leading-[24.5px] tracking-[.4px] text-[#f5f5f7] uppercase disabled:cursor-default disabled:bg-[var(--disabled-surface)] disabled:text-[var(--disabled-text)]" type="submit" disabled={!dirty || !valid || saving}>{saving ? "Updating..." : "Update"}</button>
     </form>
   );
 }
@@ -115,7 +115,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
 
   if (!cv) {
     return (
-      <div className="cv-details-unavailable" role="alert">
+      <div className="mx-auto mt-10 w-[min(852px,100%)] text-base leading-6 text-[var(--text)] [&_a]:mr-5 [&_a]:text-[var(--red)] [&_button]:mr-5 [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-[var(--red)]" role="alert">
         <p>Failed to load CV details</p>
         <button type="button" onClick={() => router.refresh()}>Retry</button>
         <Link href={role === "admin" ? "/admin/cvs" : "/cvs"}>Back to CVs</Link>
@@ -124,7 +124,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
   }
 
   return (
-    <section className="cv-details-page" aria-label="CV details">
+    <section aria-label="CV details">
       <nav className="flex h-[52px] max-w-full overflow-x-auto print:hidden" aria-label="CV sections">
         {sections.map((item) => (
           <Link
@@ -136,7 +136,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
         ))}
       </nav>
       {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> : section === "skills" ? <CvSkillsPage key={cv.id} cv={cv} /> : section === "projects" ? <CvProjectsPage key={cv.id} cv={cv} /> : section === "preview" ? <CvPreviewPage key={cv.id} cv={cv} /> :
-        <p className="cv-details-section-placeholder">{sections.find((item) => item.value === section)?.label} content will be added here.</p>}
+        <p className="mx-auto mt-10 w-[min(852px,100%)] text-base leading-6 text-[var(--text)]">{sections.find((item) => item.value === section)?.label} content will be added here.</p>}
     </section>
   );
 }

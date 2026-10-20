@@ -57,7 +57,7 @@ describe("personal languages", () => {
     fireEvent.click(screen.getByRole("button", { name: "English, B2, not selected" }));
     fireEvent.click(screen.getByRole("button", { name: "Remove 2" }));
     const dialog = screen.getByRole("dialog", { name: "Remove language" });
-    expect(dialog.querySelector(".profile-cv-dialog-message")).toHaveTextContent("Are you sure you want to remove 2 languages?");
+    expect(within(dialog).getByText(/Are you sure you want to remove/)).toHaveTextContent("Are you sure you want to remove 2 languages?");
     fireEvent.click(within(dialog).getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(screen.getByText("No languages here")).toBeVisible());
   });

@@ -108,9 +108,24 @@ const viewBoxes: Partial<Record<IconName, string>> = {
   "arrow-nav": "0 0 20 20",
 };
 
+const iconColors: Partial<Record<IconName, string>> = {
+  eye: "text-[var(--muted)]",
+  chevron: "text-[var(--muted)]",
+  search: "text-[var(--muted)]",
+  sort: "text-[var(--muted)]",
+  more: "text-[var(--more-icon)]",
+  "add-profile-item": "text-[var(--muted)]",
+  plus: "text-[var(--red)]",
+  "person-red": "text-[var(--red)]",
+  delete: "text-[var(--red)]",
+  "arrow-nav": "text-[#aeaeae]",
+  "cross-green": "text-[#335d35]",
+};
+
 export function AppIcon({ name, className = "" }: { name: IconName; className?: string }) {
   const size = name === "sort" ? 18 : name === "arrow-nav" ? 20 : name === "download" ? 35 : 24;
-  const classes = `app-icon app-icon--${name} ${className}`.trim();
+  const iconSize = size === 18 ? "size-[18px]" : size === 20 ? "size-5" : size === 35 ? "size-[35px]" : "size-6";
+  const classes = `inline-block shrink-0 align-middle ${iconSize} ${iconColors[name] ?? ""} ${className}`.trim();
 
   return (
     <svg
