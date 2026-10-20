@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { useAppSelector } from "@/lib/hooks";
 import { MyProfilePreview } from "@/components/my-profile-preview";
-import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, type ProfileUser } from "@/lib/profile/api";
+import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, PROFILE_DEPARTMENTS_QUERY, PROFILE_POSITIONS_QUERY, type ProfileUser } from "@/lib/profile/api";
 
 vi.mock("@apollo/client/react", () => ({ useApolloClient: vi.fn(), useMutation: vi.fn(), useQuery: vi.fn() }));
 vi.mock("@/lib/hooks", () => ({ useAppSelector: vi.fn() }));
@@ -22,7 +22,9 @@ beforeEach(() => {
   vi.mocked(useAppSelector).mockImplementation((selector) => selector({ auth: { user: { id: "2", email: profile.email, role: "Employee", is_verified: false } } } as never));
   vi.mocked(useQuery).mockReturnValue({ data: { user: profile }, loading: false, error: undefined, refetch: vi.fn().mockResolvedValue({ data: { user: profile } }) } as never);
   vi.mocked(useApolloClient).mockReturnValue({ query: clientQuery } as never);
-  clientQuery.mockResolvedValue({ data: { departments: { items: [{ id: "d1", name: "React" }, { id: "d2", name: "DevOps" }], total_pages: 1 }, positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } });
+  clientQuery.mockImplementation(({ query }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+    ? { departments: { items: [{ id: "d1", name: "React" }, { id: "d2", name: "DevOps" }], total_pages: 1 } }
+    : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
   updateProfile.mockResolvedValue({ data: { updateProfile: { id: "2" } } });
   updateUser.mockResolvedValue({ data: { updateUser: { id: "2" } } });
   vi.mocked(useMutation).mockImplementation(((document: unknown) => [document === UPDATE_PROFILE_MUTATION ? updateProfile : document === UPDATE_PROFILE_USER_MUTATION ? updateUser : vi.fn(), {}]) as never);
@@ -65,17 +67,31 @@ describe("My Profile", () => {
   });
 
   it("accepts zero catalog pages without requesting another page", async () => {
-    clientQuery.mockResolvedValueOnce({ data: { departments: { items: [], total_pages: 0 }, positions: { items: [], total_pages: 0 } } });
+    clientQuery.mockImplementation(({ query }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+      ? { departments: { items: [], total_pages: 0 } } : { positions: { items: [], total_pages: 0 } } }));
     render(<MyProfilePreview />);
     await waitFor(() => expect(screen.getByText(/No departments or positions are available yet/)).toBeVisible());
-    expect(clientQuery).toHaveBeenCalledTimes(1);
+    expect(clientQuery).toHaveBeenCalledTimes(2);
   });
 
   it("rejects invalid catalog page counts instead of continuing requests", async () => {
-    clientQuery.mockResolvedValueOnce({ data: { departments: { items: [], total_pages: Number.POSITIVE_INFINITY }, positions: { items: [], total_pages: 1 } } });
+    clientQuery.mockImplementation(({ query }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+      ? { departments: { items: [], total_pages: Number.POSITIVE_INFINITY } } : { positions: { items: [], total_pages: 1 } } }));
     render(<MyProfilePreview />);
     await waitFor(() => expect(screen.getByText(/Could not load departments and positions/)).toBeVisible());
-    expect(clientQuery).toHaveBeenCalledTimes(1);
+    expect(clientQuery).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads all department pages without requesting extra position pages", async () => {
+    clientQuery.mockImplementation(({ query, variables }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+      ? { departments: { items: variables.page === 1 ? [{ id: "d1", name: "React" }] : [{ id: "d2", name: "DevOps" }], total_pages: 2 } }
+      : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    expect(screen.getByRole("option", { name: "DevOps" })).toBeInTheDocument();
+    expect(clientQuery.mock.calls.map(([request]) => [request.query, request.variables.page])).toEqual([
+      [PROFILE_DEPARTMENTS_QUERY, 1], [PROFILE_POSITIONS_QUERY, 1], [PROFILE_DEPARTMENTS_QUERY, 2],
+    ]);
   });
 
   it("rolls back the name when updating department fails", async () => {
