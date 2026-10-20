@@ -42,8 +42,8 @@ vi.stubGlobal("window", {});
 
 afterEach(async () => { retryFailedRequests(); await stop(); server = undefined; });
 
-describe("недоступный сервер", () => {
-    it("MUTATION: экран показывается, запрос ждёт, после Retry уходит заново и завершается", async () => {
+describe("unreachable server", () => {
+    it("MUTATION: screen shows, request waits, after Retry request sends again and terminate", async () => {
         const port = await deadPort();
         const request = makeClient(port).mutate({ mutation: LOGIN });
         let settled = false;
@@ -60,7 +60,7 @@ describe("недоступный сервер", () => {
         expect(isRequestFailed()).toBe(false);
     });
 
-    it("QUERY: то же самое", async () => {
+    it("QUERY", async () => {
         const port = await deadPort();
         const request = makeClient(port).query({ query: ME, fetchPolicy: "network-only" });
         await vi.waitFor(() => expect(isRequestFailed()).toBe(true));
@@ -70,7 +70,7 @@ describe("недоступный сервер", () => {
         expect((await request).data).toEqual({ me: { __typename: "User", id: "1" } });
     });
 
-    it("сервер всё ещё лежит → после Retry экран возвращается, запрос по-прежнему ждёт", async () => {
+    it("server still unreachable - after Retry screen returns, request waits", async () => {
         const port = await deadPort();
         const request = makeClient(port).mutate({ mutation: LOGIN });
         await vi.waitFor(() => expect(isRequestFailed()).toBe(true));
@@ -84,7 +84,7 @@ describe("недоступный сервер", () => {
         await expect(request).resolves.toBeDefined();
     });
 
-    it("два одновременных запроса повторяются одним нажатием Retry", async () => {
+    it("Two simultaneous requests can be retried with a single press of the Retry button.", async () => {
         const port = await deadPort();
         const client = makeClient(port);
         const a = client.mutate({ mutation: LOGIN });
@@ -98,15 +98,15 @@ describe("недоступный сервер", () => {
     });
 });
 
-describe("работающий сервер", () => {
-    it("GraphQL-ошибка (неверный пароль) НЕ вызывает экран и отдаётся форме", async () => {
+describe("working server", () => {
+    it("A GraphQL error (incorrect password) does NOT trigger a screen; instead, it is passed to the form.", async () => {
         const port = await listen(0, json({ data: null, errors: [{ message: "invalidCredentials" }] }));
         await expect(makeClient(port).mutate({ mutation: LOGIN })).rejects.toSatisfy(
             (e) => CombinedGraphQLErrors.is(e) && e.errors[0].message === "invalidCredentials");
         expect(isRequestFailed()).toBe(false);
     });
 
-    it("HTTP 500 без GraphQL-тела тоже считается сбоем и ждёт Retry", async () => {
+    it("An HTTP 500 response, even without a GraphQL body, is also considered a failure and triggers a retry.", async () => {
         const port = await listen(0, (res) => { res.writeHead(500); res.end("boom"); });
         const request = makeClient(port).mutate({ mutation: LOGIN });
         await vi.waitFor(() => expect(isRequestFailed()).toBe(true));
@@ -118,8 +118,8 @@ describe("работающий сервер", () => {
     });
 });
 
-describe("повтор мутаций после сетевого сбоя", () => {
-    it("небезопасная мутация (CreateUser) показывает экран, но не повторяется автоматически", async () => {
+describe("re-application of mutations following a network failure", () => {
+    it("Unsafe mutation (CreateUser) shows the error screen but is not retried automatically", async () => {
         const port = await deadPort();
         await expect(makeClient(port).mutate({ mutation: CREATE })).rejects.toSatisfy(isNetworkFailure);
         expect(isRequestFailed()).toBe(true);
@@ -127,7 +127,7 @@ describe("повтор мутаций после сетевого сбоя", () 
         expect(isRequestFailed()).toBe(false);
     });
 
-    it("ответ потерян, но сервер действие выполнил: Retry не создаёт дубль", async () => {
+    it("The response was lost, but the server performed the action: a retry does not create a duplicate.", async () => {
         let hits = 0;
         const port = await listen(0, (res) => { hits += 1; res.socket?.destroy(); })
         const request = makeClient(port).mutate({ mutation: CREATE });
@@ -148,7 +148,7 @@ describe("повтор мутаций после сетевого сбоя", () 
         expect(hits).toBe(1);
     });
 
-    it("запрос (query) с потерянным ответом повторяется: чтение ничего не меняет", async () => {
+    it("a query with a lost response is retried: reading changes nothing", async () => {
         let hits = 0;
         const port = await listen(0, (res) => { hits += 1; res.socket?.destroy(); });
         const request = makeClient(port).query({ query: ME, fetchPolicy: "network-only" });
@@ -162,7 +162,7 @@ describe("повтор мутаций после сетевого сбоя", () 
 });
 
 describe("isNetworkFailure", () => {
-    it("классификация", () => {
+    it("classification", () => {
         expect(isNetworkFailure(new TypeError("Failed to fetch"))).toBe(true);
         expect(isNetworkFailure(new CombinedGraphQLErrors({ data: null, errors: [{ message: "x" }] }))).toBe(false);
     });
