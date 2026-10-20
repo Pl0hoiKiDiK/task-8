@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { isRequestFailed, retryFailedRequests, waitForRetry } from "@/lib/system/network-status";
 import { NoInternetGate } from "./no-internet-gate";
 import { UnsupportedDevice } from "./unsupported-device";
@@ -18,6 +18,7 @@ describe("NoInternetGate", () => {
         setOnline(false);
         render(<NoInternetGate><input aria-label="email" defaultValue="keep" /></NoInternetGate>);
         expect(screen.getByText("Oops")).toBeTruthy();
+        expect(screen.queryByText(/go back/i)).toBeNull();
         const input = screen.getByLabelText("email", { selector: "input" }) as HTMLInputElement;
         expect(input.value).toBe("keep");
         expect(input.closest("[hidden]")).not.toBeNull();
