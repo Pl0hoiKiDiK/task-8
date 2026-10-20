@@ -1,7 +1,7 @@
 import type { ProficiencyTone } from "@/components/profile-proficiency-item";
 
 export type SkillMastery = "Novice" | "Advanced" | "Competent" | "Proficient" | "Expert";
-export type CvSkill = { name: string; category: string; mastery: SkillMastery };
+export type CvSkill = { name: string; category: string; categoryId?: string | null; mastery: SkillMastery };
 export type OwnerSkill = CvSkill;
 
 export const masteryOptions: SkillMastery[] = ["Novice", "Advanced", "Competent", "Proficient", "Expert"];

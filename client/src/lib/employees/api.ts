@@ -1,0 +1,106 @@
+import { gql, type TypedDocumentNode } from "@apollo/client";
+
+export type Employee = {
+  id: string;
+  created_at: string;
+  email: string;
+  role: "Admin" | "Employee";
+  is_verified: boolean;
+  profile: { first_name: string | null; last_name: string | null; avatar: string | null };
+  department: { id: string; name: string } | null;
+  position: { id: string; name: string } | null;
+};
+
+export type EmployeeListParams = {
+  search?: string;
+  sort_by?: "first_name" | "last_name" | "department" | "position" | "created_at";
+  sort_order?: "ASC" | "DESC";
+  page: number;
+  limit: number;
+};
+
+export const EMPLOYEES_QUERY: TypedDocumentNode<
+  { users: { items: Employee[]; total: number; page: number; total_pages: number } },
+  { params: EmployeeListParams }
+> = gql`
+  query Employees($params: SearchPaginationInput) {
+    users(params: $params) {
+      items {
+        id created_at email role is_verified
+        profile { first_name last_name avatar }
+        department { id name }
+        position { id name }
+      }
+      total
+      page
+      total_pages
+    }
+  }
+`;
+
+export const EMPLOYEE_QUERY: TypedDocumentNode<{ user: Employee }, { userId: string }> = gql`
+  query Employee($userId: ID!) {
+    user(userId: $userId) {
+      id created_at email role is_verified
+      profile { first_name last_name avatar }
+      department { id name }
+      position { id name }
+    }
+  }
+`;
+
+type Catalog = { items: { id: string; name: string }[]; total_pages: number };
+export const EMPLOYEE_OPTIONS_QUERY: TypedDocumentNode<
+  { departments: Catalog; positions: Catalog },
+  { params: { page: number; limit: number } }
+> = gql`
+  query EmployeeOptions($params: SearchPaginationInput) {
+    departments(params: $params) { items { id name } total_pages }
+    positions(params: $params) { items { id name } total_pages }
+  }
+`;
+
+export type EmployeeFormValues = {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  departmentId: string;
+  positionId: string;
+  role: "Admin" | "Employee";
+};
+
+export const CREATE_EMPLOYEE_MUTATION: TypedDocumentNode<
+  { createUser: { id: string } },
+  { user: { auth: { email: string; password: string }; profile: { first_name: string; last_name: string }; departmentId: string; positionId: string; role: EmployeeFormValues["role"] } }
+> = gql`
+  mutation CreateEmployee($user: CreateUserInput!) {
+    createUser(user: $user) { id }
+  }
+`;
+
+export const UPDATE_EMPLOYEE_MUTATION: TypedDocumentNode<
+  { updateUser: { id: string } },
+  { user: { userId: string; departmentId: string; positionId: string; role: EmployeeFormValues["role"] } }
+> = gql`
+  mutation UpdateEmployee($user: UpdateUserInput!) {
+    updateUser(user: $user) { id }
+  }
+`;
+
+export const UPDATE_EMPLOYEE_PROFILE_MUTATION: TypedDocumentNode<
+  { updateProfile: { id: string } },
+  { profile: { userId: string; first_name: string; last_name: string } }
+> = gql`
+  mutation UpdateEmployeeProfile($profile: UpdateProfileInput!) {
+    updateProfile(profile: $profile) { id }
+  }
+`;
+
+export const DELETE_EMPLOYEE_MUTATION: TypedDocumentNode<
+  { deleteUser: { affected: number } }, { userId: string }
+> = gql`
+  mutation DeleteEmployee($userId: ID!) {
+    deleteUser(userId: $userId) { affected }
+  }
+`;

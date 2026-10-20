@@ -7,14 +7,14 @@ import { AppIcon } from "@/components/app-icon";
 type ProfileSection = "Profile" | "Skills" | "Languages" | "CVs";
 type ProfileRole = "user" | "admin";
 
-export function ProfileBreadcrumbs({ role, section }: { role: ProfileRole; section: ProfileSection }) {
+export function ProfileBreadcrumbs({ role, section, displayName }: { role: ProfileRole; section: ProfileSection; displayName: string }) {
   return (
     <nav className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap max-[600px]:gap-1 max-[600px]:text-[13px]" aria-label="Breadcrumb">
       <Link className="shrink-0 text-[var(--muted)] no-underline hover:underline" href={role === "admin" ? "/admin/employees" : "/employees"}>Employees</Link>
       <AppIcon name="arrow-nav" className="!size-5" />
       <span className="inline-flex min-w-0 items-center gap-1 text-[var(--red)]">
         <span className="max-[600px]:hidden"><AppIcon name="person-red" /></span>
-        <span className="truncate">Rostislav Harlanov</span>
+        <span className="truncate">{displayName}</span>
       </span>
       <AppIcon name="arrow-nav" className="!size-5" />
       <span className="shrink-0" aria-current="page">{section}</span>

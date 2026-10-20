@@ -1,19 +1,36 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
+import { useApolloClient } from "@apollo/client/react";
 import { AdminCatalogPage } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
 import {
   departmentNameExists,
   filterAndSortDepartments,
-  initialAdminDepartments,
   type AdminDepartment,
 } from "@/components/admin-departments-data";
+import { CREATE_DEPARTMENT, DELETE_DEPARTMENT, DEPARTMENTS_QUERY, loadAllCatalogItems, UPDATE_DEPARTMENT } from "@/lib/catalog-api";
 
 export function AdminDepartmentsPage() {
+  const client = useApolloClient();
+  const loadItems = useCallback(() => loadAllCatalogItems(client, DEPARTMENTS_QUERY, "departments"), [client]);
   return <AdminCatalogPage<AdminDepartment>
     singular="Department" plural="Departments" className="admin-departments"
-    initialItems={initialAdminDepartments}
+    initialItems={[]} loadItems={loadItems}
+    createItem={async ({ name }) => {
+      const { data } = await client.mutate<{ createDepartment: AdminDepartment }>({ mutation: CREATE_DEPARTMENT, variables: { department: { name } } });
+      if (!data?.createDepartment) throw new Error("Department was not created");
+      return data.createDepartment;
+    }}
+    updateItem={async ({ id, name }) => {
+      const { data } = await client.mutate<{ updateDepartment: AdminDepartment }>({ mutation: UPDATE_DEPARTMENT, variables: { department: { departmentId: id, name } } });
+      if (!data?.updateDepartment) throw new Error("Department was not updated");
+      return data.updateDepartment;
+    }}
+    deleteItem={async (id) => {
+      const { data } = await client.mutate<{ deleteDepartment: { affected: number } }>({ mutation: DELETE_DEPARTMENT, variables: { department: { departmentId: id } } });
+      if (!data?.deleteDepartment.affected) throw new Error("Department was not deleted");
+    }}
     columns={[{ key: "name", label: "Name", sortable: true, render: (item) => item.name }]}
     filterAndSort={(items, search, sort) => filterAndSortDepartments(items, search, sort?.direction ?? null)}
     renderDialog={({ dialog, actions }) => {
@@ -23,10 +40,7 @@ export function AdminDepartmentsPage() {
         departments={actions.items} onClose={actions.close}
         onSave={(name) => actions.update({ ...dialog.item, name })} />;
       if (dialog?.type === "delete") return <AdminDepartmentDeleteDialog key={dialog.item.id} department={dialog.item}
-        onClose={actions.close} onDelete={() => {
-          if (dialog.item.inUse) throw new Error("departmentInUse");
-          actions.remove(dialog.item.id);
-        }} />;
+        onClose={actions.close} onDelete={() => actions.remove(dialog.item.id)} />;
       return null;
     }}
   />;

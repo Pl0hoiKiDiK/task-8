@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type Re
 import { createPortal } from "react-dom";
 import { AppIcon } from "@/components/app-icon";
 import {
-  filterAndSortCvProjects, formatProjectDate, projectCatalog, projectRoleOptions, validateCvProject,
+  filterAndSortCvProjects, formatProjectDate, projectRoleOptions, validateCvProject,
   type CatalogProject, type CvProjectEntry, type CvProjectFields, type ProjectSortKey, type SortDirection,
 } from "@/components/cv-projects-data";
 import { useCvPreviewData, type CvRecord } from "@/components/profile-cvs-data";
@@ -51,11 +51,12 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? <span id={id} className="mt-1 block text-xs text-[var(--red)]" role="alert">{message}</span> : null;
 }
 
-function ProjectFormDialog({ kind, cvId, entry, assigned, onClose, onSave }: {
+function ProjectFormDialog({ kind, cvId, entry, assigned, projectCatalog, onClose, onSave }: {
   kind: "add" | "update";
   cvId: string;
   entry?: CvProjectEntry;
   assigned: CvProjectEntry[];
+  projectCatalog: CatalogProject[];
   onClose: () => void;
   onSave: (cvId: string, fields: CvProjectFields) => void | Promise<void>;
 }) {
@@ -209,7 +210,7 @@ function RemoveProjectDialog({ project, onClose, onConfirm }: {
 }
 
 export function CvProjectsPage({ cv }: { cv: CvRecord }) {
-  const { cvProjects, addCvProject, updateCvProject, removeCvProject } = useCvPreviewData();
+  const { cvProjects, projectCatalog, addCvProject, updateCvProject, removeCvProject } = useCvPreviewData();
   const entries = cvProjects[cv.id] ?? emptyProjects;
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<ProjectSortKey>("name");
@@ -219,7 +220,7 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
   const [dialog, setDialog] = useState<ActiveDialog>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const shown = useMemo(() => filterAndSortCvProjects(entries, projectCatalog, search, sortKey, direction), [entries, search, sortKey, direction]);
+  const shown = useMemo(() => filterAndSortCvProjects(entries, projectCatalog, search, sortKey, direction), [entries, projectCatalog, search, sortKey, direction]);
 
   useEffect(() => {
     if (!openMenu) return;
@@ -342,8 +343,8 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
       {entries.length === 0 && <p role="status" className="py-12 text-center text-[var(--muted)]">No projects added yet</p>}
       {entries.length > 0 && shown.length === 0 && <p role="status" className="py-12 text-center text-[var(--muted)]">No projects found</p>}
     </div>
-    {dialog?.kind === "add" && <ProjectFormDialog kind="add" cvId={cv.id} assigned={entries} onClose={() => setDialog(null)} onSave={addCvProject} />}
-    {dialog?.kind === "update" && <ProjectFormDialog kind="update" cvId={cv.id} entry={dialog.entry} assigned={entries} onClose={() => setDialog(null)} onSave={updateCvProject} />}
+    {dialog?.kind === "add" && <ProjectFormDialog kind="add" cvId={cv.id} assigned={entries} projectCatalog={projectCatalog} onClose={() => setDialog(null)} onSave={addCvProject} />}
+    {dialog?.kind === "update" && <ProjectFormDialog kind="update" cvId={cv.id} entry={dialog.entry} assigned={entries} projectCatalog={projectCatalog} onClose={() => setDialog(null)} onSave={updateCvProject} />}
     {dialog?.kind === "remove" && <RemoveProjectDialog project={projectCatalog.find((item) => item.id === dialog.entry.projectId)!} onClose={() => setDialog(null)} onConfirm={() => removeCvProject(cv.id, dialog.entry.projectId)} />}
   </section>;
 }

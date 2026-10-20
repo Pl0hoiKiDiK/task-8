@@ -24,6 +24,9 @@ vi.mock("next/link", () => ({
 vi.mock("@apollo/client/react", () => ({
   useApolloClient: () => ({ clearStore }),
 }));
+vi.mock("@/components/profile-cvs-data", () => ({
+  useCvPreviewData: () => ({ profile: { full_name: "Ada Lovelace" } }),
+}));
 
 function renderShell() {
   return render(<Provider store={makeStore()}><AppShell><div>Page content</div></AppShell></Provider>);
@@ -40,7 +43,7 @@ afterEach(cleanup);
 describe("application navigation", () => {
   it("opens the account menu and closes it outside, on Escape, or after selection", () => {
     renderShell();
-    const account = screen.getByRole("button", { name: /Rostislav Harlanov/ });
+    const account = screen.getByRole("button", { name: /Ada Lovelace/ });
     expect(screen.queryByRole("navigation", { name: "Account" })).not.toBeInTheDocument();
 
     fireEvent.click(account);
@@ -67,7 +70,7 @@ describe("application navigation", () => {
     renderShell();
     expect(screen.getByRole("link", { name: "Departments" })).toHaveAttribute("href", "/admin/departments");
 
-    fireEvent.click(screen.getByRole("button", { name: /Rostislav Harlanov/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ada Lovelace/ }));
     const menu = screen.getByRole("navigation", { name: "Account" });
     expect(within(menu).getByRole("link", { name: "Profile" })).toHaveAttribute("href", "/admin/profile");
     fireEvent.click(within(menu).getByRole("button", { name: "Log out" }));

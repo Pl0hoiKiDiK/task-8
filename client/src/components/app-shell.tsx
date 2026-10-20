@@ -7,8 +7,9 @@ import { useApolloClient } from "@apollo/client/react";
 import { AppIcon, type IconName } from "@/components/app-icon";
 import { ProfileBreadcrumbs } from "@/components/profile-navigation";
 import { CvDetailsBreadcrumbs, type CvSection } from "@/components/cv-details-page";
+import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { refreshTokenStorage, sessionCleared } from "@/lib/auth/model/auth-slice";
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 
 type NavItem = { label: string; href: string; icon: IconName };
 
@@ -62,6 +63,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const client = useApolloClient();
   const dispatch = useAppDispatch();
+  const authUser = useAppSelector((state) => state.auth.user);
+  const { profile } = useCvPreviewData();
+  const profileName = profile?.full_name?.trim() || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim();
+  const accountName = profileName || authUser?.email || "Account";
+  const accountInitial = accountName.charAt(0).toLocaleUpperCase();
   const accountRef = useRef<HTMLDivElement>(null);
   const accountButtonRef = useRef<HTMLButtonElement>(null);
   const role = pathname.startsWith("/admin/") ? "admin" : "user";
@@ -72,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const cvSection = (cvPath?.[2] ?? "details") as CvSection;
   const profileSection = pathname.endsWith("/skills") ? "Skills" : pathname.endsWith("/languages") ? "Languages" : pathname.endsWith("/cvs") || pathname.includes("/cvs/") ? "CVs" : "Profile";
   const title = isProfile
-    ? <ProfileBreadcrumbs role={role} section={profileSection} />
+    ? <ProfileBreadcrumbs role={role} section={profileSection} displayName={accountName} />
     : cvId ? <CvDetailsBreadcrumbs cvId={cvId} role={role === "admin" ? "admin" : "employee"} section={cvSection} />
     : pageTitles[pathname.split("/").filter(Boolean).at(-1) ?? ""] ?? "";
   const activeSection = isProfile ? `${prefix}/employees` : cvId ? `${prefix}/cvs` : pathname;
@@ -183,8 +189,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           )}
           <button className="flex w-full items-center gap-2 border-0 bg-transparent p-2 text-left text-base leading-6 tracking-[.15px] whitespace-nowrap text-[var(--text)]" ref={accountButtonRef} type="button" aria-expanded={profileOpen} aria-controls={profileOpen ? "account-menu" : undefined} onClick={() => setProfileOpen((open) => !open)}>
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--red)] text-xl text-[#f5f5f7]">R</span>
-            <span className={labelClass}>Rostislav Harlanov</span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--red)] text-xl text-[#f5f5f7]">{accountInitial}</span>
+            <span className={labelClass}>{accountName}</span>
           </button>
         </div>
       </aside>

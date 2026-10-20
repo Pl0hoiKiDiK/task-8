@@ -1,62 +1,79 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { useApolloClient } from "@apollo/client/react";
+import { LANGUAGES_QUERY, loadAllCatalogItems } from "@/lib/catalog-api";
+import { ADD_PROFILE_LANGUAGE, DELETE_PROFILE_LANGUAGE, UPDATE_PROFILE_LANGUAGE } from "@/lib/cv-api";
+import { useCvPreviewData } from "@/components/profile-cvs-data";
 import type { ProficiencyTone } from "@/components/profile-proficiency-item";
 
-export const languageOptions = ["English", "Russian", "German", "French", "Spanish", "Italian", "Polish", "Portuguese", "Ukrainian", "Chinese", "Japanese"] as const;
 export const proficiencyOptions = ["A1", "A2", "B1", "B2", "C1", "C2", "Native"] as const;
-
 export type LanguageProficiency = (typeof proficiencyOptions)[number];
 export type ProfileLanguage = { name: string; proficiency: LanguageProficiency };
 
-export const previewLanguages: ProfileLanguage[] = [
-  { name: "Russian", proficiency: "Native" },
-  { name: "English", proficiency: "B2" },
-];
-
 export const proficiencyDisplay: Record<LanguageProficiency, { tone: ProficiencyTone; level: number }> = {
-  A1: { tone: "gray", level: 20 },
-  A2: { tone: "blue", level: 35 },
-  B1: { tone: "green", level: 50 },
-  B2: { tone: "green", level: 60 },
-  C1: { tone: "yellow", level: 80 },
-  C2: { tone: "red", level: 95 },
+  A1: { tone: "gray", level: 20 }, A2: { tone: "blue", level: 35 },
+  B1: { tone: "green", level: 50 }, B2: { tone: "green", level: 60 },
+  C1: { tone: "yellow", level: 80 }, C2: { tone: "red", level: 95 },
   Native: { tone: "red", level: 100 },
 };
 
-type LanguagePreviewContextValue = {
+type LanguageData = {
   languages: ProfileLanguage[];
-  addLanguage: (language: ProfileLanguage) => void;
-  updateLanguage: (language: ProfileLanguage) => void;
-  removeLanguages: (names: string[]) => void;
+  languageOptions: string[];
+  optionsState: "loading" | "ready" | "error";
+  reloadOptions: () => Promise<void>;
+  addLanguage: (language: ProfileLanguage) => Promise<void>;
+  updateLanguage: (language: ProfileLanguage) => Promise<void>;
+  removeLanguages: (names: string[]) => Promise<void>;
 };
-
-const LanguagePreviewContext = createContext<LanguagePreviewContextValue | null>(null);
+const LanguageContext = createContext<LanguageData | null>(null);
 
 export function LanguagePreviewProvider({ children }: { children: ReactNode }) {
-  const [languages, setLanguages] = useState<ProfileLanguage[]>(previewLanguages);
+  const client = useApolloClient();
+  const { currentUserId, profile, reload } = useCvPreviewData();
+  const [languageOptions, setLanguageOptions] = useState<string[]>([]);
+  const [optionsState, setOptionsState] = useState<LanguageData["optionsState"]>("loading");
+  const languages = profile?.languages ?? [];
 
-  const addLanguage = (language: ProfileLanguage) => {
-    if (!languageOptions.some((name) => name === language.name)) throw new Error("Language is unavailable");
+  const reloadOptions = useCallback(async () => {
+    setOptionsState("loading");
+    try {
+      const items = await loadAllCatalogItems(client, LANGUAGES_QUERY, "languages");
+      setLanguageOptions(items.map((item) => item.name));
+      setOptionsState("ready");
+    } catch (error) {
+      setOptionsState("error");
+      throw error;
+    }
+  }, [client]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const timer = window.setTimeout(() => { void reloadOptions().catch(() => undefined); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [currentUserId, reloadOptions]);
+
+  async function addLanguage(language: ProfileLanguage) {
+    if (!languageOptions.includes(language.name)) throw new Error("Language is unavailable");
     if (languages.some((item) => item.name === language.name)) throw new Error("Language already exists");
-    setLanguages((current) => [...current, language]);
-  };
+    await client.mutate({ mutation: ADD_PROFILE_LANGUAGE, variables: { language: { userId: currentUserId, ...language } } });
+    await reload();
+  }
+  async function updateLanguage(language: ProfileLanguage) {
+    await client.mutate({ mutation: UPDATE_PROFILE_LANGUAGE, variables: { language: { userId: currentUserId, ...language } } });
+    await reload();
+  }
+  async function removeLanguages(names: string[]) {
+    await client.mutate({ mutation: DELETE_PROFILE_LANGUAGE, variables: { language: { userId: currentUserId, name: names } } });
+    await reload();
+  }
 
-  const updateLanguage = (language: ProfileLanguage) => {
-    if (!languages.some((item) => item.name === language.name)) throw new Error("Language was not found");
-    setLanguages((current) => current.map((item) => item.name === language.name ? language : item));
-  };
-
-  const removeLanguages = (names: string[]) => {
-    const selected = new Set(names);
-    setLanguages((current) => current.filter((item) => !selected.has(item.name)));
-  };
-
-  return <LanguagePreviewContext.Provider value={{ languages, addLanguage, updateLanguage, removeLanguages }}>{children}</LanguagePreviewContext.Provider>;
+  return <LanguageContext.Provider value={{ languages, languageOptions, optionsState, reloadOptions, addLanguage, updateLanguage, removeLanguages }}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguagePreviewData() {
-  const context = useContext(LanguagePreviewContext);
-  if (!context) throw new Error("Language preview data provider is missing");
+  const context = useContext(LanguageContext);
+  if (!context) throw new Error("Language data provider is missing");
   return context;
 }

@@ -2,11 +2,14 @@
 
 import { useState, type FormEvent } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { languageOptions, proficiencyDisplay, proficiencyOptions, useLanguagePreviewData, type LanguageProficiency, type ProfileLanguage } from "@/components/profile-languages-data";
+import { proficiencyDisplay, proficiencyOptions, useLanguagePreviewData, type LanguageProficiency, type ProfileLanguage } from "@/components/profile-languages-data";
+import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { SkillDialog } from "@/components/skill-dialogs";
+import { ProfileProficiencyItem } from "@/components/profile-proficiency-item";
 
-export function UserLanguagesPreview() {
-  const { languages, addLanguage, updateLanguage, removeLanguages } = useLanguagePreviewData();
+export function UserLanguagesPreview({ canEdit = true }: { canEdit?: boolean }) {
+  const { languages, languageOptions, optionsState, reloadOptions, addLanguage, updateLanguage, removeLanguages } = useLanguagePreviewData();
+  const { loadState, reload } = useCvPreviewData();
   const [dialog, setDialog] = useState<"add" | "edit" | "remove" | null>(null);
   const [editing, setEditing] = useState<ProfileLanguage | null>(null);
   const [selecting, setSelecting] = useState(false);
@@ -18,6 +21,8 @@ export function UserLanguagesPreview() {
     setSelected([]);
   }
 
+  if (loadState === "loading" || optionsState === "loading") return <p role="status">Loading languages…</p>;
+  if (loadState === "error" || optionsState === "error") return <div role="alert">Could not load languages. <button type="button" onClick={() => { void Promise.all([reload(), reloadOptions()]).catch(() => undefined); }}>Retry</button></div>;
   return <div className="user-languages-page">
     <section className="user-skills-content user-languages-content" aria-labelledby="current-languages-title">
       <div className="user-skills-group">
@@ -26,7 +31,7 @@ export function UserLanguagesPreview() {
           {shownLanguages.map((language) => {
             const { tone, level } = proficiencyDisplay[language.proficiency];
             const isSelected = selected.includes(language.name);
-            return <button type="button" key={language.name}
+            return canEdit ? <button type="button" key={language.name}
               className={`user-skill user-skill--button user-language${isSelected ? " user-skill--selected" : ""}`}
               aria-label={`${language.name}, ${language.proficiency}${selecting ? isSelected ? ", selected" : ", not selected" : ", edit language"}`}
               aria-pressed={selecting ? isSelected : undefined}
@@ -36,11 +41,11 @@ export function UserLanguagesPreview() {
               }}>
               <span className={`user-skill-bar user-skill-bar--${tone}`} aria-hidden="true"><span style={{ width: `${level}%` }} /></span>
               <span className="user-language-name">{language.name}</span>
-            </button>;
+            </button> : <ProfileProficiencyItem key={language.name} name={language.name} tone={tone} level={level} />;
           })}
         </div> : <p className="user-languages-empty">No languages here</p>}
       </div>
-      <div className="admin-profile-actions profile-skills-actions user-languages-actions">
+      {canEdit && <div className="admin-profile-actions profile-skills-actions user-languages-actions">
         {selecting ? <>
           <button type="button" className="profile-skills-cancel" onClick={cancelSelection}>Cancel</button>
           <button type="button" className="profile-skills-remove" disabled={!selected.length} onClick={() => setDialog("remove")}>Remove <span className="cv-skills-count">{selected.length}</span></button>
@@ -48,19 +53,20 @@ export function UserLanguagesPreview() {
           <button type="button" onClick={() => { setEditing(null); setDialog("add"); }}><AppIcon name="add-profile-item" />Add language</button>
           <button type="button" disabled={!shownLanguages.length} onClick={() => setSelecting(true)}><AppIcon name="delete" />Remove languages</button>
         </>}
-      </div>
+      </div>}
     </section>
-    {(dialog === "add" || dialog === "edit") && <LanguageFormDialog kind={dialog} language={editing} existing={shownLanguages}
+    {canEdit && (dialog === "add" || dialog === "edit") && <LanguageFormDialog kind={dialog} language={editing} existing={shownLanguages} options={languageOptions}
       onClose={() => setDialog(null)} onSave={dialog === "add" ? addLanguage : updateLanguage} />}
-    {dialog === "remove" && <LanguageRemoveDialog count={selected.length} onClose={() => setDialog(null)}
+    {canEdit && dialog === "remove" && <LanguageRemoveDialog count={selected.length} onClose={() => setDialog(null)}
       onConfirm={() => removeLanguages(selected)} onSuccess={cancelSelection} />}
   </div>;
 }
 
-function LanguageFormDialog({ kind, language, existing, onClose, onSave }: {
+function LanguageFormDialog({ kind, language, existing, options, onClose, onSave }: {
   kind: "add" | "edit";
   language: ProfileLanguage | null;
   existing: ProfileLanguage[];
+  options: string[];
   onClose: () => void;
   onSave: (language: ProfileLanguage) => void | Promise<void>;
 }) {
@@ -100,7 +106,7 @@ function LanguageFormDialog({ kind, language, existing, onClose, onSave }: {
           onChange={(event) => { setName(event.target.value); setNameTouched(true); setError(""); }}>
           {kind === "add" && <option value="">Language</option>}
           {language && <option value={language.name}>{language.name}</option>}
-          {languageOptions.filter((option) => option !== language?.name).map((option) => <option value={option} key={option}>{option}</option>)}
+          {options.filter((option) => option !== language?.name).map((option) => <option value={option} key={option}>{option}</option>)}
         </select>
         {(duplicate || (nameTouched && !name)) && <span id="language-dialog-name-error" className="cv-skill-field-error">{duplicate ? "Language already exists" : "Language is required"}</span>}
       </div>

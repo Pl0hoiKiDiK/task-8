@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { availableOwnerSkills, masteryDisplay, ownerSkillsFor, type CvSkill } from "@/components/cv-skills-data";
+import { availableOwnerSkills, masteryDisplay, type CvSkill } from "@/components/cv-skills-data";
 import { useCvPreviewData, type CvRecord } from "@/components/profile-cvs-data";
 import { SkillFormDialog, SkillRemoveDialog } from "@/components/skill-dialogs";
 
 type DialogKind = "add" | "update" | "remove";
 
 export function CvSkillsPage({ cv }: { cv: CvRecord }) {
-  const { cvSkills, addCvSkill, updateCvSkill, removeCvSkills } = useCvPreviewData();
+  const { cvSkills, ownerSkills, loadOwnerSkills, addCvSkill, updateCvSkill, removeCvSkills } = useCvPreviewData();
   const skills = cvSkills[cv.id] ?? [];
   const [dialog, setDialog] = useState<DialogKind | null>(null);
   const [editing, setEditing] = useState<CvSkill | undefined>();
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const categories = [...new Set(skills.map((skill) => skill.category))];
-  const available = availableOwnerSkills(ownerSkillsFor(cv.employee), skills);
+  const available = availableOwnerSkills(ownerSkills[cv.ownerId ?? ""] ?? [], skills);
+
+  useEffect(() => { if (cv.ownerId) void loadOwnerSkills(cv.ownerId).catch(() => undefined); }, [cv.ownerId, loadOwnerSkills]);
 
   function cancelSelection() {
     setSelecting(false);

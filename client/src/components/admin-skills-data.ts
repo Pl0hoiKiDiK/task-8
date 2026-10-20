@@ -1,4 +1,4 @@
-export type AdminSkill = { id: string; name: string; category: string };
+export type AdminSkill = { id: string; name: string; category: string; categoryId?: string; categoryType?: string };
 export type SkillCategory = { name: string; type: string };
 
 export const skillCategories: SkillCategory[] = [

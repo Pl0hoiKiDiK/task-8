@@ -1,25 +1,54 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 import { AdminCatalogPage } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
-import { filterAndSortSkills, initialAdminSkills, skillCategories, skillNameExists, skillType, type AdminSkill } from "@/components/admin-skills-data";
+import { filterAndSortSkills, skillNameExists, type AdminSkill } from "@/components/admin-skills-data";
+import { CREATE_SKILL, DELETE_SKILL, loadAllCatalogItems, SKILL_CATEGORIES_QUERY, SKILLS_QUERY, UPDATE_SKILL, type ApiSkill, type ApiSkillCategory } from "@/lib/catalog-api";
+
+function fromApi(skill: ApiSkill): AdminSkill {
+  return { id: skill.id, name: skill.name, category: skill.category.name, categoryId: skill.category.id, categoryType: skill.category.parent?.name ?? skill.category.name };
+}
 
 export function AdminSkillsPage() {
+  const client = useApolloClient();
+  const categoriesResult = useQuery(SKILL_CATEGORIES_QUERY, { fetchPolicy: "network-only" });
+  const categories = categoriesResult.data?.skillCategories ?? [];
+  const loadItems = useCallback(async () => (await loadAllCatalogItems(client, SKILLS_QUERY, "skills")).map(fromApi), [client]);
+  function categoryId(name: string) {
+    const id = categories.find((category) => category.name === name)?.id;
+    if (!id) throw new Error("Skill category is unavailable");
+    return id;
+  }
   return <AdminCatalogPage<AdminSkill>
     singular="Skill" plural="Skills" className="admin-skills"
-    initialItems={initialAdminSkills}
+    initialItems={[]} loadItems={loadItems}
+    createItem={async (skill) => {
+      const { data } = await client.mutate<{ createSkill: ApiSkill }>({ mutation: CREATE_SKILL, variables: { skill: { name: skill.name, categoryId: categoryId(skill.category) } } });
+      if (!data?.createSkill) throw new Error("Skill was not created");
+      return fromApi(data.createSkill);
+    }}
+    updateItem={async (skill) => {
+      const { data } = await client.mutate<{ updateSkill: ApiSkill }>({ mutation: UPDATE_SKILL, variables: { skill: { skillId: skill.id, name: skill.name, categoryId: categoryId(skill.category) } } });
+      if (!data?.updateSkill) throw new Error("Skill was not updated");
+      return fromApi(data.updateSkill);
+    }}
+    deleteItem={async (id) => {
+      const { data } = await client.mutate<{ deleteSkill: { affected: number } }>({ mutation: DELETE_SKILL, variables: { skill: { skillId: id } } });
+      if (!data?.deleteSkill.affected) throw new Error("Skill was not deleted");
+    }}
     columns={[
       { key: "name", label: "Name", sortable: true, render: (item) => item.name },
-      { key: "type", label: "Type", className: "admin-skills-type", render: (item) => skillType(item.category) },
+      { key: "type", label: "Type", className: "admin-skills-type", render: (item) => item.categoryType ?? "" },
       { key: "category", label: "Category", render: (item) => item.category },
     ]}
     filterAndSort={(items, search, sort) => filterAndSortSkills(items, search, sort?.direction ?? null)}
     renderDialog={({ dialog, actions }) => {
-      if (dialog?.type === "create") return <AdminSkillFormDialog key="create" skills={actions.items}
+      if (dialog?.type === "create") return <AdminSkillFormDialog key="create" skills={actions.items} categories={categories}
         onClose={actions.close} onSave={(name, category) => actions.create({ id: crypto.randomUUID(), name, category })} />;
       if (dialog?.type === "edit") return <AdminSkillFormDialog key={dialog.item.id} skill={dialog.item}
-        skills={actions.items} onClose={actions.close}
+        skills={actions.items} categories={categories} onClose={actions.close}
         onSave={(name, category) => actions.update({ ...dialog.item, name, category })} />;
       if (dialog?.type === "delete") return <AdminSkillDeleteDialog key={dialog.item.id} skill={dialog.item}
         onClose={actions.close} onDelete={() => actions.remove(dialog.item.id)} />;
@@ -27,9 +56,10 @@ export function AdminSkillsPage() {
     }}
   />;
 }
-function AdminSkillFormDialog({ skill, skills, onClose, onSave }: {
+function AdminSkillFormDialog({ skill, skills, categories, onClose, onSave }: {
   skill?: AdminSkill;
   skills: AdminSkill[];
+  categories: ApiSkillCategory[];
   onClose: () => void;
   onSave: (name: string, category: string) => void | Promise<void>;
 }) {
@@ -69,7 +99,7 @@ function AdminSkillFormDialog({ skill, skills, onClose, onSave }: {
           aria-describedby={categoryTouched && !category ? "admin-skill-category-error" : undefined}
           onBlur={() => setCategoryTouched(true)} onChange={(event) => { setCategory(event.target.value); setSystemError(""); }}>
           <option value="">Category</option>
-          {skillCategories.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}
+          {categories.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
         </select>
         {categoryTouched && !category && <span id="admin-skill-category-error" className="cv-skill-field-error">Category is required</span>}
       </div>

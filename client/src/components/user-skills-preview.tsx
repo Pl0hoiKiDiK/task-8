@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { availableOwnerSkills, masteryDisplay, masteryFromLevel, previewOwnerSkills, type CvSkill, type SkillMastery } from "@/components/cv-skills-data";
+import { availableOwnerSkills, masteryDisplay, type CvSkill, type SkillMastery } from "@/components/cv-skills-data";
 import { ProfileProficiencyItem, type ProficiencyTone } from "@/components/profile-proficiency-item";
 import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { SkillFormDialog, SkillRemoveDialog } from "@/components/skill-dialogs";
@@ -10,51 +10,14 @@ import { SkillFormDialog, SkillRemoveDialog } from "@/components/skill-dialogs";
 export type Skill = { name: string; tone: ProficiencyTone; level: number };
 export type SkillGroup = { title: string; skills: Skill[] };
 
-export const previewSkillGroups: SkillGroup[] = [
-  {
-    title: "Programming languages",
-    skills: [
-      { name: "TypeScript", tone: "yellow", level: 80 },
-      { name: "JavaScript", tone: "red", level: 100 },
-    ],
-  },
-  {
-    title: "Frontend",
-    skills: [
-      { name: "React", tone: "red", level: 100 },
-      { name: "CSS3", tone: "yellow", level: 80 },
-      { name: "Storybook", tone: "gray", level: 20 },
-      { name: "SCSS", tone: "yellow", level: 80 },
-      { name: "React Query", tone: "yellow", level: 80 },
-      { name: "Redux", tone: "yellow", level: 80 },
-    ],
-  },
-  {
-    title: "Backend",
-    skills: [
-      { name: "Keycloak", tone: "blue", level: 40 },
-      { name: "Node.js", tone: "green", level: 60 },
-      { name: "NestJS", tone: "green", level: 60 },
-    ],
-  },
-  {
-    title: "Source control systems",
-    skills: [{ name: "Git", tone: "red", level: 100 }],
-  },
-];
-
-export function UserSkillsPreview({ skillGroups, canEdit = false, shared = false }: { skillGroups: SkillGroup[]; canEdit?: boolean; shared?: boolean }) {
-  const { userSkills, addUserSkill, updateUserSkill, removeUserSkills } = useCvPreviewData();
-  const [localSkills, setLocalSkills] = useState<CvSkill[]>(() => skillGroups.flatMap(({ title, skills: groupSkills }) =>
-    groupSkills.map(({ name, level }) => ({ name, category: title, mastery: masteryFromLevel(level) })),
-  ));
-  const skills = shared ? userSkills : localSkills;
+export function UserSkillsPreview({ canEdit = false }: { canEdit?: boolean }) {
+  const { userSkills: skills, skillCatalog, loadState, reload, addUserSkill, updateUserSkill, removeUserSkills } = useCvPreviewData();
   const [dialog, setDialog] = useState<"add" | "update" | "remove" | null>(null);
   const [editing, setEditing] = useState<CvSkill | undefined>();
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const categories = [...new Set(skills.map((skill) => skill.category))];
-  const available = availableOwnerSkills(previewOwnerSkills, skills);
+  const available = availableOwnerSkills(skillCatalog, skills);
   const hasSkills = skills.length > 0;
 
   function cancelSelection() {
@@ -62,20 +25,13 @@ export function UserSkillsPreview({ skillGroups, canEdit = false, shared = false
     setSelected([]);
   }
 
-  function saveSkill(name: string, mastery: SkillMastery) {
-    if (shared) {
-      if (dialog === "add") addUserSkill(name, mastery);
-      else updateUserSkill(name, mastery);
-      return;
-    }
-    if (dialog === "add") {
-      const found = available.find((skill) => skill.name === name);
-      if (!found) throw new Error("Skill is unavailable");
-      setLocalSkills((current) => [...current, { ...found, mastery }]);
-    } else {
-      setLocalSkills((current) => current.map((skill) => skill.name === name ? { ...skill, mastery } : skill));
-    }
+  async function saveSkill(name: string, mastery: SkillMastery) {
+    if (dialog === "add") await addUserSkill(name, mastery);
+    else await updateUserSkill(name, mastery);
   }
+
+  if (loadState === "loading") return <p role="status">Loading skills…</p>;
+  if (loadState === "error") return <div role="alert">Could not load skills. <button type="button" onClick={() => { void reload().catch(() => undefined); }}>Retry</button></div>;
 
   return (
     <div className={`user-skills-page${canEdit ? " user-skills-page--editable" : ""}`}>
@@ -116,11 +72,8 @@ export function UserSkillsPreview({ skillGroups, canEdit = false, shared = false
       </div>
       {(dialog === "add" || dialog === "update") && <SkillFormDialog kind={dialog} skill={dialog === "update" ? editing : undefined} available={available}
         onClose={() => setDialog(null)} onSave={saveSkill} />}
-      {dialog === "remove" && <SkillRemoveDialog title={shared ? "Remove skill" : "Remove skills"} count={selected.length} error="" onClose={() => setDialog(null)} onSuccess={cancelSelection}
-        onConfirm={() => {
-          if (shared) removeUserSkills(selected);
-          else { const removing = new Set(selected); setLocalSkills((current) => current.filter((skill) => !removing.has(skill.name))); }
-        }} />}
+      {dialog === "remove" && <SkillRemoveDialog title="Remove skills" count={selected.length} error="" onClose={() => setDialog(null)} onSuccess={cancelSelection}
+        onConfirm={() => removeUserSkills(selected)} />}
     </div>
   );
 }

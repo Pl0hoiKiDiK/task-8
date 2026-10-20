@@ -1,19 +1,36 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
+import { useApolloClient } from "@apollo/client/react";
 import { AdminCatalogPage } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
 import {
   positionNameExists,
   filterAndSortPositions,
-  initialAdminPositions,
   type AdminPosition,
 } from "@/components/admin-positions-data";
+import { CREATE_POSITION, DELETE_POSITION, loadAllCatalogItems, POSITIONS_QUERY, UPDATE_POSITION } from "@/lib/catalog-api";
 
 export function AdminPositionsPage() {
+  const client = useApolloClient();
+  const loadItems = useCallback(() => loadAllCatalogItems(client, POSITIONS_QUERY, "positions"), [client]);
   return <AdminCatalogPage<AdminPosition>
     singular="Position" plural="Positions" className="admin-positions"
-    initialItems={initialAdminPositions}
+    initialItems={[]} loadItems={loadItems}
+    createItem={async ({ name }) => {
+      const { data } = await client.mutate<{ createPosition: AdminPosition }>({ mutation: CREATE_POSITION, variables: { position: { name } } });
+      if (!data?.createPosition) throw new Error("Position was not created");
+      return data.createPosition;
+    }}
+    updateItem={async ({ id, name }) => {
+      const { data } = await client.mutate<{ updatePosition: AdminPosition }>({ mutation: UPDATE_POSITION, variables: { position: { positionId: id, name } } });
+      if (!data?.updatePosition) throw new Error("Position was not updated");
+      return data.updatePosition;
+    }}
+    deleteItem={async (id) => {
+      const { data } = await client.mutate<{ deletePosition: { affected: number } }>({ mutation: DELETE_POSITION, variables: { position: { positionId: id } } });
+      if (!data?.deletePosition.affected) throw new Error("Position was not deleted");
+    }}
     columns={[{ key: "name", label: "Name", sortable: true, render: (item) => item.name }]}
     filterAndSort={(items, search, sort) => filterAndSortPositions(items, search, sort?.direction ?? null)}
     renderDialog={({ dialog, actions }) => {
@@ -23,10 +40,7 @@ export function AdminPositionsPage() {
         positions={actions.items} onClose={actions.close}
         onSave={(name) => actions.update({ ...dialog.item, name })} />;
       if (dialog?.type === "delete") return <AdminPositionDeleteDialog key={dialog.item.id} position={dialog.item}
-        onClose={actions.close} onDelete={() => {
-          if (dialog.item.inUse) throw new Error("positionInUse");
-          actions.remove(dialog.item.id);
-        }} />;
+        onClose={actions.close} onDelete={() => actions.remove(dialog.item.id)} />;
       return null;
     }}
   />;

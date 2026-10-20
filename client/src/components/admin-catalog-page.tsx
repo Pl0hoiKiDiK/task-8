@@ -8,9 +8,9 @@ export type CatalogDialog<T> = { type: "create" } | { type: "edit" | "delete"; i
 
 export type CatalogActions<T> = {
   items: T[];
-  create: (item: T) => void;
-  update: (item: T) => void;
-  remove: (id: string) => void;
+  create: (item: T) => Promise<void>;
+  update: (item: T) => Promise<void>;
+  remove: (id: string) => Promise<void>;
   close: () => void;
 };
 
@@ -25,13 +25,16 @@ export type CatalogColumn<T> = {
 const PAGE_SIZE = 10;
 
 export function AdminCatalogPage<T extends { id: string; name: string }>({
-  singular, plural, className, initialItems, loadItems, columns, filterAndSort, renderDialog,
+  singular, plural, className, initialItems, loadItems, createItem, updateItem, deleteItem, columns, filterAndSort, renderDialog,
 }: {
   singular: string;
   plural: string;
   className: string;
   initialItems: T[];
   loadItems?: () => Promise<T[]>;
+  createItem?: (item: T) => Promise<T>;
+  updateItem?: (item: T) => Promise<T>;
+  deleteItem?: (id: string) => Promise<void>;
   columns: CatalogColumn<T>[];
   filterAndSort: (items: T[], search: string, sort: CatalogSort) => T[];
   renderDialog: ComponentType<{ dialog: CatalogDialog<T>; actions: CatalogActions<T> }>;
@@ -100,20 +103,25 @@ export function AdminCatalogPage<T extends { id: string; name: string }>({
 
   const actions: CatalogActions<T> = {
     items,
-    create(item) {
-      setItems((current) => [...current, item]);
+    async create(item) {
+      const saved = createItem ? await createItem(item) : item;
+      setItems((current) => [...current, saved]);
       setSearch("");
       setSort(null);
       setPage(Math.ceil((items.length + 1) / PAGE_SIZE));
     },
-    update(item) {
+    async update(item) {
+      const saved = updateItem ? await updateItem(item) : item;
       const index = items.findIndex((current) => current.id === item.id);
-      setItems((current) => current.map((value) => value.id === item.id ? item : value));
+      setItems((current) => current.map((value) => value.id === item.id ? saved : value));
       setSearch("");
       setSort(null);
       setPage(Math.floor(Math.max(index, 0) / PAGE_SIZE) + 1);
     },
-    remove(id) { setItems((current) => current.filter((item) => item.id !== id)); },
+    async remove(id) {
+      if (deleteItem) await deleteItem(id);
+      setItems((current) => current.filter((item) => item.id !== id));
+    },
     close: closeDialog,
   };
 
@@ -121,7 +129,7 @@ export function AdminCatalogPage<T extends { id: string; name: string }>({
     <div className={`profile-cvs-toolbar ${className}-toolbar`}>
       <label className="search-field profile-cvs-search">
         <AppIcon name="search" />
-        <span className="sr-only">Search {plural.toLowerCase()} by name</span>
+        <span className="sr-only">Search {plural.toLowerCase()} by {singular === "Project" ? "name or domain" : "name"}</span>
         <input type="search" placeholder="Search" value={search}
           onChange={(event) => { setSearch(event.target.value); setPage(1); setOpenMenuId(null); }} />
       </label>
@@ -131,8 +139,8 @@ export function AdminCatalogPage<T extends { id: string; name: string }>({
       </button>
     </div>
 
-    <div className={`${className}-table`} role="table" aria-label={plural} aria-busy={loadState === "loading"}>
-      <div className={`${className}-row ${className}-heading`} role="row">
+    <div className={`${className}-table ${className === "admin-projects" ? "w-full overflow-x-auto" : ""}`} role="table" aria-label={plural} aria-busy={loadState === "loading"}>
+      <div className={`${className}-row ${className}-heading ${className === "admin-projects" ? "grid min-w-[780px] grid-cols-[minmax(0,2fr)_minmax(0,1fr)_130px_130px_48px] items-center gap-3 border-b border-[var(--border)] px-4 py-3 text-sm font-medium" : ""}`} role="row">
         {columns.map((column) => {
           const direction = sort?.field === column.key ? sort.direction : null;
           return <div key={column.key} role="columnheader" className={column.className}
@@ -151,13 +159,13 @@ export function AdminCatalogPage<T extends { id: string; name: string }>({
         <span role="columnheader"><span className="sr-only">Actions</span></span>
       </div>
 
-      {loadState === "loading" ? <div className={`${className}-state`} role="row"><p role="cell" aria-live="polite">Loading {plural.toLowerCase()}…</p></div>
-        : loadState === "error" ? <div className={`${className}-state`} role="row"><div role="cell">
+      {loadState === "loading" ? <div className={`${className}-state ${className === "admin-projects" ? "min-w-[780px] border-b border-[var(--border)] px-4 py-6" : ""}`} role="row"><p role="cell" aria-live="polite">Loading {plural.toLowerCase()}…</p></div>
+        : loadState === "error" ? <div className={`${className}-state ${className === "admin-projects" ? "min-w-[780px] border-b border-[var(--border)] px-4 py-6" : ""}`} role="row"><div role="cell">
           <p role="alert">Could not load {plural.toLowerCase()}.</p>
           <button type="button" onClick={retryLoad}>Retry</button>
         </div></div>
-          : visible.length === 0 ? <div className={`${className}-state`} role="row"><p role="cell">No {plural.toLowerCase()} found</p></div>
-            : visible.map((item) => <div className={`${className}-row ${className}-item`} role="row" key={item.id}>
+          : visible.length === 0 ? <div className={`${className}-state ${className === "admin-projects" ? "min-w-[780px] border-b border-[var(--border)] px-4 py-6" : ""}`} role="row"><p role="cell">No {plural.toLowerCase()} found</p></div>
+            : visible.map((item) => <div className={`${className}-row ${className}-item ${className === "admin-projects" ? "grid min-w-[780px] grid-cols-[minmax(0,2fr)_minmax(0,1fr)_130px_130px_48px] items-start gap-3 border-b border-[var(--border)] px-4 py-4 text-sm" : ""}`} role="row" key={item.id}>
               {columns.map((column) => <span key={column.key} role="cell" className={column.className}>{column.render(item)}</span>)}
               <div className="profile-cv-actions" role="cell" ref={openMenuId === item.id ? menuRoot : undefined}>
                 <button type="button" className="profile-cv-more" aria-label={`Actions for ${item.name}`}

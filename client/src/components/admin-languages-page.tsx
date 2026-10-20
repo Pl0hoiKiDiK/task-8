@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
+import { useApolloClient } from "@apollo/client/react";
 import { AdminCatalogPage, type CatalogSort } from "@/components/admin-catalog-page";
 import { SkillDialog } from "@/components/skill-dialogs";
 import {
   filterAndSortLanguages,
-  initialAdminLanguages,
   normalizeLanguageFields,
   validateLanguageFields,
   type AdminLanguage,
   type LanguageFields,
   type LanguageSort,
 } from "@/components/admin-languages-data";
+import { CREATE_LANGUAGE, DELETE_LANGUAGE, LANGUAGES_QUERY, loadAllCatalogItems, UPDATE_LANGUAGE, type ApiLanguage } from "@/lib/catalog-api";
 
-async function loadLanguagePreview(): Promise<AdminLanguage[]> {
-  // Local catalog preview until the authenticated language API is connected.
-  return [...initialAdminLanguages];
+function fromApi(language: ApiLanguage): AdminLanguage {
+  return { id: language.id, name: language.name, iso: language.iso2, nativeName: language.native_name ?? "" };
 }
 
 function sortLanguages(items: AdminLanguage[], search: string, sort: CatalogSort) {
@@ -23,9 +23,25 @@ function sortLanguages(items: AdminLanguage[], search: string, sort: CatalogSort
 }
 
 export function AdminLanguagesPage() {
+  const client = useApolloClient();
+  const loadItems = useCallback(async () => (await loadAllCatalogItems(client, LANGUAGES_QUERY, "languages")).map(fromApi), [client]);
   return <AdminCatalogPage<AdminLanguage>
     singular="Language" plural="Languages" className="admin-languages"
-    initialItems={[]} loadItems={loadLanguagePreview}
+    initialItems={[]} loadItems={loadItems}
+    createItem={async (language) => {
+      const { data } = await client.mutate<{ createLanguage: ApiLanguage }>({ mutation: CREATE_LANGUAGE, variables: { language: { name: language.name, iso2: language.iso, native_name: language.nativeName } } });
+      if (!data?.createLanguage) throw new Error("Language was not created");
+      return fromApi(data.createLanguage);
+    }}
+    updateItem={async (language) => {
+      const { data } = await client.mutate<{ updateLanguage: ApiLanguage }>({ mutation: UPDATE_LANGUAGE, variables: { language: { languageId: language.id, name: language.name, iso2: language.iso, native_name: language.nativeName } } });
+      if (!data?.updateLanguage) throw new Error("Language was not updated");
+      return fromApi(data.updateLanguage);
+    }}
+    deleteItem={async (id) => {
+      const { data } = await client.mutate<{ deleteLanguage: { affected: number } }>({ mutation: DELETE_LANGUAGE, variables: { language: { languageId: id } } });
+      if (!data?.deleteLanguage.affected) throw new Error("Language was not deleted");
+    }}
     columns={[
       { key: "name", label: "Name", sortable: true, render: (item) => item.name },
       { key: "iso", label: "ISO", sortable: true, render: (item) => item.iso },
