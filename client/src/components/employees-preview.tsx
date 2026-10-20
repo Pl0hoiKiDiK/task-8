@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useApolloClient, useQuery } from "@apollo/client/react";
 import { AppIcon } from "@/components/app-icon";
+import { pageWindow } from "@/lib/page-window";
 import { EmployeeDialog, type EmployeeDialogState } from "@/components/employee-dialog";
 import { EMPLOYEES_QUERY, type Employee, type EmployeeListParams } from "@/lib/employees/api";
 
@@ -15,11 +16,11 @@ type Sort = { field: SortField; order: "ASC" | "DESC" } | null;
 const columns: { field: SortField; label: string; width?: string }[] = [
   { field: "first_name", label: "First Name" },
   { field: "last_name", label: "Last Name" },
-  { field: "department", label: "Department", width: "w-[14%]" },
-  { field: "position", label: "Position", width: "w-[17%]" },
+  { field: "department", label: "Department", width: "w-[14%] max-[900px]:w-[28%]" },
+  { field: "position", label: "Position", width: "w-[17%] max-[900px]:hidden" },
 ];
-const headerCell = "h-[52px] border-b border-[var(--border)] px-4 text-left text-sm font-medium whitespace-nowrap";
-const bodyCell = "h-[73px] border-b border-[var(--border)] px-4 text-sm whitespace-nowrap";
+const headerCell = "h-[52px] border-b border-[var(--border)] px-4 text-left text-sm font-medium leading-6 tracking-[.15px] whitespace-nowrap max-[600px]:px-2";
+const bodyCell = "h-[73px] overflow-hidden border-b border-[var(--border)] px-4 text-ellipsis whitespace-nowrap text-sm leading-5 tracking-[.15px] max-[600px]:px-2";
 
 function displayName(employee: Employee) {
   return [employee.profile.first_name, employee.profile.last_name].filter(Boolean).join(" ") || employee.email;
@@ -73,9 +74,13 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
       const items: Employee[] = [];
       try {
         for (let nextPage = 2; nextPage <= data!.users.total_pages; nextPage += 1) {
-          const result = await client.query({ query: EMPLOYEES_QUERY, variables: { params: {
-            search: querySearch, sort_by: "created_at", sort_order: "DESC", page: nextPage, limit: 100,
-          } }, fetchPolicy: "network-only" });
+          const result = await client.query({
+            query: EMPLOYEES_QUERY, variables: {
+              params: {
+                search: querySearch, sort_by: "created_at", sort_order: "DESC", page: nextPage, limit: 100,
+              }
+            }, fetchPolicy: "network-only"
+          });
           if (!result.data) throw new Error("Could not load employees");
           items.push(...result.data.users.items);
         }
@@ -163,7 +168,7 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
   </th>;
 
   return <section aria-label="Employees">
-    <div className="flex min-h-14 flex-wrap items-start justify-between gap-4 pl-0 sm:pl-5">
+    <div className="flex min-h-14 flex-wrap items-start justify-between gap-4 pl-0 sm:pl-5 max-[600px]:pl-0">
       <label className="flex h-[46px] w-full max-w-80 items-center gap-2.5 rounded-full border border-[var(--border)] px-3.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--red)] sm:w-80">
         <AppIcon name="search" />
         <input className="min-w-0 flex-1 border-0 bg-transparent text-base text-[var(--text)] outline-none placeholder:text-[var(--placeholder)]" type="search" placeholder="Search" aria-label="Search employees by first name, last name or email" value={search}
@@ -176,13 +181,13 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
     </div>
 
     <div className="w-full overflow-x-auto" aria-busy={loading}>
-      <table className="w-full min-w-[840px] table-fixed border-collapse" aria-label="Employees">
+      <table className="w-full table-fixed border-collapse" aria-label="Employees">
         <thead><tr>
-          <th scope="col" aria-label="Avatar" className={`${headerCell} w-20`} />
+          <th scope="col" aria-label="Avatar" className={`${headerCell} w-20 max-[600px]:w-[52px]`} />
           {columns.slice(0, 2).map(sortHeader)}
-          <th scope="col" className={`${headerCell} w-[27%]`}>Email</th>
+          <th scope="col" className={`${headerCell} w-[27%] max-[900px]:hidden`}>Email</th>
           {columns.slice(2).map(sortHeader)}
-          <th scope="col" aria-label="Actions" className={`${headerCell} w-14 text-right`} />
+          <th scope="col" aria-label="Actions" className={`${headerCell} w-14 text-right max-[600px]:w-10 max-[600px]:px-0!`} />
         </tr></thead>
         <tbody>
           {loading ? <tr><td className="h-20 px-4" colSpan={7} role="status">Loading employees…</td></tr>
@@ -195,10 +200,10 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
                   <td className={bodyCell}><EmployeeAvatar employee={employee} /></td>
                   <td className={`${bodyCell} truncate`} title={employee.profile.first_name ?? ""}>{employee.profile.first_name || "—"}</td>
                   <td className={`${bodyCell} truncate`} title={employee.profile.last_name ?? ""}>{employee.profile.last_name || "—"}</td>
-                  <td className={`${bodyCell} truncate`} title={employee.email}>{employee.email}</td>
+                  <td className={`${bodyCell} truncate max-[900px]:hidden`} title={employee.email}>{employee.email}</td>
                   <td className={`${bodyCell} truncate`} title={employee.department?.name ?? ""}>{employee.department?.name || "—"}</td>
-                  <td className={`${bodyCell} truncate`} title={employee.position?.name ?? ""}>{employee.position?.name || "—"}</td>
-                  <td className={`${bodyCell} text-right`}>
+                  <td className={`${bodyCell} truncate max-[900px]:hidden`} title={employee.position?.name ?? ""}>{employee.position?.name || "—"}</td>
+                  <td className={`${bodyCell} text-right max-[600px]:px-0!`}>
                     {admin ? <button type="button" className="inline-grid size-10 place-items-center text-[var(--muted)]" aria-label={`Actions for ${displayName(employee)}`}
                       aria-haspopup="menu" aria-expanded={openMenu?.employee.id === employee.id} onClick={(event) => openActions(employee, event.currentTarget)}><AppIcon name="more" /></button>
                       : <Link href={`${prefix}/employees/${employee.id}`} className="inline-grid size-10 place-items-center text-[var(--muted)]" aria-label={`View ${displayName(employee)}`}><AppIcon name="chevron" className="rotate-180" /></Link>}
@@ -208,10 +213,12 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
       </table>
     </div>
 
-    {!loading && !error && pageCount > 1 && <nav className="mt-5 flex items-center justify-center gap-2" aria-label="Employee pages">
+    {!loading && !error && pageCount > 1 && <nav className="mt-5 flex flex-wrap items-center justify-center gap-2" aria-label="Employee pages">
       <button className="rounded border border-[var(--border)] px-3 py-1 disabled:opacity-40" type="button" disabled={page === 1} onClick={() => setPage(page - 1)} aria-label="Previous page">‹</button>
-      {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button key={number} type="button" className={`rounded border px-3 py-1 ${number === page ? "border-[var(--red)] bg-[var(--red)] text-white" : "border-[var(--border)]"}`}
-        aria-label={`Page ${number}`} aria-current={number === page ? "page" : undefined} onClick={() => { setPage(number); setOpenMenu(null); }}>{number}</button>)}
+      {pageWindow(page, pageCount).map((item, index) => item === "…"
+        ? <span key={`gap-${index}`} className="px-1 text-[var(--muted)]" aria-hidden="true">…</span>
+        : <button key={item} type="button" className={`rounded border px-3 py-1 ${item === page ? "border-[var(--red)] bg-[var(--red)] text-white" : "border-[var(--border)]"}`}
+          aria-label={`Page ${item}`} aria-current={item === page ? "page" : undefined} onClick={() => { setPage(item); setOpenMenu(null); }}>{item}</button>)}
       <button className="rounded border border-[var(--border)] px-3 py-1 disabled:opacity-40" type="button" disabled={page === pageCount} onClick={() => setPage(page + 1)} aria-label="Next page">›</button>
     </nav>}
 

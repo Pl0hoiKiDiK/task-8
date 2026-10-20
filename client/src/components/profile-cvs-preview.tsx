@@ -40,7 +40,7 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      menuRoot.current?.querySelector<HTMLButtonElement>(".profile-cv-more")?.focus();
+      menuRoot.current?.querySelector<HTMLButtonElement>("[data-cv-id]")?.focus();
       setOpenMenuId(null);
     };
     document.addEventListener("pointerdown", closeOnOutside);
@@ -57,47 +57,47 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
   }
 
   return (
-    <div className="profile-cvs-page">
-      <section className="profile-cvs-list" aria-label="CVs">
-        <div className="profile-cvs-toolbar">
-          <label className="search-field profile-cvs-search">
+    <div>
+      <section aria-label="CVs">
+        <div className="flex min-h-14 items-start justify-between gap-4 px-5 pt-1 max-[600px]:px-2">
+          <label className="flex h-[46px] w-80 items-center gap-2.5 rounded-full border border-[#aeaeae] px-3.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--red)] max-[900px]:w-[276px] max-[600px]:w-[min(320px,100%)] [&_input]:min-w-0 [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:text-base [&_input]:leading-[23px] [&_input]:tracking-[.15px] [&_input]:text-[var(--text)] [&_input]:outline-none [&_input]:placeholder:text-[var(--placeholder)] shrink-0">
             <AppIcon name="search" />
             <span className="sr-only">{view === "admin" ? "Search CVs by name or employee email" : "Search CVs by name"}</span>
             <input type="search" placeholder="Search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} />
           </label>
-          <button className="create-action profile-cvs-create" type="button" aria-label="Create CV" onClick={() => setDialog({ type: "create" })}>
+          <button className="flex h-[46px] items-center gap-3.5 border-0 bg-transparent px-[18px] text-sm font-medium leading-[24.5px] tracking-[.4px] text-[var(--red)] uppercase max-[900px]:px-1 max-[900px]:[&>span]:hidden shrink-0 disabled:cursor-default disabled:opacity-100" type="button" aria-label="Create CV" onClick={() => setDialog({ type: "create" })}>
             <AppIcon name="plus" /><span>Create CV</span>
           </button>
         </div>
 
-        <div className="profile-cvs-heading">
+        <div className="grid min-h-[58px] grid-cols-[35%_29%_minmax(0,1fr)_40px] items-center border-b border-[var(--border)] px-4 text-sm font-medium leading-6 tracking-[.15px] text-[var(--text)] max-[900px]:grid-cols-[48%_minmax(0,1fr)_32px] max-[600px]:grid-cols-[minmax(0,1fr)_minmax(0,.85fr)_28px]">
           <button
             type="button"
-            className="profile-cvs-sort"
+            className="inline-flex items-center justify-self-start gap-1 border-0 bg-transparent p-0 text-inherit"
             aria-label={`Sort by name, currently ${direction === "asc" ? "ascending" : "descending"}`}
             onClick={() => { setDirection((current) => current === "asc" ? "desc" : "asc"); setPage(1); }}
           >
-            Name <AppIcon name="sort" className={direction === "desc" ? "sort-indicator profile-cvs-sort--desc" : "sort-indicator"} />
+            Name <AppIcon name="sort" className={direction === "desc" ? "ml-1.5 !size-[18px] align-middle rotate-180" : "ml-1.5 !size-[18px] align-middle"} />
           </button>
           <span>Education</span>
-          <span className="profile-cvs-employee">Employee</span>
+          <span className="max-[900px]:hidden">Employee</span>
         </div>
 
-        <div className="profile-cvs-items" aria-busy={loadState === "loading"}>
-          {loadState === "loading" ? <p className="profile-cvs-empty" role="status">Loading CVs…</p>
-          : loadState === "error" ? <div className="profile-cvs-empty" role="alert">Could not load CVs. <button type="button" onClick={() => { void reload().catch(() => undefined); }}>Retry</button></div>
+        <div aria-busy={loadState === "loading"}>
+          {loadState === "loading" ? <p className="m-0 px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="status">Loading CVs…</p>
+          : loadState === "error" ? <div className="px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="alert">Could not load CVs. <button type="button" onClick={() => { void reload().catch(() => undefined); }}>Retry</button></div>
           : visibleCvs.length === 0 ? (
-            <p className="profile-cvs-empty" role="status">{search || view !== "employee" ? "No CVs found" : "You have no CVs yet"}</p>
+            <p className="m-0 px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="status">{search || view !== "employee" ? "No CVs found" : "You have no CVs yet"}</p>
           ) : visibleCvs.map((cv) => (
-            <article className="profile-cv" key={cv.id} aria-label={cv.name}>
-              <div className="profile-cv-row">
+            <article className="border-b border-[var(--border)] px-4 pt-6 pb-4 [&>p]:mt-6 [&>p]:mb-0 [&>p]:text-base [&>p]:leading-6 [&>p]:tracking-[.15px] [&>p]:text-[var(--text)] [&>p]:opacity-50 max-[900px]:[&>p]:mt-4" key={cv.id} aria-label={cv.name}>
+              <div className="grid min-h-6 grid-cols-[35%_29%_minmax(0,1fr)_40px] items-start text-sm leading-5 tracking-[.15px] text-[var(--text)] max-[900px]:grid-cols-[48%_minmax(0,1fr)_32px] max-[600px]:grid-cols-[minmax(0,1fr)_minmax(0,.85fr)_28px] [&>h2]:m-0 [&>h2]:min-w-0 [&>h2]:max-w-80 [&>h2]:wrap-anywhere [&>h2]:pr-4 [&>h2]:font-[inherit] [&>span]:min-w-0 [&>span]:wrap-anywhere">
                 <h2>{cv.name}</h2>
                 <span>{cv.education}</span>
-                <span className="profile-cvs-employee">{cv.employee}</span>
-                <div className="profile-cv-actions" ref={openMenuId === cv.id ? menuRoot : undefined}>
+                <span className="max-[900px]:hidden">{cv.employee}</span>
+                <div className="relative justify-self-end" ref={openMenuId === cv.id ? menuRoot : undefined}>
                   <button
                     type="button"
-                    className="profile-cv-more"
+                    className="grid h-6 w-8 place-items-center justify-self-end border-0 bg-transparent p-0 text-[var(--muted)] disabled:cursor-default disabled:opacity-100"
                     data-cv-id={cv.id}
                     aria-label={`Actions for ${cv.name}`}
                     aria-haspopup="menu"
@@ -108,7 +108,7 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
                   </button>
                   {openMenuId === cv.id && (
                     <div
-                      className="profile-cv-actions-menu"
+                      className="absolute top-7 right-0 z-5 w-[132px] border border-[var(--border)] bg-[var(--surface)] py-1 shadow-[0_4px_12px_#0003] [&>a]:block [&>a]:w-full [&>a]:px-4 [&>a]:py-[9px] [&>a]:text-left [&>a]:text-sm [&>a]:leading-5 [&>a]:text-[var(--text)] [&>a]:no-underline [&>a:hover]:bg-[var(--sidebar-active)] [&>button]:block [&>button]:w-full [&>button]:border-0 [&>button]:bg-transparent [&>button]:px-4 [&>button]:py-[9px] [&>button]:text-left [&>button]:text-sm [&>button]:leading-5 [&>button]:text-[var(--text)] [&>button:hover]:bg-[var(--sidebar-active)]"
                       role="menu"
                       aria-label={`Actions for ${cv.name}`}
                       onKeyDown={(event) => {
@@ -133,7 +133,7 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
           ))}
         </div>
         {view !== "profile" && pageCount > 1 && (
-          <nav className="profile-cvs-pagination" aria-label="CV pages">
+          <nav className="flex justify-center gap-2 py-6 [&>button]:h-9 [&>button]:min-w-9 [&>button]:rounded [&>button]:border [&>button]:border-[var(--border)] [&>button]:bg-transparent [&>button]:text-[var(--text)] [&>button[aria-current=page]]:border-[var(--red)] [&>button[aria-current=page]]:bg-[var(--red)] [&>button[aria-current=page]]:text-[#f5f5f7] [&>button:disabled]:cursor-default [&>button:disabled]:opacity-40" aria-label="CV pages">
             <button type="button" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)} aria-label="Previous page">‹</button>
             {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => (
               <button key={number} type="button" aria-label={`Page ${number}`} aria-current={currentPage === number ? "page" : undefined} onClick={() => setPage(number)}>{number}</button>

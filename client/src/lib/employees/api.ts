@@ -19,18 +19,27 @@ export type EmployeeListParams = {
   limit: number;
 };
 
+const employeeFields = gql`
+  fragment EmployeeFields on User {
+    id
+    created_at
+    email
+    role
+    is_verified
+    profile { first_name last_name avatar }
+    department { id name }
+    position { id name }
+  }
+`;
+
 export const EMPLOYEES_QUERY: TypedDocumentNode<
   { users: { items: Employee[]; total: number; page: number; total_pages: number } },
   { params: EmployeeListParams }
 > = gql`
+  ${employeeFields}
   query Employees($params: SearchPaginationInput) {
     users(params: $params) {
-      items {
-        id created_at email role is_verified
-        profile { first_name last_name avatar }
-        department { id name }
-        position { id name }
-      }
+      items { ...EmployeeFields }
       total
       page
       total_pages
@@ -39,13 +48,9 @@ export const EMPLOYEES_QUERY: TypedDocumentNode<
 `;
 
 export const EMPLOYEE_QUERY: TypedDocumentNode<{ user: Employee }, { userId: string }> = gql`
+  ${employeeFields}
   query Employee($userId: ID!) {
-    user(userId: $userId) {
-      id created_at email role is_verified
-      profile { first_name last_name avatar }
-      department { id name }
-      position { id name }
-    }
+    user(userId: $userId) { ...EmployeeFields }
   }
 `;
 

@@ -37,7 +37,7 @@ function ProjectModal({ title, onClose, children, initialFocus }: {
 
   return (
     <dialog ref={dialogRef} aria-label={title} onCancel={(event) => { event.preventDefault(); onClose(); }}
-      className="m-auto max-h-[calc(100dvh-32px)] w-[min(860px,calc(100vw-32px))] overflow-y-auto border-0 bg-[var(--project-dialog-surface)] p-6 text-[var(--text)] shadow-xl backdrop:bg-black/60 max-[600px]:p-4">
+      className="m-auto max-h-[calc(100dvh-32px)] w-[min(860px,calc(100vw_-_32px))] overflow-y-auto border-0 bg-[var(--project-dialog-surface)] p-6 text-[var(--text)] shadow-xl backdrop:bg-black/60 max-[600px]:p-4">
       <div className="mb-6 flex items-start justify-between gap-4">
         <h2 className="text-xl font-medium">{title}</h2>
         <button type="button" aria-label={`Close ${title}`} onClick={onClose} className="grid h-7 w-7 place-items-center text-2xl leading-none hover:text-[var(--red)]">×</button>
@@ -276,7 +276,7 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
 
   return <section aria-label="CV projects" className="mx-auto w-full max-w-[1190px] pt-2 text-[var(--text)]">
     <div className="mb-5 flex items-center justify-between gap-4">
-      <label className="flex h-12 w-80 max-w-[calc(100%-60px)] items-center gap-2 rounded-full border border-[var(--border)] px-3 focus-within:border-[var(--red)]">
+      <label className="flex h-12 w-80 max-w-[calc(100%_-_60px)] items-center gap-2 rounded-full border border-[var(--border)] px-3 focus-within:border-[var(--red)]">
         <AppIcon name="search" className="shrink-0" />
         <span className="sr-only">Search CV projects by name or domain</span>
         <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search"

@@ -5,7 +5,7 @@ import { AppIcon } from "@/components/app-icon";
 import { proficiencyDisplay, proficiencyOptions, useLanguagePreviewData, type LanguageProficiency, type ProfileLanguage } from "@/components/profile-languages-data";
 import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { SkillDialog } from "@/components/skill-dialogs";
-import { ProfileProficiencyItem } from "@/components/profile-proficiency-item";
+import { ProfileProficiencyItem, proficiencyBarClass } from "@/components/profile-proficiency-item";
 
 export function UserLanguagesPreview({ canEdit = true }: { canEdit?: boolean }) {
   const { languages, languageOptions, optionsState, reloadOptions, addLanguage, updateLanguage, removeLanguages } = useLanguagePreviewData();
@@ -23,32 +23,33 @@ export function UserLanguagesPreview({ canEdit = true }: { canEdit?: boolean }) 
 
   if (loadState === "loading" || optionsState === "loading") return <p role="status">Loading languages…</p>;
   if (loadState === "error" || optionsState === "error") return <div role="alert">Could not load languages. <button type="button" onClick={() => { void Promise.all([reload(), reloadOptions()]).catch(() => undefined); }}>Retry</button></div>;
-  return <div className="user-languages-page">
-    <section className="user-skills-content user-languages-content" aria-labelledby="current-languages-title">
-      <div className="user-skills-group">
+
+  return <div>
+    <section className="mx-auto mt-8 w-[min(900px,100%)] px-6 max-[900px]:pr-[19px] max-[900px]:pl-[25px] max-[600px]:px-0" aria-labelledby="current-languages-title">
+      <div className="[&+*]:mt-8 [&>h1]:m-0 [&>h1]:text-base [&>h1]:leading-6 [&>h1]:tracking-[.15px] [&>h1]:text-[var(--text)]">
         <h1 id="current-languages-title">Current languages</h1>
-        {shownLanguages.length ? <div className="user-skills-grid user-languages-grid">
+        {shownLanguages.length ? <div className="mt-4 grid auto-rows-[48px] grid-cols-2 max-[600px]:grid-cols-1">
           {shownLanguages.map((language) => {
             const { tone, level } = proficiencyDisplay[language.proficiency];
             const isSelected = selected.includes(language.name);
             return canEdit ? <button type="button" key={language.name}
-              className={`user-skill user-skill--button user-language${isSelected ? " user-skill--selected" : ""}`}
+              className={`flex min-h-12 w-full min-w-0 items-center gap-4 border-0 bg-transparent pl-4 text-left text-base leading-6 tracking-[.15px] text-[#626262] hover:text-[var(--text)] max-[900px]:pl-2${isSelected ? " rounded bg-[var(--sidebar-active)] text-[var(--text)]" : ""}`}
               aria-label={`${language.name}, ${language.proficiency}${selecting ? isSelected ? ", selected" : ", not selected" : ", edit language"}`}
               aria-pressed={selecting ? isSelected : undefined}
               onClick={() => {
                 if (selecting) setSelected((current) => current.includes(language.name) ? current.filter((name) => name !== language.name) : [...current, language.name]);
                 else { setEditing(language); setDialog("edit"); }
               }}>
-              <span className={`user-skill-bar user-skill-bar--${tone}`} aria-hidden="true"><span style={{ width: `${level}%` }} /></span>
-              <span className="user-language-name">{language.name}</span>
+              <span className={proficiencyBarClass(tone, isSelected)} aria-hidden="true"><span style={{ width: `${level}%` }} /></span>
+              <span className="min-w-0 truncate">{language.name}</span>
             </button> : <ProfileProficiencyItem key={language.name} name={language.name} tone={tone} level={level} />;
           })}
-        </div> : <p className="user-languages-empty">No languages here</p>}
+        </div> : <p className="mt-6 mb-0 text-base text-[var(--muted)]">No languages here</p>}
       </div>
-      {canEdit && <div className="admin-profile-actions profile-skills-actions user-languages-actions">
+      {canEdit && <div className="mt-6 flex justify-end gap-16 pr-6 max-[900px]:gap-6 max-[900px]:pr-0 max-[600px]:justify-between max-[600px]:gap-3 [&>button]:inline-flex [&>button]:h-12 [&>button]:w-40 [&>button]:items-center [&>button]:justify-center [&>button]:gap-2 [&>button]:rounded-3xl [&>button]:border-0 [&>button]:bg-transparent [&>button]:p-0 [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:whitespace-nowrap [&>button]:uppercase [&>button]:text-[var(--action-muted)] [&>button:last-child]:text-[var(--red)] [&>button:hover:not(:disabled)]:brightness-80 [&>button:disabled]:cursor-default [&>button:disabled]:opacity-45 max-[600px]:[&>button]:min-w-0 max-[600px]:[&>button]:flex-1">
         {selecting ? <>
-          <button type="button" className="profile-skills-cancel" onClick={cancelSelection}>Cancel</button>
-          <button type="button" className="profile-skills-remove" disabled={!selected.length} onClick={() => setDialog("remove")}>Remove <span className="cv-skills-count">{selected.length}</span></button>
+          <button type="button" className="border border-[var(--border)] text-[var(--text)]" onClick={cancelSelection}>Cancel</button>
+          <button type="button" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:opacity-45" disabled={!selected.length} onClick={() => setDialog("remove")}>Remove <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[#f5f5f7] px-1 text-xs leading-none tracking-normal text-[var(--red)] normal-case">{selected.length}</span></button>
         </> : <>
           <button type="button" onClick={() => { setEditing(null); setDialog("add"); }}><AppIcon name="add-profile-item" />Add language</button>
           <button type="button" disabled={!shownLanguages.length} onClick={() => setSelecting(true)}><AppIcon name="delete" />Remove languages</button>
@@ -97,8 +98,8 @@ function LanguageFormDialog({ kind, language, existing, options, onClose, onSave
   }
 
   return <SkillDialog title={title} onClose={onClose}>
-    <form className="cv-skill-dialog-form" onSubmit={save} noValidate>
-      <div className="cv-skill-dialog-field">
+    <form className="mt-6 flex flex-col gap-9 [&>div:last-child]:-mt-2.5" onSubmit={save} noValidate>
+      <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:text-[var(--muted)] [&>select]:h-12 [&>select]:w-full [&>select]:rounded-none [&>select]:border [&>select]:border-[var(--border)] [&>select]:bg-[var(--surface)] [&>select]:px-[11px] [&>select]:text-base [&>select]:text-[var(--text)] [&>select:disabled]:bg-[var(--sidebar-active)] [&>select:disabled]:text-[var(--muted)] [&>select[aria-invalid=true]]:border-[var(--red)]">
         <label htmlFor="language-dialog-name">Language</label>
         <select id="language-dialog-name" value={name} disabled={kind === "edit" || saving} required
           aria-invalid={Boolean((nameTouched && !name) || duplicate)}
@@ -108,9 +109,9 @@ function LanguageFormDialog({ kind, language, existing, options, onClose, onSave
           {language && <option value={language.name}>{language.name}</option>}
           {options.filter((option) => option !== language?.name).map((option) => <option value={option} key={option}>{option}</option>)}
         </select>
-        {(duplicate || (nameTouched && !name)) && <span id="language-dialog-name-error" className="cv-skill-field-error">{duplicate ? "Language already exists" : "Language is required"}</span>}
+        {(duplicate || (nameTouched && !name)) && <span id="language-dialog-name-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">{duplicate ? "Language already exists" : "Language is required"}</span>}
       </div>
-      <div className="cv-skill-dialog-field">
+      <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:text-[var(--muted)] [&>select]:h-12 [&>select]:w-full [&>select]:rounded-none [&>select]:border [&>select]:border-[var(--border)] [&>select]:bg-[var(--surface)] [&>select]:px-[11px] [&>select]:text-base [&>select]:text-[var(--text)] [&>select:disabled]:bg-[var(--sidebar-active)] [&>select:disabled]:text-[var(--muted)] [&>select[aria-invalid=true]]:border-[var(--red)]">
         <label htmlFor="language-dialog-proficiency">Language proficiency</label>
         <select id="language-dialog-proficiency" value={proficiency} disabled={saving} required
           aria-invalid={proficiencyTouched && !proficiency}
@@ -119,12 +120,12 @@ function LanguageFormDialog({ kind, language, existing, options, onClose, onSave
           <option value="">Language proficiency</option>
           {proficiencyOptions.map((option) => <option value={option} key={option}>{option}</option>)}
         </select>
-        {proficiencyTouched && !proficiency && <span id="language-dialog-proficiency-error" className="cv-skill-field-error">Language proficiency is required</span>}
+        {proficiencyTouched && !proficiency && <span id="language-dialog-proficiency-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">Language proficiency is required</span>}
       </div>
-      {error && <p className="cv-skill-system-error" role="alert">{error}</p>}
-      <div className="profile-cv-dialog-actions">
-        <button type="button" className="profile-cv-dialog-cancel" disabled={saving} onClick={onClose}>Cancel</button>
-        <button type="submit" className="profile-cv-dialog-submit" disabled={!valid || saving}>{saving ? "Saving..." : kind === "add" ? "Add" : "Save"}</button>
+      {error && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{error}</p>}
+      <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+        <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={saving} onClick={onClose}>Cancel</button>
+        <button type="submit" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={!valid || saving}>{saving ? "Saving..." : kind === "add" ? "Add" : "Save"}</button>
       </div>
     </form>
   </SkillDialog>;
@@ -150,11 +151,11 @@ function LanguageRemoveDialog({ count, onClose, onConfirm, onSuccess }: { count:
   }
 
   return <SkillDialog title="Remove language" onClose={onClose}>
-    <p className="profile-cv-dialog-message">Are you sure you want to remove <strong>{count} {count === 1 ? "language" : "languages"}</strong>?</p>
-    {error && <p className="cv-skill-system-error" role="alert">{error}</p>}
-    <div className="profile-cv-dialog-actions">
-      <button type="button" className="profile-cv-dialog-cancel" disabled={removing} onClick={onClose}>Cancel</button>
-      <button type="button" className="profile-cv-dialog-submit" disabled={removing || !count} onClick={confirm}>{removing ? "Removing..." : "Confirm"}</button>
+    <p className="mt-6 mb-7 text-base leading-6 tracking-[.15px]">Are you sure you want to remove <strong>{count} {count === 1 ? "language" : "languages"}</strong>?</p>
+    {error && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{error}</p>}
+    <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+      <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={removing} onClick={onClose}>Cancel</button>
+      <button type="button" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={removing || !count} onClick={confirm}>{removing ? "Removing..." : "Confirm"}</button>
     </div>
   </SkillDialog>;
 }

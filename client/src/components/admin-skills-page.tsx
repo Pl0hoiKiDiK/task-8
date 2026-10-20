@@ -22,7 +22,7 @@ export function AdminSkillsPage() {
     return id;
   }
   return <AdminCatalogPage<AdminSkill>
-    singular="Skill" plural="Skills" className="admin-skills"
+    singular="Skill" plural="Skills" layout="wide"
     initialItems={[]} loadItems={loadItems}
     createItem={async (skill) => {
       const { data } = await client.mutate<{ createSkill: ApiSkill }>({ mutation: CREATE_SKILL, variables: { skill: { name: skill.name, categoryId: categoryId(skill.category) } } });
@@ -40,7 +40,7 @@ export function AdminSkillsPage() {
     }}
     columns={[
       { key: "name", label: "Name", sortable: true, render: (item) => item.name },
-      { key: "type", label: "Type", className: "admin-skills-type", render: (item) => item.categoryType ?? "" },
+      { key: "type", label: "Type", className: "max-[900px]:hidden", render: (item) => item.categoryType ?? "" },
       { key: "category", label: "Category", render: (item) => item.category },
     ]}
     filterAndSort={(items, search, sort) => filterAndSortSkills(items, search, sort?.direction ?? null)}
@@ -85,15 +85,15 @@ function AdminSkillFormDialog({ skill, skills, categories, onClose, onSave }: {
   }
 
   return <SkillDialog title={skill ? "Update skill" : "Create skill"} onClose={onClose}>
-    <form className="admin-skill-dialog-form" onSubmit={submit} noValidate>
-      <div className="admin-skill-field">
+    <form className="mt-6 flex flex-col gap-9 [&>div:last-child]:-mt-2.5" onSubmit={submit} noValidate>
+      <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:leading-4 [&>label]:text-[var(--muted)] [&>input]:block [&>input]:h-12 [&>input]:w-full [&>input]:rounded-none [&>input]:border [&>input]:border-[var(--border)] [&>input]:bg-transparent [&>input]:px-[11px] [&>input]:text-sm [&>input]:leading-6 [&>input]:tracking-[.15px] [&>input]:text-[var(--text)] [&>input]:placeholder:text-[var(--placeholder)] [&>select]:block [&>select]:h-12 [&>select]:w-full [&>select]:rounded-none [&>select]:border [&>select]:border-[var(--border)] [&>select]:bg-[var(--surface)] [&>select]:px-[11px] [&>select]:text-sm [&>select]:leading-6 [&>select]:tracking-[.15px] [&>select]:text-[var(--text)] [&>[aria-invalid=true]]:border-[var(--red)]">
         <label htmlFor="admin-skill-name">Name</label>
         <input id="admin-skill-name" type="text" placeholder="Name" value={name} disabled={saving} aria-invalid={nameTouched && (!name.trim() || duplicate)}
           aria-describedby={nameTouched && (!name.trim() || duplicate) ? "admin-skill-name-error" : undefined}
           onBlur={() => setNameTouched(true)} onChange={(event) => { setName(event.target.value); setSystemError(""); }} />
-        {nameTouched && (!name.trim() || duplicate) && <span id="admin-skill-name-error" className="cv-skill-field-error">{duplicate ? "Skill already exists" : "Skill is required"}</span>}
+        {nameTouched && (!name.trim() || duplicate) && <span id="admin-skill-name-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">{duplicate ? "Skill already exists" : "Skill is required"}</span>}
       </div>
-      <div className="admin-skill-field">
+      <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:leading-4 [&>label]:text-[var(--muted)] [&>input]:block [&>input]:h-12 [&>input]:w-full [&>input]:rounded-none [&>input]:border [&>input]:border-[var(--border)] [&>input]:bg-transparent [&>input]:px-[11px] [&>input]:text-sm [&>input]:leading-6 [&>input]:tracking-[.15px] [&>input]:text-[var(--text)] [&>input]:placeholder:text-[var(--placeholder)] [&>select]:block [&>select]:h-12 [&>select]:w-full [&>select]:rounded-none [&>select]:border [&>select]:border-[var(--border)] [&>select]:bg-[var(--surface)] [&>select]:px-[11px] [&>select]:text-sm [&>select]:leading-6 [&>select]:tracking-[.15px] [&>select]:text-[var(--text)] [&>[aria-invalid=true]]:border-[var(--red)]">
         <label htmlFor="admin-skill-category">Category</label>
         <select id="admin-skill-category" value={category} disabled={saving} aria-invalid={categoryTouched && !category}
           aria-describedby={categoryTouched && !category ? "admin-skill-category-error" : undefined}
@@ -101,12 +101,12 @@ function AdminSkillFormDialog({ skill, skills, categories, onClose, onSave }: {
           <option value="">Category</option>
           {categories.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
         </select>
-        {categoryTouched && !category && <span id="admin-skill-category-error" className="cv-skill-field-error">Category is required</span>}
+        {categoryTouched && !category && <span id="admin-skill-category-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">Category is required</span>}
       </div>
-      {systemError && <p className="cv-skill-system-error" role="alert">{systemError}</p>}
-      <div className="profile-cv-dialog-actions">
-        <button type="button" className="profile-cv-dialog-cancel" disabled={saving} onClick={onClose}>Cancel</button>
-        <button type="submit" className="profile-cv-dialog-submit" disabled={!valid || saving}>{saving ? "Saving..." : skill ? "Update" : "Create"}</button>
+      {systemError && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{systemError}</p>}
+      <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+        <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={saving} onClick={onClose}>Cancel</button>
+        <button type="submit" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={!valid || saving}>{saving ? "Saving..." : skill ? "Update" : "Create"}</button>
       </div>
     </form>
   </SkillDialog>;
@@ -124,11 +124,11 @@ function AdminSkillDeleteDialog({ skill, onClose, onDelete }: { skill: AdminSkil
     finally { setDeleting(false); }
   }
   return <SkillDialog title="Delete skill" onClose={onClose}>
-    <p className="profile-cv-dialog-message">Are you sure you want to delete skill <strong>{skill.name}</strong>?</p>
-    {error && <p className="cv-skill-system-error" role="alert">{error}</p>}
-    <div className="profile-cv-dialog-actions">
-      <button type="button" className="profile-cv-dialog-cancel" disabled={deleting} onClick={onClose}>Cancel</button>
-      <button type="button" className="profile-cv-dialog-submit" disabled={deleting} onClick={confirm}>{deleting ? "Deleting..." : "Confirm"}</button>
+    <p className="mt-6 mb-7 text-base leading-6 tracking-[.15px]">Are you sure you want to delete skill <strong>{skill.name}</strong>?</p>
+    {error && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{error}</p>}
+    <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+      <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={deleting} onClick={onClose}>Cancel</button>
+      <button type="button" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={deleting} onClick={confirm}>{deleting ? "Deleting..." : "Confirm"}</button>
     </div>
   </SkillDialog>;
 }

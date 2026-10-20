@@ -18,7 +18,7 @@ export function AdminPositionsPage() {
   const loadItems = useCallback(() => loadAllCatalogItems(client, POSITIONS_QUERY, "positions"), [client]);
   const refreshRoles = () => { void reloadProjectRoles().catch(() => undefined); };
   return <AdminCatalogPage<AdminPosition>
-    singular="Position" plural="Positions" className="admin-positions"
+    singular="Position" plural="Positions" layout="compact"
     initialItems={[]} loadItems={loadItems}
     createItem={async ({ name }) => {
       const { data } = await client.mutate<{ createPosition: AdminPosition }>({ mutation: CREATE_POSITION, variables: { position: { name } } });
@@ -81,8 +81,8 @@ function AdminPositionFormDialog({ position, positions, onClose, onSave }: {
   }
 
   return <SkillDialog title={position ? "Edit position" : "Create position"} onClose={onClose}>
-    <form className="admin-position-dialog-form" onSubmit={submit} noValidate>
-      <div className="admin-position-field">
+    <form className="mt-6 flex flex-col gap-9 [&>div:last-child]:-mt-2.5" onSubmit={submit} noValidate>
+      <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:leading-4 [&>label]:text-[var(--muted)] [&>input]:block [&>input]:h-12 [&>input]:w-full [&>input]:rounded-none [&>input]:border [&>input]:border-[var(--border)] [&>input]:bg-transparent [&>input]:px-[11px] [&>input]:text-sm [&>input]:leading-6 [&>input]:tracking-[.15px] [&>input]:text-[var(--text)] [&>input]:placeholder:text-[var(--placeholder)] [&>[aria-invalid=true]]:border-[var(--red)]">
         <label htmlFor="admin-position-name" className={name ? undefined : "sr-only"}>Position</label>
         <input id="admin-position-name" type="text" placeholder="Position" value={name} disabled={saving}
           aria-invalid={touched && Boolean(error)} aria-describedby={touched && error ? "admin-position-name-error" : undefined}
@@ -90,12 +90,12 @@ function AdminPositionFormDialog({ position, positions, onClose, onSave }: {
             if (event.relatedTarget instanceof HTMLElement && event.currentTarget.closest("dialog")?.contains(event.relatedTarget)) setTouched(true);
           }}
           onChange={(event) => { setName(event.target.value); setTouched(true); setSystemError(""); }} />
-        {touched && error && <span id="admin-position-name-error" className="cv-skill-field-error">{error}</span>}
+        {touched && error && <span id="admin-position-name-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">{error}</span>}
       </div>
-      {systemError && <p className="cv-skill-system-error" role="alert">{systemError}</p>}
-      <div className="profile-cv-dialog-actions">
-        <button type="button" className="profile-cv-dialog-cancel" disabled={saving} onClick={onClose}>Cancel</button>
-        <button type="submit" className="profile-cv-dialog-submit" disabled={saving}>
+      {systemError && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{systemError}</p>}
+      <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+        <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={saving} onClick={onClose}>Cancel</button>
+        <button type="submit" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={saving}>
           {saving ? "Saving..." : position ? "Save" : "Create"}
         </button>
       </div>
@@ -128,13 +128,13 @@ function AdminPositionDeleteDialog({ position, onClose, onDelete }: {
   }
 
   return <SkillDialog title="Delete position" onClose={onClose}>
-    <p className={`profile-cv-dialog-message${error ? " admin-position-delete-message--error" : ""}`}>
+    <p className={`mt-6 mb-7 text-base leading-6 tracking-[.15px]${error ? " mb-2" : ""}`}>
       Are you sure you want to delete position <strong>{position.name}</strong>?
     </p>
-    {error && <p className="cv-skill-system-error" role="alert">{error}</p>}
-    <div className="profile-cv-dialog-actions">
-      <button type="button" className="profile-cv-dialog-cancel" disabled={deleting} onClick={onClose}>Cancel</button>
-      <button type="button" className="profile-cv-dialog-submit" disabled={deleting} onClick={confirm}>
+    {error && <p className="mt-1 block text-xs leading-4 text-[var(--red)]" role="alert">{error}</p>}
+    <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
+      <button type="button" className="border border-[var(--text)] bg-transparent text-[var(--text)]" disabled={deleting} onClick={onClose}>Cancel</button>
+      <button type="button" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" disabled={deleting} onClick={confirm}>
         {deleting ? "Deleting..." : "Confirm"}
       </button>
     </div>

@@ -1,93 +1,142 @@
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MyProfilePreview } from "./my-profile-preview";
-import { DEPARTMENTS_QUERY, POSITIONS_QUERY } from "@/lib/catalog-api";
-import { DELETE_AVATAR, UPDATE_PROFILE, UPDATE_USER_ASSIGNMENT } from "@/lib/cv-api";
-import { SEND_VERIFICATION_MUTATION } from "@/lib/auth/api/graphql";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
+import { useAppSelector } from "@/lib/hooks";
+import { MyProfilePreview } from "@/components/my-profile-preview";
+import { DELETE_AVATAR } from "@/lib/cv-api";
+import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, PROFILE_DEPARTMENTS_QUERY, PROFILE_POSITIONS_QUERY, type ProfileUser } from "@/lib/profile/api";
 
-const mocks = vi.hoisted(() => ({
-  query: vi.fn(), mutate: vi.fn(), reload: vi.fn(), refetch: vi.fn(), push: vi.fn(),
-  avatar: "https://example.com/avatar.png",
-  isVerified: true,
-}));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
-vi.mock("@apollo/client/react", () => ({
-  useApolloClient: () => ({ query: mocks.query, mutate: mocks.mutate }),
-  useQuery: () => ({
-    data: { user: { id: "user-1", role: "Employee", department: { id: "d-1", name: "Engineering" }, position: { id: "p-1", name: "Developer" } } },
-    loading: false, error: null, refetch: mocks.refetch,
-  }),
-}));
-vi.mock("@/components/profile-cvs-data", () => ({
-  useCvPreviewData: () => ({
-    currentUserId: "user-1", currentUserEmail: "ada@example.com", loadState: "ready", reload: mocks.reload,
-    profile: { id: "user-1", created_at: "2025-01-01", first_name: "Ada", last_name: "Lovelace", full_name: "Ada Lovelace", email: "ada@example.com", avatar: mocks.avatar, is_verified: mocks.isVerified, skills: [], languages: [] },
-  }),
-}));
+vi.mock("@apollo/client/react", () => ({ useApolloClient: vi.fn(), useMutation: vi.fn(), useQuery: vi.fn() }));
+vi.mock("@/lib/hooks", () => ({ useAppSelector: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
+const profile: ProfileUser = {
+  id: "2", email: "person@example.com", created_at: "1791212081094", is_verified: false, role: "Employee",
+  profile: { first_name: "Jane", last_name: "Doe", avatar: null },
+  department: { id: "d1", name: "React" }, position: { id: "p1", name: "Engineer" },
+};
+const updateProfile = vi.fn();
+const updateUser = vi.fn();
+const deleteAvatar = vi.fn();
+const clientQuery = vi.fn();
 
 beforeEach(() => {
-  mocks.avatar = "https://example.com/avatar.png";
-  mocks.isVerified = true;
-  mocks.push.mockReset();
-  mocks.query.mockReset().mockImplementation(async ({ query }) => {
-    if (query === DEPARTMENTS_QUERY) return { data: { departments: { items: [{ id: "d-1", name: "Engineering" }, { id: "d-2", name: "Design" }], total_pages: 1 } } };
-    if (query === POSITIONS_QUERY) return { data: { positions: { items: [{ id: "p-1", name: "Developer" }], total_pages: 1 } } };
-    throw new Error("Unexpected query");
+  vi.mocked(useAppSelector).mockImplementation((selector) => selector({ auth: { user: { id: "2", email: profile.email, role: "Employee", is_verified: false } } } as never));
+  vi.mocked(useQuery).mockReturnValue({ data: { user: profile }, loading: false, error: undefined, refetch: vi.fn().mockResolvedValue({ data: { user: profile } }) } as never);
+  vi.mocked(useApolloClient).mockReturnValue({ query: clientQuery } as never);
+  clientQuery.mockImplementation(({ query }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+    ? { departments: { items: [{ id: "d1", name: "React" }, { id: "d2", name: "DevOps" }], total_pages: 1 } }
+    : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
+  updateProfile.mockResolvedValue({ data: { updateProfile: { id: "2" } } });
+  updateUser.mockResolvedValue({ data: { updateUser: { id: "2" } } });
+  deleteAvatar.mockResolvedValue({ data: { deleteAvatar: true } });
+  vi.mocked(useMutation).mockImplementation(((document: unknown) => [document === UPDATE_PROFILE_MUTATION ? updateProfile : document === UPDATE_PROFILE_USER_MUTATION ? updateUser : document === DELETE_AVATAR ? deleteAvatar : vi.fn(), {}]) as never);
+});
+
+afterEach(() => { cleanup(); vi.clearAllMocks(); });
+
+describe("My Profile", () => {
+  it("lets the owner update changed fields after validation", async () => {
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    expect(screen.getByRole("button", { name: "Update" })).toBeDisabled();
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "" } });
+    expect(screen.getByText("First name is required")).toBeVisible();
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "Janet" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Department" }), { target: { value: "d2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ variables: { profile: { userId: "2", first_name: "Janet", last_name: "Doe" } } }));
+    expect(updateUser).toHaveBeenCalledWith({ variables: { user: { userId: "2", departmentId: "d2", positionId: "p1", role: "Employee" } } });
   });
-  mocks.mutate.mockReset().mockResolvedValue({ data: {} });
-  mocks.reload.mockReset().mockResolvedValue(undefined);
-  mocks.refetch.mockReset().mockResolvedValue(undefined);
-});
-afterEach(cleanup);
 
-it("loads profile catalogs and saves changed identity and department through GraphQL", async () => {
-  render(<MyProfilePreview />);
-  expect(screen.getByRole("status")).toHaveTextContent("Loading profile");
-  const firstName = await screen.findByRole("textbox", { name: "First Name" });
-  expect(firstName).toHaveValue("Ada");
-  const update = screen.getByRole("button", { name: "Update" });
-  expect(update).toBeDisabled();
-  fireEvent.change(firstName, { target: { value: "Ada Marie" } });
-  fireEvent.change(screen.getByRole("combobox", { name: "Department" }), { target: { value: "d-2" } });
-  fireEvent.click(update);
-  await waitFor(() => expect(mocks.mutate).toHaveBeenCalledTimes(2));
-  expect(mocks.mutate).toHaveBeenCalledWith({ mutation: UPDATE_PROFILE, variables: { profile: { userId: "user-1", first_name: "Ada Marie", last_name: "Lovelace" } } });
-  expect(mocks.mutate).toHaveBeenCalledWith({ mutation: UPDATE_USER_ASSIGNMENT, variables: { user: { userId: "user-1", departmentId: "d-2", positionId: "p-1", role: "Employee" } } });
-  expect(await screen.findByRole("status")).toHaveTextContent("Profile updated");
-  expect(mocks.refetch).toHaveBeenCalled();
-});
+  it("keeps a colleague's profile read-only for an employee", () => {
+    vi.mocked(useAppSelector).mockImplementation((selector) => selector({ auth: { user: { id: "1", email: "viewer@example.com", role: "Employee", is_verified: true } } } as never));
+    render(<MyProfilePreview userId="2" />);
+    expect(screen.getByRole("textbox", { name: "First Name" })).toHaveAttribute("readonly");
+    expect(screen.getByRole("combobox", { name: "Department" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Update" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Verify email" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Upload avatar image" })).not.toBeInTheDocument();
+  });
 
-it("validates avatar uploads, then removes an existing avatar", async () => {
-  render(<MyProfilePreview />);
-  const input = await screen.findByLabelText("Choose avatar image");
-  fireEvent.change(input, { target: { files: [new File(["not an image"], "notes.txt", { type: "text/plain" })] } });
-  expect(screen.getByRole("alert")).toHaveTextContent("Choose a PNG, JPG or GIF image");
-  expect(mocks.mutate).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Remove avatar" }));
-  await waitFor(() => expect(mocks.mutate).toHaveBeenCalledWith({ mutation: DELETE_AVATAR, variables: { avatar: { userId: "user-1" } } }));
-  expect(await screen.findByRole("status")).toHaveTextContent("Avatar removed");
-});
+  it("removes the owner's avatar through GraphQL", async () => {
+    vi.mocked(useQuery).mockReturnValue({ data: { user: { ...profile, profile: { ...profile.profile, avatar: "data:image/png;base64,AAAA" } } }, loading: false, error: undefined, refetch: vi.fn().mockResolvedValue({ data: { user: profile } }) } as never);
+    render(<MyProfilePreview />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove avatar" }));
+    await waitFor(() => expect(deleteAvatar).toHaveBeenCalledWith({ variables: { avatar: { userId: "2" } } }));
+    expect(await screen.findByText("Avatar removed successfully.")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Remove avatar" })).not.toBeInTheDocument();
+  });
 
-it("renders another user's profile without edit actions", async () => {
-  render(<MyProfilePreview canEdit={false} isOwner={false} />);
-  expect(await screen.findByRole("textbox", { name: "First Name" })).toBeDisabled();
-  expect(screen.queryByRole("button", { name: "Update" })).not.toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "Remove avatar" })).not.toBeInTheDocument();
-});
+  it("preserves edited values when the update request fails", async () => {
+    updateProfile.mockRejectedValueOnce(new Error("Network failed"));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "Janet" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(screen.getByText(/Could not update the profile/)).toBeVisible());
+    expect(screen.getByRole("textbox", { name: "First Name" })).toHaveValue("Janet");
+  });
 
-it("requests a verification email before opening the code page", async () => {
-  mocks.isVerified = false;
-  render(<MyProfilePreview />);
-  fireEvent.click(await screen.findByRole("button", { name: "Verify email" }));
-  await waitFor(() => expect(mocks.mutate).toHaveBeenCalledWith({ mutation: SEND_VERIFICATION_MUTATION, variables: { email: "ada@example.com" } }));
-  expect(mocks.push).toHaveBeenCalledWith("/verify-email?sent=1");
-});
+  it("accepts zero catalog pages without requesting another page", async () => {
+    clientQuery.mockImplementation(({ query }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+      ? { departments: { items: [], total_pages: 0 } } : { positions: { items: [], total_pages: 0 } } }));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByText(/No departments or positions are available yet/)).toBeVisible());
+    expect(clientQuery).toHaveBeenCalledTimes(2);
+  });
 
-it("keeps the user on the profile if sending verification fails", async () => {
-  mocks.isVerified = false;
-  mocks.mutate.mockRejectedValueOnce(new Error("Mail unavailable"));
-  render(<MyProfilePreview />);
-  fireEvent.click(await screen.findByRole("button", { name: "Verify email" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("Failed to send verification email");
-  expect(mocks.push).not.toHaveBeenCalled();
+  it("rejects invalid catalog page counts instead of continuing requests", async () => {
+    clientQuery.mockImplementation(({ query }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+      ? { departments: { items: [], total_pages: Number.POSITIVE_INFINITY } } : { positions: { items: [], total_pages: 1 } } }));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByText(/Could not load departments and positions/)).toBeVisible());
+    expect(clientQuery).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads all department pages without requesting extra position pages", async () => {
+    clientQuery.mockImplementation(({ query, variables }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
+      ? { departments: { items: variables.page === 1 ? [{ id: "d1", name: "React" }] : [{ id: "d2", name: "DevOps" }], total_pages: 2 } }
+      : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    expect(screen.getByRole("option", { name: "DevOps" })).toBeInTheDocument();
+    expect(clientQuery.mock.calls.map(([request]) => [request.query, request.variables.page])).toEqual([
+      [PROFILE_DEPARTMENTS_QUERY, 1], [PROFILE_POSITIONS_QUERY, 1], [PROFILE_DEPARTMENTS_QUERY, 2],
+    ]);
+  });
+
+  it("rolls back the name when updating department fails", async () => {
+    updateUser.mockRejectedValueOnce(new Error("Network failed"));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "Janet" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Department" }), { target: { value: "d2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(2));
+    expect(updateProfile).toHaveBeenNthCalledWith(2, { variables: { profile: { userId: "2", first_name: "Jane", last_name: "Doe" } } });
+    expect(screen.getByText(/Could not update the profile/)).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "First Name" })).toHaveValue("Janet");
+  });
+
+  it("reports a partial update if rollback also fails", async () => {
+    updateUser.mockRejectedValueOnce(new Error("Network failed"));
+    updateProfile.mockResolvedValueOnce({ data: { updateProfile: { id: "2" } } }).mockRejectedValueOnce(new Error("Rollback failed"));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "Janet" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Department" }), { target: { value: "d2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(screen.getByText(/Profile was partially updated/)).toBeVisible());
+    expect(screen.getByRole("textbox", { name: "First Name" })).toHaveValue("Janet");
+  });
+
+  it("allows an admin to edit another user's profile without offering email verification", async () => {
+    vi.mocked(useAppSelector).mockImplementation((selector) => selector({ auth: { user: { id: "1", email: "admin@example.com", role: "Admin", is_verified: true } } } as never));
+    render(<MyProfilePreview userId="2" />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    expect(screen.getByRole("textbox", { name: "First Name" })).not.toHaveAttribute("readonly");
+    expect(screen.getByRole("button", { name: "Upload avatar image" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Verify email" })).not.toBeInTheDocument();
+  });
 });

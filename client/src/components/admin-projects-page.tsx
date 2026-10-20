@@ -53,7 +53,7 @@ export function AdminProjectsPage() {
   const loadItems = useCallback(() => loadProjects(client), [client]);
   const refreshCvs = () => { void reload().catch(() => undefined); };
   return <AdminCatalogPage<CatalogProject>
-    singular="Project" plural="Projects" className="admin-projects"
+    singular="Project" plural="Projects" layout="projects"
     initialItems={[]} loadItems={loadItems}
     createItem={async (item) => {
       const { data } = await client.mutate<{ createProject: ApiProject }>({ mutation: CREATE_PROJECT, variables: { project: toInput(item) } });

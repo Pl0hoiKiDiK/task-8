@@ -87,21 +87,23 @@ function CvDetailsForm({ cv }: { cv: CvRecord }) {
       onBlur: () => setTouched((current) => ({ ...current, [key]: true })),
     };
     return (
-      <div className="cv-details-field" key={key}>
-        <label htmlFor={id}>{label}</label>
-        {key === "description" ? <textarea {...shared} /> : <input {...shared} type="text" maxLength={255} />}
-        {error && <span className="cv-details-field-error" id={`${id}-error`}>{error}</span>}
+      <div className="relative" key={key}>
+        <label className="absolute -top-[17px] left-[15px] text-xs leading-4 text-[var(--muted)]" htmlFor={id}>{label}</label>
+        {key === "description" ?
+          <textarea {...shared} className="block h-[185px] w-full resize-y rounded-none border border-[#aeaeae] bg-transparent px-[11px] pt-[19px] text-base leading-6 tracking-[.15px] text-[var(--text)] aria-invalid:border-[var(--red)]" /> :
+          <input {...shared} className="block h-12 w-full rounded-none border border-[#aeaeae] bg-transparent px-[11px] text-base leading-6 tracking-[.15px] text-[var(--text)] aria-invalid:border-[var(--red)]" type="text" maxLength={255} />}
+        {error && <span className="mt-1 block text-xs leading-4 text-[var(--red)]" id={`${id}-error`}>{error}</span>}
       </div>
     );
   }
 
   return (
-    <form className="cv-details-form" onSubmit={save} noValidate>
+    <form className="mx-auto mt-5 flex w-full max-w-[852px] flex-col gap-9" onSubmit={save} noValidate>
       {field("name", "Name")}
       {field("education", "Education")}
       {field("description", "Description")}
-      {saveError && <p className="cv-details-save-error" role="alert">{saveError}</p>}
-      <button className="cv-details-update" type="submit" disabled={!dirty || !valid || saving}>{saving ? "Updating..." : "Update"}</button>
+      {saveError && <p className="-mt-4 text-sm text-[var(--red)]" role="alert">{saveError}</p>}
+      <button className="h-12 w-40 self-end rounded-full border-0 bg-[var(--red)] text-sm font-medium leading-[24.5px] tracking-[.4px] text-[#f5f5f7] uppercase disabled:cursor-default disabled:bg-[var(--border)] disabled:text-[var(--cv-details-disabled-text)]" type="submit" disabled={!dirty || !valid || saving}>{saving ? "Updating..." : "Update"}</button>
     </form>
   );
 }
@@ -123,7 +125,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
 
   if (detailsState === "error" || !cv) {
     return (
-      <div className="cv-details-unavailable" role="alert">
+      <div className="mx-auto mt-10 w-full max-w-[852px] text-base leading-6 text-[var(--text)] [&_a]:mr-5 [&_a]:text-[var(--red)] [&_button]:mr-5 [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-[var(--red)]" role="alert">
         <p>Failed to load CV details</p>
         <button type="button" onClick={() => { setDetailsState("loading"); void loadCv(cvId).then(() => setDetailsState("ready")).catch(() => setDetailsState("error")); }}>Retry</button>
         <Link href={role === "admin" ? "/admin/cvs" : "/cvs"}>Back to CVs</Link>
@@ -132,7 +134,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
   }
 
   return (
-    <section className="cv-details-page" aria-label="CV details">
+    <section aria-label="CV details">
       <nav className="flex h-[52px] max-w-full overflow-x-auto print:hidden" aria-label="CV sections">
         {sections.map((item) => (
           <Link
