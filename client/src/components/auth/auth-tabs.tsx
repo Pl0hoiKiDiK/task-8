@@ -19,7 +19,7 @@ export function AuthTabs() {
                     <Link
                         key={href}
                         href={href}
-                        className={`grid w-[150px] place-items-center text-sm font-medium leading-[17.5px] tracking-[.4px] text-[var(--text)] uppercase no-underline${active ? " border-b-2 border-[var(--red)] font-semibold text-[var(--red)]" : ""}`}
+                        className={`grid w-[150px] place-items-center text-sm leading-[17.5px] tracking-[.4px] uppercase no-underline hover:text-[var(--red)] ${active ? "border-b-2 border-[var(--red)] font-semibold text-[var(--red)]" : "font-medium text-[var(--text)]"}`}
                         aria-current={active ? "page" : undefined}
                     >
                         {label}

@@ -74,14 +74,14 @@ export function OtpField({ value, onChange, readOnly, invalid, describedBy }: Pr
     }
 
     return (
-        <div role="group" aria-label="Verification code" className="flex justify-center gap-4">
+        <div role="group" aria-label="Verification code" className="flex justify-center gap-2 sm:gap-4">
             {value.map((digit, index) => (
                 <input
                     key={index}
                     ref={(element) => {
                         refs.current[index] = element;
                     }}
-                    className="h-12 min-w-0 flex-[0_1_48px] rounded-none border border-[#aeaeae] bg-transparent text-center text-base text-[var(--text)] focus-visible:border-[var(--text)] focus-visible:outline-none aria-invalid:border-[var(--red)] aria-invalid:focus-visible:outline-2 aria-invalid:focus-visible:outline-offset-2 aria-invalid:focus-visible:outline-[var(--red)]"
+                    className="h-12 min-w-0 basis-9 rounded-none border border-[#aeaeae] bg-transparent text-center text-base text-[var(--text)] aria-invalid:border-[var(--red)] sm:basis-12"
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
