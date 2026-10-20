@@ -4,14 +4,13 @@ import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { OtpField } from "./otp-field";
 
-let latest: string[] = [];
 function Harness({ readOnly }: { readOnly?: boolean }) {
     const [v, setV] = useState<string[]>(Array(6).fill(""));
-    latest = v;
     return <OtpField value={v} onChange={setV} readOnly={readOnly} />;
 }
 const cell = (i: number) => screen.getByLabelText(`Digit ${i + 1} of 6`) as HTMLInputElement;
-const code = () => latest.join("");
+const digits = () => Array.from({ length: 6 }, (_, i) => cell(i).value);
+const code = () => digits().join("");
 
 describe("OtpField", () => {
     it("typing moves focus forward", async () => {
@@ -42,7 +41,7 @@ describe("OtpField", () => {
     it("paste in the middle fills from that cell", () => {
         render(<Harness />);
         fireEvent.paste(cell(3), { clipboardData: { getData: () => "99" } });
-        expect(latest).toEqual(["", "", "", "9", "9", ""]);
+        expect(digits()).toEqual(["", "", "", "9", "9", ""]);
     });
     it("Backspace on an empty cell clears previous and focuses it", async () => {
         const user = userEvent.setup();

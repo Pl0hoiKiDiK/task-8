@@ -8,11 +8,17 @@ const KEY = "cv-builder-refresh-token";
 const user = { id: "42", email: "a@b.co", role: "Employee", is_verified: true };
 const access = makeJwt({ sub: "42", email: "a@b.co", role: "Employee", exp: 9999999999 });
 
-type AnyFn = (...args: any[]) => Promise<any>
+type MutateOptions = { context: { headers: { authorization: string } } };
+type QueryOptions = MutateOptions & { variables: { userId: string } };
+type MutateResult = { data: { updateToken: { access_token: string; refresh_token: string } } | null };
+type QueryResult = { data: { user: typeof user } | null };
 
-const makeClient = (over: { mutate?: AnyFn; query?: AnyFn } = {}) => ({
-    mutate: vi.fn<AnyFn>(over.mutate ?? (async () => ({ data: { updateToken: { access_token: access, refresh_token: "new-refresh" } } }))),
-    query: vi.fn<AnyFn>(over.query ?? (async () => ({ data: { user } }))),
+type Mutate = (options: MutateOptions) => Promise<MutateResult>;
+type Query = (options: QueryOptions) => Promise<QueryResult>;
+
+const makeClient = (over: { mutate?: Mutate; query?: Query  } = {}) => ({
+    mutate: vi.fn<Mutate>(over.mutate ?? (async () => ({ data: { updateToken: { access_token: access, refresh_token: "new-refresh" } } }))),
+    query: vi.fn<Query>(over.query ?? (async () => ({ data: { user } }))),
 })
 
 const run = (c: ReturnType<typeof makeClient>) => restoreSession(c as never)
