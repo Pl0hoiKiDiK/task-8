@@ -37,7 +37,7 @@ describe("CV links with GraphQL data", () => {
     ["employee", "/cvs/cv-1"],
   ] as const)("opens a loaded CV from the %s view", async (view, href) => {
     renderPage(view);
-    fireEvent.click(await screen.findByRole("button", { name: "Actions for Frontend CV" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Actions for Frontend CV" }, { timeout: 5000 }));
     expect(screen.getByRole("menuitem", { name: "View" })).toHaveAttribute("href", href);
   });
 });

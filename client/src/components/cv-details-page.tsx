@@ -121,7 +121,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
 
   if (detailsState === "loading") return <p role="status">Loading CV details…</p>;
 
-  if (!cv) {
+  if (detailsState === "error" || !cv) {
     return (
       <div className="cv-details-unavailable" role="alert">
         <p>Failed to load CV details</p>

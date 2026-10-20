@@ -284,13 +284,14 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
       </button>
     </div>
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[590px] table-fixed border-collapse text-sm">
+      <table className="w-full min-w-[760px] table-fixed border-collapse text-sm">
         <thead><tr className="border-b border-[var(--border)] text-left">
-          <th scope="col" className="w-[49%] px-4 pb-5 font-medium lg:w-[30%]">{sortButton("name", "Name")}</th>
-          <th scope="col" className="hidden px-4 pb-5 font-medium lg:table-cell lg:w-[25%]">Domain</th>
-          <th scope="col" className="w-[22%] px-4 pb-5 font-medium lg:w-[20%]">{sortButton("startDate", "Start Date")}</th>
-          <th scope="col" className="w-[22%] px-4 pb-5 font-medium lg:w-[20%]">{sortButton("endDate", "End Date")}</th>
-          <th scope="col" className="w-[7%] lg:w-[5%]"><span className="sr-only">Actions</span></th>
+          <th scope="col" className="w-[20%] px-4 pb-5 font-medium">{sortButton("name", "Name")}</th>
+          <th scope="col" className="w-[18%] px-4 pb-5 font-medium">Domain</th>
+          <th scope="col" className="w-[28%] px-4 pb-5 font-medium">Responsibilities</th>
+          <th scope="col" className="w-[15%] px-4 pb-5 font-medium">{sortButton("startDate", "Start Date")}</th>
+          <th scope="col" className="w-[15%] px-4 pb-5 font-medium">{sortButton("endDate", "End Date")}</th>
+          <th scope="col" className="w-[4%]"><span className="sr-only">Actions</span></th>
         </tr></thead>
         <tbody>
           {shown.map((entry) => {
@@ -299,7 +300,8 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
             return <Fragment key={entry.projectId}>
               <tr className="align-top">
                 <td className="px-4 pt-5 font-medium">{project.name}</td>
-                <td className="hidden px-4 pt-5 lg:table-cell">{project.domain}</td>
+                <td className="px-4 pt-5">{project.domain}</td>
+                <td className="px-4 pt-5">{entry.responsibilities.join(", ") || "—"}</td>
                 <td className="px-4 pt-5">{formatProjectDate(entry.startDate)}</td>
                 <td className="px-4 pt-5">{formatProjectDate(entry.endDate)}</td>
                 <td className="pt-4">
@@ -323,17 +325,8 @@ export function CvProjectsPage({ cv }: { cv: CvRecord }) {
                 </td>
               </tr>
               <tr className="border-b border-[var(--border)]">
-                <td colSpan={5} className="hidden px-4 pb-5 pt-3 text-base leading-6 text-[var(--muted)] lg:table-cell">
+                <td colSpan={6} className="px-4 pb-5 pt-3 text-base leading-6 text-[var(--muted)]">
                   <p className="line-clamp-2" title={project.description}>{project.description}</p>
-                  {entry.responsibilities.length > 0 && <div className="mt-3 flex flex-wrap gap-1">
-                    {entry.responsibilities.map((item, index) => <span key={`${item}-${index}`} className="rounded-full bg-[var(--sidebar-active)] px-2 py-1 text-xs text-[var(--text)]">{item}</span>)}
-                  </div>}
-                </td>
-                <td colSpan={4} className="px-4 pb-5 pt-3 text-base leading-6 text-[var(--muted)] lg:hidden">
-                  <p className="line-clamp-2" title={project.description}>{project.description}</p>
-                  {entry.responsibilities.length > 0 && <div className="mt-3 flex flex-wrap gap-1">
-                    {entry.responsibilities.map((item, index) => <span key={`${item}-${index}`} className="rounded-full bg-[var(--sidebar-active)] px-2 py-1 text-xs text-[var(--text)]">{item}</span>)}
-                  </div>}
                 </td>
               </tr>
             </Fragment>;
