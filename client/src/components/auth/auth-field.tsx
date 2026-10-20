@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { authInlineError } from "@/components/auth/auth-styles";
 
 type AuthFieldProps = {
     name: string,
@@ -13,16 +12,17 @@ type AuthFieldProps = {
     value: string,
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
     onBlur: (event: React.FocusEvent<HTMLInputElement>) => void,
+    disabled?: boolean,
     error?: string,
 }
 
-export function AuthField({ name, label, type = "text", autoComplete, placeholder, value, onChange, onBlur, error }: AuthFieldProps) {
+export function AuthField({ name, label, type = "text", autoComplete, placeholder, value, onChange, onBlur, disabled, error }: AuthFieldProps) {
     const [visible, setVisible] = useState(false);
     const isPassword = type === "password";
     const errorId = `${name}-error`;
 
     return (
-        <div className="relative w-full">
+        <div className="password-field">
             <label className="sr-only" htmlFor={name}>{label}</label>
             <input
                 id={name}
@@ -33,22 +33,23 @@ export function AuthField({ name, label, type = "text", autoComplete, placeholde
                 value={value}
                 onChange={onChange}
                 onBlur={onBlur}
+                disabled={disabled}
+                className="disabled:cursor-not-allowed disabled:bg-(--sidebar-active)! disabled:text-(--muted)!"
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? errorId : undefined}
-                className={`h-12 w-full rounded-none border border-[#aeaeae] bg-transparent px-[11px] text-base leading-[23px] tracking-[.15px] text-[var(--text)] placeholder:text-[var(--placeholder)] aria-invalid:border-[var(--red)] ${isPassword ? "pr-12" : ""}`}
             />
             {isPassword && (
                 <button
-                    className="absolute top-0 right-2 grid h-12 w-10 place-items-center border-0 bg-transparent text-[var(--muted)] hover:text-[var(--text)]"
+                    className="password-toggle"
                     type="button"
                     aria-label={`${visible ? "Hide" : "Show"} ${label.toLowerCase()}`}
                     aria-pressed={visible}
                     onClick={() => setVisible((v) => !v)}
                 >
-                    <AppIcon name="eye" className="size-6" />
+                    <AppIcon name="eye" />
                 </button>
             )}
-            {error && <p id={errorId} role="alert" className={`mt-2 ${authInlineError}`}>{error}</p>}
+            {error && <p id={errorId} role="alert" className="auth-error">{error}</p>}
         </div>
     );
 }
