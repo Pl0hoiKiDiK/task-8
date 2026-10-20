@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 let requestFailed = false;
+let reloadOnRetry = false;
 let pending: { promise: Promise<void>; resolve: () => void } | null = null;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
@@ -12,6 +13,12 @@ export function setRequestFailed(value: boolean) {
 }
 
 export const isRequestFailed = () => requestFailed;
+
+export function reportNonReplayableFailure() {
+    // A lost response does not tell us whether the server completed the mutation.
+    reloadOnRetry = true;
+    setRequestFailed(true);
+}
 
 export function waitForRetry(): Promise<true> {
     if (!pending) {
@@ -25,9 +32,12 @@ export function waitForRetry(): Promise<true> {
 
 export function retryFailedRequests() {
     const current = pending;
+    const shouldReload = reloadOnRetry;
     pending = null;
+    reloadOnRetry = false;
     setRequestFailed(false);
     current?.resolve();
+    return shouldReload;
 }
 
 function subscribe(cb: () => void) {

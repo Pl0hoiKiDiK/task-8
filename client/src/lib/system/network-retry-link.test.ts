@@ -8,6 +8,7 @@ import { isRequestFailed, retryFailedRequests } from "./network-status";
 
 const LOGIN = gql`mutation LoginUser { login { access_token } }`;
 const CREATE = gql`mutation CreateUser { createUser { id } }`;
+const FORGOT_PASSWORD = gql`mutation ForgotPassword { forgotPassword }`;
 const ME = gql`query Me { me { id } }`;
 
 type Handler = (res: import("node:http").ServerResponse) => void;
@@ -118,9 +119,11 @@ describe("working server", () => {
 });
 
 describe("re-application of mutations following a network failure", () => {
-    it("Unsafe mutation (CreateUser) does not repeat: the error is passed back to the form, and the screen is not displayed.", async () => {
+    it("Unsafe mutation (CreateUser) shows the error screen but is not retried automatically", async () => {
         const port = await deadPort();
         await expect(makeClient(port).mutate({ mutation: CREATE })).rejects.toSatisfy(isNetworkFailure);
+        expect(isRequestFailed()).toBe(true);
+        expect(retryFailedRequests()).toBe(true);
         expect(isRequestFailed()).toBe(false);
     });
 
@@ -129,7 +132,18 @@ describe("re-application of mutations following a network failure", () => {
         const port = await listen(0, (res) => { hits += 1; res.socket?.destroy(); })
         const request = makeClient(port).mutate({ mutation: CREATE });
         await expect(request).rejects.toSatisfy(isNetworkFailure);
-        retryFailedRequests();
+        expect(isRequestFailed()).toBe(true);
+        expect(retryFailedRequests()).toBe(true);
+        await new Promise((r) => setTimeout(r, 50));
+        expect(hits).toBe(1);
+    });
+
+    it("потерянный ответ ForgotPassword не вызывает повторную отправку письма", async () => {
+        let hits = 0;
+        const port = await listen(0, (res) => { hits += 1; res.socket?.destroy(); });
+        await expect(makeClient(port).mutate({ mutation: FORGOT_PASSWORD })).rejects.toSatisfy(isNetworkFailure);
+        expect(isRequestFailed()).toBe(true);
+        expect(retryFailedRequests()).toBe(true);
         await new Promise((r) => setTimeout(r, 50));
         expect(hits).toBe(1);
     });
@@ -151,5 +165,11 @@ describe("isNetworkFailure", () => {
     it("classification", () => {
         expect(isNetworkFailure(new TypeError("Failed to fetch"))).toBe(true);
         expect(isNetworkFailure(new CombinedGraphQLErrors({ data: null, errors: [{ message: "x" }] }))).toBe(false);
+    });
+});
+
+describe("Retry without a pending request", () => {
+    it("does not request a reload when there was no non-replayable failure", () => {
+        expect(retryFailedRequests()).toBe(false);
     });
 });
