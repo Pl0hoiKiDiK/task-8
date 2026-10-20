@@ -95,11 +95,17 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
         const departments: CatalogItem[] = [], positions: CatalogItem[] = [];
         let page = 1, totalPages = 1;
         do {
+          if (page > 1000) throw new Error("Catalog pagination limit exceeded");
           const result = await client.query({ query: PROFILE_CATALOGS_QUERY, variables: { page }, fetchPolicy: "network-only" });
           if (!result.data) throw new Error("Catalogs unavailable");
+          const departmentPages = result.data.departments.total_pages;
+          const positionPages = result.data.positions.total_pages;
+          if (![departmentPages, positionPages].every((count) => Number.isSafeInteger(count) && count >= 0)) {
+            throw new Error("Invalid catalog pagination");
+          }
           departments.push(...result.data.departments.items);
           positions.push(...result.data.positions.items);
-          totalPages = Math.max(result.data.departments.total_pages, result.data.positions.total_pages);
+          totalPages = Math.max(departmentPages, positionPages);
           page++;
         } while (page <= totalPages);
         if (active) setCatalogs({ departments, positions });
@@ -137,17 +143,35 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
     event.preventDefault(); setSubmitted(true);
     if (!user || !canEdit || !valid || !changed || saving || !catalogs) return;
     setSaving(true); setFormError(""); setMessage("");
+    const assignmentChanged = draft.departmentId !== original.departmentId || draft.positionId !== original.positionId;
+    const nameChanged = normalized.first !== original.first || normalized.last !== original.last;
+    let nameUpdated = false;
     let mutationsCompleted = false;
     try {
-      if (normalized.first !== original.first || normalized.last !== original.last) await updateProfile({ variables: { profile: { userId: targetId, first_name: normalized.first, last_name: normalized.last } } });
-      if (draft.departmentId !== original.departmentId || draft.positionId !== original.positionId) await updateUser({ variables: { user: { userId: targetId, departmentId: draft.departmentId, positionId: draft.positionId, role: user.role } } });
+      if (nameChanged) {
+        await updateProfile({ variables: { profile: { userId: targetId, first_name: normalized.first, last_name: normalized.last } } });
+        nameUpdated = true;
+      }
+      if (assignmentChanged) await updateUser({ variables: { user: { userId: targetId, departmentId: draft.departmentId, positionId: draft.positionId, role: user.role } } });
       mutationsCompleted = true;
       setDraft(normalized);
       await refetch();
       setMessage("Profile updated successfully.");
     } catch (cause) {
-      setFormError(mutationsCompleted ? "Profile saved, but its refreshed data could not be loaded. Please retry later." : `Could not update the profile. ${getAuthErrorMessage(cause)}`);
-      if (!mutationsCompleted) void refetch().catch(() => {});
+      if (mutationsCompleted) {
+        setFormError("Profile saved, but its refreshed data could not be loaded. Please retry later.");
+      } else {
+        let rollbackFailed = false;
+        if (nameUpdated) {
+          try {
+            await updateProfile({ variables: { profile: { userId: targetId, first_name: original.first, last_name: original.last } } });
+          } catch { rollbackFailed = true; }
+        }
+        setFormError(rollbackFailed
+          ? "Profile was partially updated. Department or position may have changed. Check the current values before retrying."
+          : `Could not update the profile. ${getAuthErrorMessage(cause)}`);
+        void refetch().catch(() => {});
+      }
     }
     finally { setSaving(false); }
   }

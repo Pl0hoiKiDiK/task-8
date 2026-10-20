@@ -64,6 +64,45 @@ describe("My Profile", () => {
     expect(screen.getByRole("textbox", { name: "First Name" })).toHaveValue("Janet");
   });
 
+  it("accepts zero catalog pages without requesting another page", async () => {
+    clientQuery.mockResolvedValueOnce({ data: { departments: { items: [], total_pages: 0 }, positions: { items: [], total_pages: 0 } } });
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByText(/No departments or positions are available yet/)).toBeVisible());
+    expect(clientQuery).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects invalid catalog page counts instead of continuing requests", async () => {
+    clientQuery.mockResolvedValueOnce({ data: { departments: { items: [], total_pages: Number.POSITIVE_INFINITY }, positions: { items: [], total_pages: 1 } } });
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByText(/Could not load departments and positions/)).toBeVisible());
+    expect(clientQuery).toHaveBeenCalledTimes(1);
+  });
+
+  it("rolls back the name when updating department fails", async () => {
+    updateUser.mockRejectedValueOnce(new Error("Network failed"));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "Janet" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Department" }), { target: { value: "d2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(2));
+    expect(updateProfile).toHaveBeenNthCalledWith(2, { variables: { profile: { userId: "2", first_name: "Jane", last_name: "Doe" } } });
+    expect(screen.getByText(/Could not update the profile/)).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "First Name" })).toHaveValue("Janet");
+  });
+
+  it("reports a partial update if rollback also fails", async () => {
+    updateUser.mockRejectedValueOnce(new Error("Network failed"));
+    updateProfile.mockResolvedValueOnce({ data: { updateProfile: { id: "2" } } }).mockRejectedValueOnce(new Error("Rollback failed"));
+    render(<MyProfilePreview />);
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
+    fireEvent.change(screen.getByRole("textbox", { name: "First Name" }), { target: { value: "Janet" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Department" }), { target: { value: "d2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(screen.getByText(/Profile was partially updated/)).toBeVisible());
+    expect(screen.getByRole("textbox", { name: "First Name" })).toHaveValue("Janet");
+  });
+
   it("allows an admin to edit another user's profile without offering email verification", async () => {
     vi.mocked(useAppSelector).mockImplementation((selector) => selector({ auth: { user: { id: "1", email: "admin@example.com", role: "Admin", is_verified: true } } } as never));
     render(<MyProfilePreview userId="2" />);
