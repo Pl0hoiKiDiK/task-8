@@ -1,18 +1,18 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { CombinedGraphQLErrors } from "@apollo/client";
 import { EmployeesPreview } from "./employees-preview";
 
-const mocks = vi.hoisted(() => ({
-  query: vi.fn(),
-  mutate: vi.fn(),
-  options: vi.fn(),
-  refetch: vi.fn(),
-}));
+const mocks = vi.hoisted(() => {
+  const options = vi.fn();
+  const refetchQueries = vi.fn();
+  return { query: vi.fn(), mutate: vi.fn(), options, refetch: vi.fn(), refetchQueries, client: { query: options, refetchQueries } };
+});
 
 vi.mock("@apollo/client/react", () => ({
   useQuery: (...args: unknown[]) => mocks.query(...args),
   useMutation: () => [mocks.mutate, { loading: false }],
-  useApolloClient: () => ({ query: mocks.options }),
+  useApolloClient: () => mocks.client,
 }));
 
 const ada = {
@@ -28,10 +28,12 @@ beforeAll(() => {
 
 beforeEach(() => {
   mocks.query.mockReturnValue({ data: { users: { items: [ada], total: 1, page: 1, total_pages: 1 } }, loading: false, error: undefined, refetch: mocks.refetch });
-  mocks.options.mockResolvedValue({ data: {
-    departments: { items: [{ id: "1", name: "Engineering" }], total_pages: 1 },
-    positions: { items: [{ id: "2", name: "Developer" }], total_pages: 1 },
-  } });
+  mocks.options.mockResolvedValue({
+    data: {
+      departments: { items: [{ id: "1", name: "Engineering" }], total_pages: 1 },
+      positions: { items: [{ id: "2", name: "Developer" }], total_pages: 1 },
+    }
+  });
   mocks.mutate.mockResolvedValue({ data: { createUser: { id: "8" } } });
 });
 
@@ -78,6 +80,7 @@ describe("employees page", () => {
     fireEvent.click(screen.getByRole("button", { name: /Department/ }));
     await waitFor(() => expect(screen.getByRole("link", { name: "View Ada Lovelace" })).toHaveAttribute("href", "/employees/101"));
     expect(screen.getByText("Alpha")).toBeVisible();
+
     expect(screen.getByRole("button", { name: "Page 2" })).toBeVisible();
   });
 
@@ -97,11 +100,15 @@ describe("employees page", () => {
     fireEvent.change(within(dialog).getByRole("combobox", { name: "Position" }), { target: { value: "2" } });
     expect(create).toBeEnabled();
     fireEvent.click(create);
-    await waitFor(() => expect(mocks.mutate).toHaveBeenCalledWith({ variables: { user: {
-      auth: { email: "new@example.com", password: "123456" },
-      profile: { first_name: "New", last_name: "Person" },
-      departmentId: "1", positionId: "2", role: "Employee",
-    } } }));
+    await waitFor(() => expect(mocks.mutate).toHaveBeenCalledWith({
+      variables: {
+        user: {
+          auth: { email: "new@example.com", password: "123456" },
+          profile: { first_name: "New", last_name: "Person" },
+          departmentId: "1", positionId: "2", role: "Employee",
+        }
+      }
+    }));
     expect(mocks.refetch).toHaveBeenCalled();
   });
 
@@ -115,20 +122,66 @@ describe("employees page", () => {
     expect(within(dialog).getByLabelText("Password")).toBeDisabled();
     fireEvent.change(within(dialog).getByRole("textbox", { name: "First Name" }), { target: { value: "Augusta" } });
     fireEvent.change(within(dialog).getByRole("combobox", { name: "Role" }), { target: { value: "Admin" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Update" }));
     await waitFor(() => expect(mocks.mutate).toHaveBeenCalledTimes(2));
     expect(mocks.mutate.mock.calls[0][0]).toEqual({ variables: { profile: { userId: "7", first_name: "Augusta", last_name: "Lovelace" } } });
     expect(mocks.mutate.mock.calls[1][0]).toEqual({ variables: { user: { userId: "7", departmentId: "1", positionId: "2", role: "Admin" } } });
   });
 
   it("keeps the delete dialog open when the server forbids deleting a verified user", async () => {
-    mocks.mutate.mockRejectedValueOnce(new Error("cannotDeleteVerifiedUser"));
+    mocks.mutate.mockRejectedValueOnce(new CombinedGraphQLErrors({ data: null, errors: [{ message: "cannotDeleteVerifiedUser" }] }));
     render(<EmployeesPreview admin />);
     fireEvent.click(screen.getByRole("button", { name: "Actions for Ada Lovelace" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
     const dialog = screen.getByRole("dialog", { name: "Delete user" });
     fireEvent.click(within(dialog).getByRole("button", { name: "Confirm" }));
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent("The server does not allow deleting verified users.");
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Verified users cannot be deleted");
     expect(dialog).toBeVisible();
+  });
+  it("shows field names as placeholders inside the inputs, as in the design", async () => {
+    render(<EmployeesPreview admin />);
+    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
+    const dialog = screen.getByRole("dialog", { name: "Create user" });
+    for (const name of ["Email", "Password", "First Name", "Last Name"]) expect(within(dialog).getByPlaceholderText(name)).toBeVisible();
+    expect(within(dialog).getByRole("combobox", { name: "Role" })).toHaveValue("Employee");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Show password" }));
+    expect(within(dialog).getByPlaceholderText("Password")).toHaveAttribute("type", "text");
+  });
+
+  it("names the user by email in the delete dialog when the profile has no name", async () => {
+    mocks.query.mockReturnValue({ data: { users: { items: [{ ...ada, profile: { first_name: null, last_name: null, avatar: null } }], total: 1, page: 1, total_pages: 1 } }, loading: false, error: undefined, refetch: mocks.refetch });
+    render(<EmployeesPreview admin />);
+    fireEvent.click(screen.getByRole("button", { name: "Actions for ada@example.com" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+    expect(screen.getByRole("dialog", { name: "Delete user" })).toHaveTextContent("delete user ada@example.com?");
+  });
+
+  it("after a failed second step keeps the saved name and retries only the remaining mutation", async () => {
+    mocks.mutate
+      .mockResolvedValueOnce({ data: { updateProfile: { id: "7" } } })
+      .mockRejectedValueOnce(new CombinedGraphQLErrors({ data: null, errors: [{ message: "departmentNotFound" }] }))
+      .mockResolvedValueOnce({ data: { updateUser: { id: "7" } } });
+    render(<EmployeesPreview admin />);
+    fireEvent.click(screen.getByRole("button", { name: "Actions for Ada Lovelace" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Update" }));
+    const dialog = screen.getByRole("dialog", { name: "Update user" });
+    await waitFor(() => expect(within(dialog).getByRole("combobox", { name: "Department" })).toBeEnabled());
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "First Name" }), { target: { value: "Augusta" } });
+    fireEvent.change(within(dialog).getByRole("combobox", { name: "Role" }), { target: { value: "Admin" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Update" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Name was saved, but department, position or role were not: Department not found");
+    expect(mocks.refetchQueries).toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Update" }));
+    await waitFor(() => expect(mocks.mutate).toHaveBeenCalledTimes(3));
+    expect(mocks.mutate.mock.calls[2][0]).toEqual({ variables: { user: { userId: "7", departmentId: "1", positionId: "2", role: "Admin" } } });
+  });
+
+  it("does not loop on total_pages 0 and caps absurd page counts", async () => {
+    mocks.options.mockResolvedValue({ data: { departments: { items: [{ id: "1", name: "Engineering" }], total_pages: 0 }, positions: { items: [{ id: "2", name: "Developer" }], total_pages: 0 } } });
+    render(<EmployeesPreview admin />);
+    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
+    await waitFor(() => expect(within(screen.getByRole("dialog", { name: "Create user" })).getByRole("combobox", { name: "Department" })).toBeEnabled());
+    expect(mocks.options).toHaveBeenCalledTimes(1);
   });
 });

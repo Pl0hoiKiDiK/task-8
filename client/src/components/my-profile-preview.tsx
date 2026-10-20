@@ -7,7 +7,7 @@ import { AppIcon } from "@/components/app-icon";
 import { useAppSelector } from "@/lib/hooks";
 import type { AuthUser } from "@/lib/auth/model/auth-slice";
 import { getAuthErrorMessage } from "@/lib/auth/model/errors";
-import { PROFILE_USER_QUERY, PROFILE_CATALOGS_QUERY, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, UPLOAD_PROFILE_AVATAR_MUTATION, SEND_PROFILE_VERIFICATION_MUTATION, type CatalogItem, type ProfileUser } from "@/lib/profile/api";
+import { PROFILE_USER_QUERY, loadCatalogs, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, UPLOAD_PROFILE_AVATAR_MUTATION, SEND_PROFILE_VERIFICATION_MUTATION, type CatalogItem, type ProfileUser } from "@/lib/profile/api";
 
 const avatarLimit = 500_000;
 const imageTypes = new Set(["image/png", "image/jpeg", "image/gif"]);
@@ -88,30 +88,15 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
   useEffect(() => {
     if (!canEdit) return;
     let active = true;
-    async function loadCatalogs() {
+    async function load() {
       setCatalogs(null);
       setCatalogError("");
       try {
-        const departments: CatalogItem[] = [], positions: CatalogItem[] = [];
-        let page = 1, totalPages = 1;
-        do {
-          if (page > 1000) throw new Error("Catalog pagination limit exceeded");
-          const result = await client.query({ query: PROFILE_CATALOGS_QUERY, variables: { page }, fetchPolicy: "network-only" });
-          if (!result.data) throw new Error("Catalogs unavailable");
-          const departmentPages = result.data.departments.total_pages;
-          const positionPages = result.data.positions.total_pages;
-          if (![departmentPages, positionPages].every((count) => Number.isSafeInteger(count) && count >= 0)) {
-            throw new Error("Invalid catalog pagination");
-          }
-          departments.push(...result.data.departments.items);
-          positions.push(...result.data.positions.items);
-          totalPages = Math.max(departmentPages, positionPages);
-          page++;
-        } while (page <= totalPages);
-        if (active) setCatalogs({ departments, positions });
+        const result = await loadCatalogs(client);
+        if (active) setCatalogs(result);
       } catch (cause) { if (active) setCatalogError(getAuthErrorMessage(cause)); }
     }
-    void loadCatalogs();
+    void load();
     return () => { active = false; };
   }, [canEdit, catalogAttempt, client]);
 

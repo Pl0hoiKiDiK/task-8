@@ -21,6 +21,7 @@
   --action-muted: #626262;
   --disabled-surface: #aeaeae;
   --disabled-text: #f5f5f7;
+  --cv-details-disabled-text: #f5f5f7;
   --selected-track: #aeaeae;
   --skill-yellow-track: #ffe49e;
   --skill-green-fill: #2e7d32;
@@ -51,6 +52,7 @@
     --action-muted: #c4c4c6;
     --disabled-surface: #626262;
     --disabled-text: #aeaeae;
+    --cv-details-disabled-text: #aeaeae;
     --selected-track: #454545;
     --skill-yellow-track: #7f5c00;
     --skill-green-fill: #66bb6a;
@@ -81,6 +83,7 @@
   --action-muted: #c4c4c6;
   --disabled-surface: #626262;
   --disabled-text: #aeaeae;
+  --cv-details-disabled-text: #aeaeae;
   --selected-track: #454545;
   --skill-yellow-track: #7f5c00;
   --skill-green-fill: #66bb6a;
