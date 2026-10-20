@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { previewEmployeeEmail, useCvPreviewData, type CvFields, type CvRecord } from "@/components/profile-cvs-data";
+import { useEffect, useState, type FormEvent } from "react";
+import { useCvPreviewData, type CvFields, type CvRecord } from "@/components/profile-cvs-data";
 import { CvSkillsPage } from "@/components/cv-skills-page";
 import { CvProjectsPage } from "@/components/cv-projects-page";
 import { CvPreviewPage } from "@/components/cv-preview-page";
@@ -22,8 +21,8 @@ function basePath(role: "admin" | "employee", cvId: string) {
 }
 
 export function CvDetailsBreadcrumbs({ cvId, role, section }: { cvId: string; role: "admin" | "employee"; section: CvSection }) {
-  const { cvs } = useCvPreviewData();
-  const cv = cvs.find((item) => item.id === cvId && (role === "admin" || item.employee === previewEmployeeEmail));
+  const { cvs, currentUserId } = useCvPreviewData();
+  const cv = cvs.find((item) => item.id === cvId && (role === "admin" || item.ownerId === currentUserId));
   return (
     <nav className="flex min-w-0 items-center gap-3.5 overflow-hidden whitespace-nowrap max-[600px]:gap-2" aria-label="Breadcrumb">
       <Link className="shrink-0 text-[var(--muted)] no-underline hover:underline" href={role === "admin" ? "/admin/cvs" : "/cvs"}>CVs</Link>
@@ -110,16 +109,25 @@ function CvDetailsForm({ cv }: { cv: CvRecord }) {
 }
 
 export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: string; role: "admin" | "employee"; section?: CvSection }) {
-  const router = useRouter();
-  const { cvs } = useCvPreviewData();
-  const cv = cvs.find((item) => item.id === cvId && (role === "admin" || item.employee === previewEmployeeEmail));
+  const { cvs, currentUserId, loadCv } = useCvPreviewData();
+  const [detailsState, setDetailsState] = useState<"loading" | "ready" | "error">("loading");
+  const cv = cvs.find((item) => item.id === cvId && (role === "admin" || item.ownerId === currentUserId));
   const base = basePath(role, cvId);
 
-  if (!cv) {
+  useEffect(() => {
+    let active = true;
+    void loadCv(cvId).then(() => { if (active) setDetailsState("ready"); })
+      .catch(() => { if (active) setDetailsState("error"); });
+    return () => { active = false; };
+  }, [cvId, loadCv]);
+
+  if (detailsState === "loading") return <p role="status">Loading CV details…</p>;
+
+  if (detailsState === "error" || !cv) {
     return (
       <div className="mx-auto mt-10 w-full max-w-[852px] text-base leading-6 text-[var(--text)] [&_a]:mr-5 [&_a]:text-[var(--red)] [&_button]:mr-5 [&_button]:border-0 [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-[var(--red)]" role="alert">
         <p>Failed to load CV details</p>
-        <button type="button" onClick={() => router.refresh()}>Retry</button>
+        <button type="button" onClick={() => { setDetailsState("loading"); void loadCv(cvId).then(() => setDetailsState("ready")).catch(() => setDetailsState("error")); }}>Retry</button>
         <Link href={role === "admin" ? "/admin/cvs" : "/cvs"}>Back to CVs</Link>
       </div>
     );
@@ -137,8 +145,7 @@ export function CvDetailsPage({ cvId, role, section = "details" }: { cvId: strin
           >{item.label}</Link>
         ))}
       </nav>
-      {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> : section === "skills" ? <CvSkillsPage key={cv.id} cv={cv} /> : section === "projects" ? <CvProjectsPage key={cv.id} cv={cv} /> : section === "preview" ? <CvPreviewPage key={cv.id} cv={cv} /> :
-        <p className="mx-auto mt-10 w-full max-w-[852px] text-base leading-6 text-[var(--text)]">{sections.find((item) => item.value === section)?.label} content will be added here.</p>}
+      {section === "details" ? <CvDetailsForm key={cv.id} cv={cv} /> : section === "skills" ? <CvSkillsPage key={cv.id} cv={cv} /> : section === "projects" ? <CvProjectsPage key={cv.id} cv={cv} /> : <CvPreviewPage key={cv.id} cv={cv} />}
     </section>
   );
 }

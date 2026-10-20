@@ -3,7 +3,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { useAppSelector } from "@/lib/hooks";
 import { MyProfilePreview } from "@/components/my-profile-preview";
-import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, PROFILE_DEPARTMENTS_QUERY, PROFILE_POSITIONS_QUERY, type ProfileUser } from "@/lib/profile/api";
+import { DELETE_AVATAR } from "@/lib/cv-api";
+import { UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, type ProfileUser } from "@/lib/profile/api";
+import { DEPARTMENTS_QUERY as PROFILE_DEPARTMENTS_QUERY, POSITIONS_QUERY as PROFILE_POSITIONS_QUERY } from "@/lib/catalog-api";
 
 vi.mock("@apollo/client/react", () => ({ useApolloClient: vi.fn(), useMutation: vi.fn(), useQuery: vi.fn() }));
 vi.mock("@/lib/hooks", () => ({ useAppSelector: vi.fn() }));
@@ -16,6 +18,7 @@ const profile: ProfileUser = {
 };
 const updateProfile = vi.fn();
 const updateUser = vi.fn();
+const deleteAvatar = vi.fn();
 const clientQuery = vi.fn();
 
 beforeEach(() => {
@@ -27,7 +30,8 @@ beforeEach(() => {
     : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
   updateProfile.mockResolvedValue({ data: { updateProfile: { id: "2" } } });
   updateUser.mockResolvedValue({ data: { updateUser: { id: "2" } } });
-  vi.mocked(useMutation).mockImplementation(((document: unknown) => [document === UPDATE_PROFILE_MUTATION ? updateProfile : document === UPDATE_PROFILE_USER_MUTATION ? updateUser : vi.fn(), {}]) as never);
+  deleteAvatar.mockResolvedValue({ data: { deleteAvatar: true } });
+  vi.mocked(useMutation).mockImplementation(((document: unknown) => [document === UPDATE_PROFILE_MUTATION ? updateProfile : document === UPDATE_PROFILE_USER_MUTATION ? updateUser : document === DELETE_AVATAR ? deleteAvatar : vi.fn(), {}]) as never);
 });
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
@@ -54,6 +58,15 @@ describe("My Profile", () => {
     expect(screen.queryByRole("button", { name: "Update" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Verify email" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Upload avatar image" })).not.toBeInTheDocument();
+  });
+
+  it("removes the owner's avatar through GraphQL", async () => {
+    vi.mocked(useQuery).mockReturnValue({ data: { user: { ...profile, profile: { ...profile.profile, avatar: "data:image/png;base64,AAAA" } } }, loading: false, error: undefined, refetch: vi.fn().mockResolvedValue({ data: { user: profile } }) } as never);
+    render(<MyProfilePreview />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove avatar" }));
+    await waitFor(() => expect(deleteAvatar).toHaveBeenCalledWith({ variables: { avatar: { userId: "2" } } }));
+    expect(await screen.findByText("Avatar removed successfully.")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Remove avatar" })).not.toBeInTheDocument();
   });
 
   it("preserves edited values when the update request fails", async () => {
@@ -84,12 +97,12 @@ describe("My Profile", () => {
 
   it("loads all department pages without requesting extra position pages", async () => {
     clientQuery.mockImplementation(({ query, variables }) => Promise.resolve({ data: query === PROFILE_DEPARTMENTS_QUERY
-      ? { departments: { items: variables.page === 1 ? [{ id: "d1", name: "React" }] : [{ id: "d2", name: "DevOps" }], total_pages: 2 } }
+      ? { departments: { items: variables.params.page === 1 ? [{ id: "d1", name: "React" }] : [{ id: "d2", name: "DevOps" }], total_pages: 2 } }
       : { positions: { items: [{ id: "p1", name: "Engineer" }], total_pages: 1 } } }));
     render(<MyProfilePreview />);
     await waitFor(() => expect(screen.getByRole("combobox", { name: "Department" })).toBeEnabled());
     expect(screen.getByRole("option", { name: "DevOps" })).toBeInTheDocument();
-    expect(clientQuery.mock.calls.map(([request]) => [request.query, request.variables.page])).toEqual([
+    expect(clientQuery.mock.calls.map(([request]) => [request.query, request.variables.params.page])).toEqual([
       [PROFILE_DEPARTMENTS_QUERY, 1], [PROFILE_POSITIONS_QUERY, 1], [PROFILE_DEPARTMENTS_QUERY, 2],
     ]);
   });

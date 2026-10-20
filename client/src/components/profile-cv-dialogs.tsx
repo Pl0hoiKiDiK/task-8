@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { CvFields, CvRecord } from "@/components/profile-cvs-data";
+import { getApiErrorMessage } from "@/lib/common/graphql-errors";
 
 function CvDialog({ title, onClose, children, initialFocus, returnFocus }: {
   title: string;
@@ -58,7 +59,7 @@ function validate(fields: CvFields) {
 export function CvFormDialog({ cv, onClose, onSave, saveLabel = "Update" }: {
   cv?: CvRecord;
   onClose: () => void;
-  onSave: (fields: CvFields) => void;
+  onSave: (fields: CvFields) => void | Promise<void>;
   saveLabel?: string;
 }) {
   const [fields, setFields] = useState<CvFields>(cv ? {
@@ -67,21 +68,26 @@ export function CvFormDialog({ cv, onClose, onSave, saveLabel = "Update" }: {
   const [touched, setTouched] = useState<Record<keyof CvFields, boolean>>({
     name: false, education: false, description: false,
   });
+  const [saving, setSaving] = useState(false);
+  const [requestError, setRequestError] = useState("");
   const errors = validate(fields);
   const valid = !errors.name && !errors.education && !errors.description;
   const title = cv ? "Update CV" : "Create CV";
 
-  function save(event: FormEvent<HTMLFormElement>) {
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!valid) {
+    if (!valid || saving) {
       setTouched({ name: true, education: true, description: true });
       return;
     }
-    onSave({
-      name: fields.name.trim(),
-      education: fields.education.trim(),
-      description: fields.description.trim(),
-    });
+    setSaving(true);
+    setRequestError("");
+    try {
+      await onSave({ name: fields.name.trim(), education: fields.education.trim(), description: fields.description.trim() });
+      onClose();
+    } catch (error) {
+      setRequestError(`Failed to ${cv ? "update" : "create"} CV. ${getApiErrorMessage(error)}`);
+    } finally { setSaving(false); }
   }
 
   function field<K extends keyof CvFields>(key: K, label: string) {
@@ -126,9 +132,10 @@ export function CvFormDialog({ cv, onClose, onSave, saveLabel = "Update" }: {
         {field("name", "Name")}
         {field("education", "Education")}
         {field("description", "Description")}
+        {requestError && <p role="alert" className="text-sm text-[var(--red)]">{requestError}</p>}
         <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
-          <button className="border border-[var(--text)] bg-transparent text-[var(--text)]" type="button" onClick={onClose}>Cancel</button>
-          <button className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" type="submit" disabled={!valid}>{cv ? saveLabel : "Create"}</button>
+          <button className="border border-[var(--text)] bg-transparent text-[var(--text)]" type="button" disabled={saving} onClick={onClose}>Cancel</button>
+          <button className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" type="submit" disabled={!valid || saving}>{saving ? "Saving..." : cv ? saveLabel : "Create"}</button>
         </div>
       </form>
     </CvDialog>
@@ -138,14 +145,25 @@ export function CvFormDialog({ cv, onClose, onSave, saveLabel = "Update" }: {
 export function CvDeleteDialog({ cv, onClose, onConfirm }: {
   cv: CvRecord;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
 }) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+  async function confirm() {
+    if (deleting) return;
+    setDeleting(true);
+    setError("");
+    try { await onConfirm(); onClose(); }
+    catch (caught) { setError(`Failed to delete CV. ${getApiErrorMessage(caught)}`); }
+    finally { setDeleting(false); }
+  }
   return (
     <CvDialog title="Delete CV" onClose={onClose} initialFocus="button:not([aria-label])" returnFocus={`[data-cv-id="${cv.id}"]`}>
       <p className="mt-6 mb-7 text-base leading-6 tracking-[.15px]">Are you sure you want to delete CV <strong>{cv.name}</strong>?</p>
+      {error && <p role="alert" className="text-sm text-[var(--red)]">{error}</p>}
       <div className="flex justify-end gap-6 max-[600px]:gap-3 [&>button]:h-12 max-[600px]:[&>button]:w-1/2 [&>button]:w-40 [&>button]:rounded-3xl [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:uppercase">
-        <button className="border border-[var(--text)] bg-transparent text-[var(--text)]" type="button" onClick={onClose}>Cancel</button>
-        <button className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" type="button" onClick={onConfirm}>Confirm</button>
+        <button className="border border-[var(--text)] bg-transparent text-[var(--text)]" type="button" disabled={deleting} onClick={onClose}>Cancel</button>
+        <button className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:cursor-not-allowed" type="button" disabled={deleting} onClick={confirm}>{deleting ? "Deleting..." : "Confirm"}</button>
       </div>
     </CvDialog>
   );

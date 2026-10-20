@@ -16,7 +16,6 @@ export default function VerifyEmailPage() {
         useVerifyEmailForm();
 
     if (!isReady) return null;
-    
     return (
         <section className={verifyPanel} aria-labelledby="verify-email-title">
             <h1 id="verify-email-title" className={authTitle}>Email verification</h1>

@@ -1,5 +1,6 @@
 import { gql, type ApolloClient, type TypedDocumentNode } from "@apollo/client";
 import type { UserRole } from "@/lib/auth/api/graphql";
+import { DEPARTMENTS_QUERY, loadAllCatalogItems, POSITIONS_QUERY } from "@/lib/catalog-api";
 
 export type CatalogItem = { id: string; name: string };
 export type ProfileUser = {
@@ -24,46 +25,10 @@ export const PROFILE_USER_QUERY: TypedDocumentNode<{ user: ProfileUser }, { user
   }
 `;
 
-type CatalogPage = { items: CatalogItem[]; total_pages: number };
-export const PROFILE_DEPARTMENTS_QUERY: TypedDocumentNode<{ departments: CatalogPage }, { page: number }> = gql`
-  query ProfileDepartments($page: Int!) {
-    departments(params: { page: $page, limit: 100 }) { items { id name } total_pages }
-  }
-`;
-export const PROFILE_POSITIONS_QUERY: TypedDocumentNode<{ positions: CatalogPage }, { page: number }> = gql`
-  query ProfilePositions($page: Int!) {
-    positions(params: { page: $page, limit: 100 }) { items { id name } total_pages }
-  }
-`;
-
-const MAX_CATALOG_PAGES = 1000;
-
-async function loadPages(fetchPage: (page: number) => Promise<CatalogPage>): Promise<CatalogItem[]> {
-  const items: CatalogItem[] = [];
-  let totalPages = 1;
-  for (let page = 1; page <= totalPages; page++) {
-    const result = await fetchPage(page);
-    if (!result || !Array.isArray(result.items) || !Number.isSafeInteger(result.total_pages) || result.total_pages < 0 || result.total_pages > MAX_CATALOG_PAGES) {
-      throw new Error("Invalid catalog pagination");
-    }
-    items.push(...result.items);
-    totalPages = result.total_pages;
-  }
-  return items;
-}
-
 export async function loadCatalogs(client: ApolloClient) {
   const [departments, positions] = await Promise.all([
-    loadPages(async (page) => {
-      const { data } = await client.query({ query: PROFILE_DEPARTMENTS_QUERY, variables: { page }, fetchPolicy: "network-only" });
-      if (!data) throw new Error("Catalogs unavailable");
-      return data.departments;
-    }),
-    loadPages(async (page) => {
-      const { data } = await client.query({ query: PROFILE_POSITIONS_QUERY, variables: { page }, fetchPolicy: "network-only" });
-      if (!data) throw new Error("Catalogs unavailable");
-      return data.positions;
-    }),
+    loadAllCatalogItems(client, DEPARTMENTS_QUERY, "departments"),
+    loadAllCatalogItems(client, POSITIONS_QUERY, "positions"),
   ]);
   return { departments, positions };
 }
@@ -95,10 +60,3 @@ export const UPLOAD_PROFILE_AVATAR_MUTATION: TypedDocumentNode<
   }
 `;
 
-export const SEND_PROFILE_VERIFICATION_MUTATION: TypedDocumentNode<
-  { sendVerification: null }, { email: string }
-> = gql`
-  mutation SendProfileVerification($email: String!) {
-    sendVerification(email: $email)
-  }
-`;

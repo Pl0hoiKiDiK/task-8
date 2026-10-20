@@ -2,12 +2,14 @@
 
 import { useState, type FormEvent } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { languageOptions, proficiencyDisplay, proficiencyOptions, useLanguagePreviewData, type LanguageProficiency, type ProfileLanguage } from "@/components/profile-languages-data";
+import { proficiencyDisplay, proficiencyOptions, useLanguagePreviewData, type LanguageProficiency, type ProfileLanguage } from "@/components/profile-languages-data";
+import { useCvPreviewData } from "@/components/profile-cvs-data";
 import { SkillDialog } from "@/components/skill-dialogs";
-import { proficiencyBarClass } from "@/components/profile-proficiency-item";
+import { ProfileProficiencyItem, proficiencyBarClass } from "@/components/profile-proficiency-item";
 
-export function UserLanguagesPreview() {
-  const { languages, addLanguage, updateLanguage, removeLanguages } = useLanguagePreviewData();
+export function UserLanguagesPreview({ canEdit = true }: { canEdit?: boolean }) {
+  const { languages, languageOptions, optionsState, reloadOptions, addLanguage, updateLanguage, removeLanguages } = useLanguagePreviewData();
+  const { loadState, reload } = useCvPreviewData();
   const [dialog, setDialog] = useState<"add" | "edit" | "remove" | null>(null);
   const [editing, setEditing] = useState<ProfileLanguage | null>(null);
   const [selecting, setSelecting] = useState(false);
@@ -19,6 +21,9 @@ export function UserLanguagesPreview() {
     setSelected([]);
   }
 
+  if (loadState === "loading" || optionsState === "loading") return <p role="status">Loading languages…</p>;
+  if (loadState === "error" || optionsState === "error") return <div role="alert">Could not load languages. <button type="button" onClick={() => { void Promise.all([reload(), reloadOptions()]).catch(() => undefined); }}>Retry</button></div>;
+
   return <div>
     <section className="mx-auto mt-8 w-[min(900px,100%)] px-6 max-[900px]:pr-[19px] max-[900px]:pl-[25px] max-[600px]:px-0" aria-labelledby="current-languages-title">
       <div className="[&+*]:mt-8 [&>h1]:m-0 [&>h1]:text-base [&>h1]:leading-6 [&>h1]:tracking-[.15px] [&>h1]:text-[var(--text)]">
@@ -27,7 +32,7 @@ export function UserLanguagesPreview() {
           {shownLanguages.map((language) => {
             const { tone, level } = proficiencyDisplay[language.proficiency];
             const isSelected = selected.includes(language.name);
-            return <button type="button" key={language.name}
+            return canEdit ? <button type="button" key={language.name}
               className={`flex min-h-12 w-full min-w-0 items-center gap-4 border-0 bg-transparent pl-4 text-left text-base leading-6 tracking-[.15px] text-[#626262] hover:text-[var(--text)] max-[900px]:pl-2${isSelected ? " rounded bg-[var(--sidebar-active)] text-[var(--text)]" : ""}`}
               aria-label={`${language.name}, ${language.proficiency}${selecting ? isSelected ? ", selected" : ", not selected" : ", edit language"}`}
               aria-pressed={selecting ? isSelected : undefined}
@@ -37,11 +42,11 @@ export function UserLanguagesPreview() {
               }}>
               <span className={proficiencyBarClass(tone, isSelected)} aria-hidden="true"><span style={{ width: `${level}%` }} /></span>
               <span className="min-w-0 truncate">{language.name}</span>
-            </button>;
+            </button> : <ProfileProficiencyItem key={language.name} name={language.name} tone={tone} level={level} />;
           })}
         </div> : <p className="mt-6 mb-0 text-base text-[var(--muted)]">No languages here</p>}
       </div>
-      <div className="mt-6 flex justify-end gap-16 pr-6 max-[900px]:gap-6 max-[900px]:pr-0 max-[600px]:justify-between max-[600px]:gap-3 [&>button]:inline-flex [&>button]:h-12 [&>button]:w-40 [&>button]:items-center [&>button]:justify-center [&>button]:gap-2 [&>button]:rounded-3xl [&>button]:border-0 [&>button]:bg-transparent [&>button]:p-0 [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:whitespace-nowrap [&>button]:uppercase [&>button]:text-[var(--action-muted)] [&>button:last-child]:text-[var(--red)] [&>button:hover:not(:disabled)]:brightness-80 [&>button:disabled]:cursor-default [&>button:disabled]:opacity-45 max-[600px]:[&>button]:min-w-0 max-[600px]:[&>button]:flex-1">
+      {canEdit && <div className="mt-6 flex justify-end gap-16 pr-6 max-[900px]:gap-6 max-[900px]:pr-0 max-[600px]:justify-between max-[600px]:gap-3 [&>button]:inline-flex [&>button]:h-12 [&>button]:w-40 [&>button]:items-center [&>button]:justify-center [&>button]:gap-2 [&>button]:rounded-3xl [&>button]:border-0 [&>button]:bg-transparent [&>button]:p-0 [&>button]:text-sm [&>button]:font-medium [&>button]:leading-[24.5px] [&>button]:tracking-[.4px] [&>button]:whitespace-nowrap [&>button]:uppercase [&>button]:text-[var(--action-muted)] [&>button:last-child]:text-[var(--red)] [&>button:hover:not(:disabled)]:brightness-80 [&>button:disabled]:cursor-default [&>button:disabled]:opacity-45 max-[600px]:[&>button]:min-w-0 max-[600px]:[&>button]:flex-1">
         {selecting ? <>
           <button type="button" className="border border-[var(--border)] text-[var(--text)]" onClick={cancelSelection}>Cancel</button>
           <button type="button" className="border-0 bg-[var(--red)] text-[#f5f5f7] disabled:opacity-45" disabled={!selected.length} onClick={() => setDialog("remove")}>Remove <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[#f5f5f7] px-1 text-xs leading-none tracking-normal text-[var(--red)] normal-case">{selected.length}</span></button>
@@ -49,19 +54,20 @@ export function UserLanguagesPreview() {
           <button type="button" onClick={() => { setEditing(null); setDialog("add"); }}><AppIcon name="add-profile-item" />Add language</button>
           <button type="button" disabled={!shownLanguages.length} onClick={() => setSelecting(true)}><AppIcon name="delete" />Remove languages</button>
         </>}
-      </div>
+      </div>}
     </section>
-    {(dialog === "add" || dialog === "edit") && <LanguageFormDialog kind={dialog} language={editing} existing={shownLanguages}
+    {canEdit && (dialog === "add" || dialog === "edit") && <LanguageFormDialog kind={dialog} language={editing} existing={shownLanguages} options={languageOptions}
       onClose={() => setDialog(null)} onSave={dialog === "add" ? addLanguage : updateLanguage} />}
-    {dialog === "remove" && <LanguageRemoveDialog count={selected.length} onClose={() => setDialog(null)}
+    {canEdit && dialog === "remove" && <LanguageRemoveDialog count={selected.length} onClose={() => setDialog(null)}
       onConfirm={() => removeLanguages(selected)} onSuccess={cancelSelection} />}
   </div>;
 }
 
-function LanguageFormDialog({ kind, language, existing, onClose, onSave }: {
+function LanguageFormDialog({ kind, language, existing, options, onClose, onSave }: {
   kind: "add" | "edit";
   language: ProfileLanguage | null;
   existing: ProfileLanguage[];
+  options: string[];
   onClose: () => void;
   onSave: (language: ProfileLanguage) => void | Promise<void>;
 }) {
@@ -101,7 +107,7 @@ function LanguageFormDialog({ kind, language, existing, onClose, onSave }: {
           onChange={(event) => { setName(event.target.value); setNameTouched(true); setError(""); }}>
           {kind === "add" && <option value="">Language</option>}
           {language && <option value={language.name}>{language.name}</option>}
-          {languageOptions.filter((option) => option !== language?.name).map((option) => <option value={option} key={option}>{option}</option>)}
+          {options.filter((option) => option !== language?.name).map((option) => <option value={option} key={option}>{option}</option>)}
         </select>
         {(duplicate || (nameTouched && !name)) && <span id="language-dialog-name-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">{duplicate ? "Language already exists" : "Language is required"}</span>}
       </div>

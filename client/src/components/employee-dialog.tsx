@@ -8,12 +8,10 @@ import {
   CREATE_EMPLOYEE_MUTATION,
   DELETE_EMPLOYEE_MUTATION,
   EMPLOYEES_QUERY,
-  UPDATE_EMPLOYEE_MUTATION,
-  UPDATE_EMPLOYEE_PROFILE_MUTATION,
   type Employee,
   type EmployeeFormValues,
 } from "@/lib/employees/api";
-import { loadEmployeeOptions, type EmployeeOptions } from "@/lib/employees/load-options";
+import { loadCatalogs, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, type CatalogItem } from "@/lib/profile/api";
 
 export type EmployeeDialogState = { type: "create" } | { type: "update" | "delete"; employee: Employee };
 
@@ -125,14 +123,14 @@ export function EmployeeDialog({ state, onClose, onSaved }: {
     role: state.employee.role,
   });
   const [touched, setTouched] = useState<(keyof EmployeeFormValues)[]>([]);
-  const [options, setOptions] = useState<EmployeeOptions | null>(null);
+  const [options, setOptions] = useState<{ departments: CatalogItem[]; positions: CatalogItem[] } | null>(null);
   const [optionsError, setOptionsError] = useState(false);
   const [optionsAttempt, setOptionsAttempt] = useState(0);
   const [requestError, setRequestError] = useState("");
   const savedName = useRef<{ first: string; last: string } | null>(null);
   const [createUser, { loading: creating }] = useMutation(CREATE_EMPLOYEE_MUTATION);
-  const [updateUser, { loading: saving }] = useMutation(UPDATE_EMPLOYEE_MUTATION);
-  const [updateProfile, { loading: savingProfile }] = useMutation(UPDATE_EMPLOYEE_PROFILE_MUTATION);
+  const [updateUser, { loading: saving }] = useMutation(UPDATE_PROFILE_USER_MUTATION);
+  const [updateProfile, { loading: savingProfile }] = useMutation(UPDATE_PROFILE_MUTATION);
   const [deleteUser, { loading: removing }] = useMutation(DELETE_EMPLOYEE_MUTATION);
   const pending = creating || saving || savingProfile || removing;
   const errors = validate(values, updating);
@@ -142,7 +140,7 @@ export function EmployeeDialog({ state, onClose, onSaved }: {
     if (state.type === "delete") return;
     let active = true;
     setOptionsError(false);
-    loadEmployeeOptions(client)
+    loadCatalogs(client)
       .then((loaded) => { if (active) setOptions(loaded); })
       .catch(() => { if (active) setOptionsError(true); });
     return () => { active = false; };

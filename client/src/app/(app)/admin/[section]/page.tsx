@@ -3,6 +3,7 @@ import { AdminSkillsPage } from "@/components/admin-skills-page";
 import { AdminLanguagesPage } from "@/components/admin-languages-page";
 import { AdminDepartmentsPage } from "@/components/admin-departments-page";
 import { AdminPositionsPage } from "@/components/admin-positions-page";
+import { AdminProjectsPage } from "@/components/admin-projects-page";
 
 const titles: Record<string, string> = {
   skills: "Skills",
@@ -22,5 +23,6 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
   if (section === "languages") return <AdminLanguagesPage />;
   if (section === "departments") return <AdminDepartmentsPage />;
   if (section === "positions") return <AdminPositionsPage />;
+  if (section === "projects") return <AdminProjectsPage />;
   return null;
 }

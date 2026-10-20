@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppIcon } from "@/components/app-icon";
-import { availableOwnerSkills, masteryDisplay, ownerSkillsFor, type CvSkill } from "@/components/cv-skills-data";
+import { availableOwnerSkills, masteryDisplay, type CvSkill } from "@/components/cv-skills-data";
 import { useCvPreviewData, type CvRecord } from "@/components/profile-cvs-data";
 import { SkillFormDialog, SkillRemoveDialog } from "@/components/skill-dialogs";
 import { proficiencyBarClass } from "@/components/profile-proficiency-item";
@@ -10,14 +10,22 @@ import { proficiencyBarClass } from "@/components/profile-proficiency-item";
 type DialogKind = "add" | "update" | "remove";
 
 export function CvSkillsPage({ cv }: { cv: CvRecord }) {
-  const { cvSkills, addCvSkill, updateCvSkill, removeCvSkills } = useCvPreviewData();
+  const { cvSkills, ownerSkills, loadOwnerSkills, addCvSkill, updateCvSkill, removeCvSkills } = useCvPreviewData();
   const skills = cvSkills[cv.id] ?? [];
   const [dialog, setDialog] = useState<DialogKind | null>(null);
   const [editing, setEditing] = useState<CvSkill | undefined>();
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [ownerSkillsError, setOwnerSkillsError] = useState(false);
   const categories = [...new Set(skills.map((skill) => skill.category))];
-  const available = availableOwnerSkills(ownerSkillsFor(cv.employee), skills);
+  const available = availableOwnerSkills(ownerSkills[cv.ownerId ?? ""] ?? [], skills);
+
+  const ownerSkillsReady = Boolean(cv.ownerId && ownerSkills[cv.ownerId]);
+
+  useEffect(() => {
+    if (!cv.ownerId || ownerSkillsReady) return;
+    void loadOwnerSkills(cv.ownerId).catch(() => setOwnerSkillsError(true));
+  }, [cv.ownerId, loadOwnerSkills, ownerSkillsReady]);
 
   function cancelSelection() {
     setSelecting(false);
@@ -57,10 +65,12 @@ export function CvSkillsPage({ cv }: { cv: CvRecord }) {
           <button type="button" className="rounded-3xl border border-[var(--border)] text-[var(--text)]" onClick={cancelSelection}>Cancel</button>
           <button type="button" className="rounded-3xl bg-[var(--red)] text-[#f5f5f7] hover:text-white" disabled={!selected.length} onClick={() => setDialog("remove")}>Remove <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[#f5f5f7] px-1 text-xs leading-none tracking-normal text-[var(--red)] normal-case">{selected.length}</span></button>
         </> : <>
-          <button type="button" onClick={() => { setEditing(undefined); setDialog("add"); }}><AppIcon name="add-profile-item" />Add skill</button>
+          <button type="button" disabled={!ownerSkillsReady} onClick={() => { setEditing(undefined); setDialog("add"); }}><AppIcon name="add-profile-item" />Add skill</button>
           <button type="button" className="text-[var(--red)]" disabled={!skills.length} onClick={() => setSelecting(true)}><AppIcon name="delete" />Remove skills</button>
         </>}
       </div>
+      {!ownerSkillsReady && !ownerSkillsError && <p role="status">Loading available skills…</p>}
+      {!ownerSkillsReady && ownerSkillsError && <div role="alert">Failed to load available skills. <button type="button" onClick={() => { setOwnerSkillsError(false); if (cv.ownerId) void loadOwnerSkills(cv.ownerId).catch(() => setOwnerSkillsError(true)); }}>Retry</button></div>}
       {(dialog === "add" || dialog === "update") && <SkillFormDialog kind={dialog} skill={dialog === "update" ? editing : undefined} available={available}
         onClose={() => setDialog(null)}
         onSave={(name, mastery) => dialog === "add" ? addCvSkill(cv.id, name, mastery) : updateCvSkill(cv.id, name, mastery)} />}

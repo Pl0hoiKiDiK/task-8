@@ -26,6 +26,9 @@ vi.mock("@apollo/client/react", () => ({
   useApolloClient: () => ({ clearStore }),
   useQuery: () => ({ data: { user: { profile: accountProfile.current } } }),
 }));
+vi.mock("@/components/profile-cvs-data", () => ({
+  useCvPreviewData: () => ({ profile: { full_name: "Ada Lovelace" } }),
+}));
 
 function renderShell() {
   const store = makeStore();

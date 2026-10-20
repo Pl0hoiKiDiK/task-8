@@ -1,52 +1,39 @@
-# CV Builder
+# CV Builder frontend
 
-Frontend for creating and managing CVs. The shared page layouts and initial screen previews are in progress; GraphQL operations will be added as the team implements the requirements.
+Next.js frontend for the CV Builder application. The app includes authentication and email verification, employee profiles, skills and languages, CV editing and PDF preview, and administrator screens for employees and catalogs. Data operations use the local GraphQL API through Apollo Client; Redux Toolkit stores session and interface state.
 
-## Stack
+## Setup
 
-- Next.js App Router and TypeScript
-- Tailwind CSS
-- Redux Toolkit and React Redux for shared mutable UI state
-- Apollo Client and GraphQL for backend data
-- Vitest and React Testing Library for unit and component tests
+Requires Node.js 22.12 or newer and a running local API. See the [repository README](../README.md) for backend setup.
 
-## Requirements
+```sh
+npm install
+```
 
-- Node.js 22.12 or newer
-- npm
-- Local [CV Builder API](https://github.com/innowise-frontend/cv-backend) for GraphQL features
+Copy `.env.example` to `.env.local`. By default, `NEXT_PUBLIC_GRAPHQL_URL` points to `http://localhost:3001/api/graphql`.
 
-## Local setup
+```sh
+npm run dev
+```
 
-1. Run `npm install`.
-2. Copy `.env.example` to `.env.local` and adjust `NEXT_PUBLIC_GRAPHQL_URL` if the API uses another address. The API README currently specifies `http://localhost:3001/api/graphql`.
-3. Run `npm run dev` and open `http://localhost:3000`.
-
-`.env.local` is ignored by Git. Do not place secrets in `NEXT_PUBLIC_` variables; those values are exposed to the browser.
+Open `http://localhost:3000`.
 
 ## Checks
 
-- `npm run lint` checks the source with ESLint.
-- `npm run typecheck` checks TypeScript.
-- `npm run test` runs unit and component tests once.
-- `npm run test:coverage` produces the coverage report.
-- `npm run build` checks the production build.
+```sh
+npm run lint
+npm run typecheck
+npm run test
+npm run test:coverage
+npm run build
+```
 
-## Project structure
+Tests use Vitest and React Testing Library. They are colocated with source files as `*.test.ts` and `*.test.tsx`. The coverage report is written to `coverage/`. E2E tests are not included.
 
-- `src/app`: routes, layout and app providers
-- `src/lib`: Redux store and UI state
-- `vitest.config.mts`: test runner setup
+## Code layout
 
-## Layout previews
+- `src/app`: routes, layouts and application providers
+- `src/components`: screens and reusable interface elements
+- `src/lib`: GraphQL operations, session handling, shared data helpers and Redux state
 
-- `/`: sign in layout
-- `/employees`: employee layout with sample data
-- `/admin/employees`: administrator employee layout with sample data
-- `/settings`: settings layout and light/dark theme selector
-
-The sign in form, account actions, and sample employee table are visual previews. They do not yet call the API.
-
-## Current status
-
-The frontend scaffold and GraphQL client are configured. The backend connection, authorization flow, remaining application screens, and API operations still need to be implemented and tested with the locally running API. A UI component library is still to be agreed with the mentor; Tailwind CSS supplies styling utilities rather than ready-made UI components.
+`NEXT_PUBLIC_` values are visible in the browser; do not put secrets in them.

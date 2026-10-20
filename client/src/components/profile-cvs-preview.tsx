@@ -4,27 +4,28 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppIcon } from "@/components/app-icon";
 import { CvDeleteDialog, CvFormDialog } from "@/components/profile-cv-dialogs";
-import { previewEmployeeEmail, useCvPreviewData, type CvRecord } from "@/components/profile-cvs-data";
+import { useCvPreviewData, type CvRecord } from "@/components/profile-cvs-data";
 import { filterAndSortCvs, type CvSortDirection } from "@/lib/cv-list";
 
 type ActiveDialog = { type: "create" } | { type: "edit" | "delete"; cv: CvRecord } | null;
-type CvView = "profile" | "admin" | "employee";
+type CvView = "profile" | "admin" | "employee" | "user";
 const cvBasePath: Record<CvView, string> = {
   profile: "/admin/profile/cvs",
   admin: "/admin/cvs",
   employee: "/cvs",
+  user: "/admin/cvs",
 };
 const PAGE_SIZE = 5;
 
-export function ProfileCvsPreview({ view = "profile" }: { view?: CvView }) {
-  const { cvs, createCv, updateCv, deleteCv } = useCvPreviewData();
+export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView; ownerId?: string }) {
+  const { cvs, currentUserId, loadState, reload, createCv, updateCv, deleteCv } = useCvPreviewData();
   const [search, setSearch] = useState("");
   const [direction, setDirection] = useState<CvSortDirection>("asc");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<ActiveDialog>(null);
   const [page, setPage] = useState(1);
   const menuRoot = useRef<HTMLDivElement>(null);
-  const scopedCvs = useMemo(() => view === "admin" ? cvs : cvs.filter((cv) => cv.employee === previewEmployeeEmail), [cvs, view]);
+  const scopedCvs = useMemo(() => view === "admin" ? cvs : cvs.filter((cv) => cv.ownerId === (ownerId ?? currentUserId)), [cvs, currentUserId, ownerId, view]);
   const matchingCvs = useMemo(() => filterAndSortCvs(scopedCvs, search, direction, view === "admin"), [scopedCvs, search, direction, view]);
   const pageCount = Math.ceil(matchingCvs.length / PAGE_SIZE);
   const currentPage = Math.max(1, Math.min(page, pageCount));
@@ -82,8 +83,10 @@ export function ProfileCvsPreview({ view = "profile" }: { view?: CvView }) {
           <span className="max-[900px]:hidden">Employee</span>
         </div>
 
-        <div>
-          {visibleCvs.length === 0 ? (
+        <div aria-busy={loadState === "loading"}>
+          {loadState === "loading" ? <p className="m-0 px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="status">Loading CVs…</p>
+          : loadState === "error" ? <div className="px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="alert">Could not load CVs. <button type="button" onClick={() => { void reload().catch(() => undefined); }}>Retry</button></div>
+          : visibleCvs.length === 0 ? (
             <p className="m-0 px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="status">{search || view !== "employee" ? "No CVs found" : "You have no CVs yet"}</p>
           ) : visibleCvs.map((cv) => (
             <article className="border-b border-[var(--border)] px-4 pt-6 pb-4 [&>p]:mt-6 [&>p]:mb-0 [&>p]:text-base [&>p]:leading-6 [&>p]:tracking-[.15px] [&>p]:text-[var(--text)] [&>p]:opacity-50 max-[900px]:[&>p]:mt-4" key={cv.id} aria-label={cv.name}>
@@ -141,13 +144,13 @@ export function ProfileCvsPreview({ view = "profile" }: { view?: CvView }) {
       </section>
 
       {dialog?.type === "create" && (
-        <CvFormDialog onClose={() => setDialog(null)} onSave={(fields) => { createCv(fields); setDialog(null); }} />
+        <CvFormDialog onClose={() => setDialog(null)} onSave={(fields) => createCv(fields, ownerId)} />
       )}
       {dialog?.type === "edit" && (
-        <CvFormDialog cv={dialog.cv} saveLabel={view === "profile" ? "Update" : "Save"} onClose={() => setDialog(null)} onSave={(fields) => { updateCv(dialog.cv.id, fields); setDialog(null); }} />
+        <CvFormDialog cv={dialog.cv} saveLabel={view === "profile" ? "Update" : "Save"} onClose={() => setDialog(null)} onSave={(fields) => updateCv(dialog.cv.id, fields)} />
       )}
       {dialog?.type === "delete" && (
-        <CvDeleteDialog cv={dialog.cv} onClose={() => setDialog(null)} onConfirm={() => { deleteCv(dialog.cv.id); setDialog(null); }} />
+        <CvDeleteDialog cv={dialog.cv} onClose={() => setDialog(null)} onConfirm={() => deleteCv(dialog.cv.id)} />
       )}
     </div>
   );

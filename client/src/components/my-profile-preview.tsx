@@ -7,7 +7,9 @@ import { AppIcon } from "@/components/app-icon";
 import { useAppSelector } from "@/lib/hooks";
 import type { AuthUser } from "@/lib/auth/model/auth-slice";
 import { getAuthErrorMessage } from "@/lib/auth/model/errors";
-import { PROFILE_USER_QUERY, loadCatalogs, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, UPLOAD_PROFILE_AVATAR_MUTATION, SEND_PROFILE_VERIFICATION_MUTATION, type CatalogItem, type ProfileUser } from "@/lib/profile/api";
+import { DELETE_AVATAR } from "@/lib/cv-api";
+import { PROFILE_USER_QUERY, loadCatalogs, UPDATE_PROFILE_MUTATION, UPDATE_PROFILE_USER_MUTATION, UPLOAD_PROFILE_AVATAR_MUTATION, type CatalogItem, type ProfileUser } from "@/lib/profile/api";
+import { SEND_VERIFICATION_MUTATION } from "@/lib/auth/api/graphql";
 
 const avatarLimit = 500_000;
 const imageTypes = new Set(["image/png", "image/jpeg", "image/gif"]);
@@ -56,7 +58,8 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
   const [updateProfile] = useMutation(UPDATE_PROFILE_MUTATION);
   const [updateUser] = useMutation(UPDATE_PROFILE_USER_MUTATION);
   const [uploadAvatar] = useMutation(UPLOAD_PROFILE_AVATAR_MUTATION);
-  const [sendVerification] = useMutation(SEND_PROFILE_VERIFICATION_MUTATION);
+  const [deleteAvatar] = useMutation(DELETE_AVATAR);
+  const [sendVerification] = useMutation(SEND_VERIFICATION_MUTATION);
   const [draft, setDraft] = useState<Draft>(blank);
   const [touched, setTouched] = useState<Partial<Record<keyof Draft, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -179,6 +182,18 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
     finally { setUploading(false); }
   }
 
+  async function removeAvatar() {
+    if (!canEdit || !avatar || uploading) return;
+    setUploading(true); setAvatarError(""); setMessage("");
+    try {
+      await deleteAvatar({ variables: { avatar: { userId: targetId } } });
+      setAvatar(null);
+      void refetch().catch(() => {});
+      setMessage("Avatar removed successfully.");
+    } catch (cause) { setAvatarError(`Could not remove the avatar. ${getAuthErrorMessage(cause)}`); }
+    finally { setUploading(false); }
+  }
+
   async function verifyEmail() {
     if (!user || !canVerify || verifying) return;
     setVerifying(true); setVerifyError("");
@@ -190,7 +205,7 @@ function ProfileEditor({ currentUser, targetId }: { currentUser: AuthUser; targe
     {message && <div className="fixed top-6 right-6 z-30 flex w-[min(360px,calc(100vw-32px))] justify-between gap-3 rounded-xl border border-[#335d35] bg-[#66bb6a] p-[14px] text-[#335d35] max-[900px]:top-auto max-[900px]:bottom-6" role="status"><p className="m-0">{message}</p><button type="button" className="grid size-6 shrink-0 place-items-center" aria-label="Dismiss notification" onClick={() => setMessage("")}><AppIcon name="cross-green" /></button></div>}
     <div className="flex min-h-[120px] translate-x-5 items-center justify-center gap-[76px] max-[900px]:gap-[38px] max-[600px]:translate-x-0 max-[600px]:gap-5 max-[480px]:flex-col max-[480px]:gap-3">
       <div className="grid size-[120px] shrink-0 place-items-center rounded-full bg-[light-dark(#aeaeae,#626262)] bg-cover bg-center text-[40px] leading-[48px] text-[light-dark(#f5f5f7,#2e2e2e)]" role="img" aria-label={avatar ? `${name}'s avatar` : `${name}'s initials`} style={avatar ? { backgroundImage: `url(${JSON.stringify(avatar)})` } : undefined}>{!avatar && (user.profile.first_name?.[0] || user.email[0] || "?").toUpperCase()}</div>
-      {canEdit && <div className="w-[280px] max-[600px]:w-auto max-[480px]:w-full"><input ref={fileInput} className="sr-only" type="file" accept="image/png,image/jpeg,image/gif" aria-label="Choose avatar image" onChange={(event) => void chooseAvatar(event)} /><button type="button" className="flex items-center gap-3 border-0 bg-transparent p-0 text-xl font-medium leading-8 text-[var(--text)] hover:text-[var(--red)] focus-visible:outline-2 focus-visible:outline-[var(--red)] disabled:opacity-50 max-[600px]:gap-1 max-[600px]:text-base max-[480px]:mx-auto" disabled={uploading} onClick={() => fileInput.current?.click()}><AppIcon name="download" className="!size-[35px]" /><span>{uploading ? "Uploading..." : "Upload avatar image"}</span></button><p className="m-0 text-base leading-7 text-[var(--text)] opacity-60 max-[600px]:text-xs max-[480px]:text-center">PNG, JPG, JPEG or GIF, up to 500 KB</p>{avatarError && <p className="mt-1 text-sm text-[var(--red)]" role="alert">{avatarError}</p>}</div>}
+      {canEdit && <div className="w-[280px] max-[600px]:w-auto max-[480px]:w-full"><input ref={fileInput} className="sr-only" type="file" accept="image/png,image/jpeg,image/gif" aria-label="Choose avatar image" onChange={(event) => void chooseAvatar(event)} /><button type="button" className="flex items-center gap-3 border-0 bg-transparent p-0 text-xl font-medium leading-8 text-[var(--text)] hover:text-[var(--red)] focus-visible:outline-2 focus-visible:outline-[var(--red)] disabled:opacity-50 max-[600px]:gap-1 max-[600px]:text-base max-[480px]:mx-auto" disabled={uploading} onClick={() => fileInput.current?.click()}><AppIcon name="download" className="!size-[35px]" /><span>{uploading ? "Uploading..." : "Upload avatar image"}</span></button><p className="m-0 text-base leading-7 text-[var(--text)] opacity-60 max-[600px]:text-xs max-[480px]:text-center">PNG, JPG, JPEG or GIF, up to 500 KB</p>{avatar && <button type="button" className="mt-1 border-0 bg-transparent p-0 text-sm text-[var(--red)] disabled:opacity-50" disabled={uploading} onClick={() => void removeAvatar()}>Remove avatar</button>}{avatarError && <p className="mt-1 text-sm text-[var(--red)]" role="alert">{avatarError}</p>}</div>}
     </div>
     <div className="mt-8 text-center"><h1 className="mt-0 mb-2 text-2xl leading-8 font-normal">{name}</h1><p className="m-0 text-base leading-6 text-[var(--muted)]">{user.email}</p><p className="m-0 text-base leading-6">A member since {memberSince}</p></div>
     <form className="mt-12 grid grid-cols-2 gap-x-8 gap-y-5 max-[900px]:grid-cols-1" onSubmit={(event) => void submit(event)} noValidate>
