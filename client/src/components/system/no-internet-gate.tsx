@@ -9,7 +9,8 @@ export function NoInternetGate({ children }: { children: ReactNode }) {
     const noInternet = useNoInternet();
 
     function handleRetry() {
-        if (retryFailedRequests()) window.location.reload();
+        const reload = retryFailedRequests();
+        if (reload && navigator.onLine) window.location.reload();
     }
 
     return (

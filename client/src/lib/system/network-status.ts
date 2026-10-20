@@ -32,7 +32,7 @@ export function waitForRetry(): Promise<true> {
 
 export function retryFailedRequests() {
     const current = pending;
-    const shouldReload = reloadOnRetry || !current;
+    const shouldReload = reloadOnRetry;
     pending = null;
     reloadOnRetry = false;
     setRequestFailed(false);

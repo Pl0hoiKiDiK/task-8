@@ -168,8 +168,8 @@ describe("isNetworkFailure", () => {
     });
 });
 
-describe("Retry без ожидающего запроса", () => {
-    it("возвращает признак перезагрузки страницы", () => {
-        expect(retryFailedRequests()).toBe(true);
+describe("Retry without a pending request", () => {
+    it("does not request a reload when there was no non-replayable failure", () => {
+        expect(retryFailedRequests()).toBe(false);
     });
 });
