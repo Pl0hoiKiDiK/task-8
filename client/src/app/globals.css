@@ -11,6 +11,7 @@
   --menu-surface: #e1e1e3;
   --project-dialog-surface: #f5f5f7;
   --red: #c63031;
+  --cv-details-disabled-text: #f5f5f7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +25,7 @@
     --sidebar-active: #424242;
     --menu-surface: #424242;
     --project-dialog-surface: #424242;
+    --cv-details-disabled-text: #aeaeae;
   }
 }
 
@@ -37,6 +39,7 @@
   --sidebar-active: #424242;
   --menu-surface: #424242;
   --project-dialog-surface: #424242;
+  --cv-details-disabled-text: #aeaeae;
 }
 
 @media print {
@@ -142,22 +145,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .profile-cv-dialog-submit { border: 0; background: var(--red); color: #f5f5f7; }
 .profile-cv-dialog-submit:disabled { cursor: not-allowed; }
 .profile-cv-dialog-message { margin: 24px 0 28px; font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-.cv-details-form { width: min(852px, 100%); display: flex; flex-direction: column; gap: 36px; margin: 20px auto 0; }
-.cv-details-field { position: relative; }
-.cv-details-field label { position: absolute; left: 15px; top: -17px; color: var(--muted); font-size: 12px; line-height: 16px; }
-.cv-details-field input, .cv-details-field textarea { width: 100%; display: block; padding: 0 11px; border: 1px solid #aeaeae; border-radius: 0; background: transparent; color: var(--text); font-size: 16px; line-height: 24px; letter-spacing: .15px; }
-.cv-details-field input { height: 48px; }
-.cv-details-field textarea { height: 185px; padding-top: 19px; resize: vertical; }
-.cv-details-field [aria-invalid="true"] { border-color: var(--red); }
-.cv-details-field-error { display: block; margin-top: 4px; color: var(--red); font-size: 12px; line-height: 16px; }
-.cv-details-save-error { margin: -16px 0 0; color: var(--red); font-size: 14px; }
-.cv-details-update { align-self: flex-end; width: 160px; height: 48px; border: 0; border-radius: 24px; background: var(--red); color: #f5f5f7; font-size: 14px; font-weight: 500; line-height: 24.5px; letter-spacing: .4px; text-transform: uppercase; }
-.cv-details-update:disabled { background: #aeaeae; cursor: default; }
-:root[data-theme="dark"] .cv-details-update:disabled { background: #626262; color: #aeaeae; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cv-details-update:disabled { background: #626262; color: #aeaeae; } }
-.cv-details-section-placeholder, .cv-details-unavailable { width: min(852px, 100%); margin: 40px auto 0; color: var(--text); font-size: 16px; line-height: 24px; }
-.cv-details-unavailable a, .cv-details-unavailable button { margin-right: 20px; color: var(--red); }
-.cv-details-unavailable button { padding: 0; border: 0; background: transparent; font: inherit; }
 :root[data-theme="dark"] .profile-cv-dialog { background: #424242; }
 :root[data-theme="dark"] .profile-cv-dialog::backdrop { background: #0006; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .profile-cv-dialog { background: #424242; } :root:not([data-theme="light"]) .profile-cv-dialog::backdrop { background: #0006; } }
