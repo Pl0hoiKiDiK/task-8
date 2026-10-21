@@ -1,6 +1,11 @@
-import { EmployeeDetails } from "@/components/employee-details";
+import { EmployeeDetails, type EmployeeSection } from "@/components/employee-details";
 
-export default async function AdminEmployeeDetailsPage({ params }: { params: Promise<{ userId: string }> }) {
+export default async function AdminEmployeeDetailsPage({ params, searchParams }: {
+  params: Promise<{ userId: string }>;
+  searchParams: Promise<{ section?: string | string[] }>;
+}) {
   const { userId } = await params;
-  return <EmployeeDetails userId={userId} admin />;
+  const requested = (await searchParams).section;
+  const section: EmployeeSection = requested === "skills" || requested === "languages" || requested === "cvs" ? requested : "profile";
+  return <EmployeeDetails userId={userId} admin section={section} />;
 }
