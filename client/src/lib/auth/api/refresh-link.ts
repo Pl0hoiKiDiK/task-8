@@ -48,7 +48,6 @@ export function createRefreshLink(store: AppStore, uri: string) {
             store.dispatch(accessTokenUpdated(tokens.access_token));
             return { status: "ok", accessToken: tokens.access_token };
         } catch {
-            // Сетевой сбой: сессию не трогаем, пользователь сможет повторить запрос.
             return { status: "offline" };
         }
     })().finally(() => {
