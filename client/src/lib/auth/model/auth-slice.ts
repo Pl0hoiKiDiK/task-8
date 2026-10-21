@@ -35,10 +35,13 @@ const authSlice = createSlice({
         emailVerified(state) {
             if (state.user) state.user.is_verified = true;
         },
+        accessTokenUpdated(state, action: PayloadAction<string>) {
+            state.accessToken = action.payload;
+        },
     },
 });
 
-export const { sessionStarted, sessionCleared, restoreFinished, emailVerified } = authSlice.actions;
+export const { sessionStarted, sessionCleared, restoreFinished, emailVerified, accessTokenUpdated } = authSlice.actions;
 export const authReducer = authSlice.reducer;
 
 
