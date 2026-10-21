@@ -23,7 +23,7 @@ export type CatalogColumn<T> = {
 };
 
 const PAGE_SIZE = 10;
-const wideRow = "grid grid-cols-[32%_32%_minmax(0,1fr)_40px] items-center border-b border-[var(--border)] px-4 text-sm leading-5 tracking-[.15px] text-[var(--text)] max-[900px]:grid-cols-[46%_minmax(0,1fr)_40px] max-[600px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_32px] max-[600px]:pr-0 max-[600px]:pl-2";
+const wideRow = "grid min-w-[780px] grid-cols-[32%_32%_minmax(0,1fr)_40px] items-center border-b border-[var(--border)] px-4 text-sm leading-5 tracking-[.15px] text-[var(--text)]";
 const compactRow = "grid grid-cols-[minmax(0,1fr)_40px] items-center border-b border-[var(--border)] px-4 text-sm leading-5 tracking-[.15px] text-[var(--text)] max-[600px]:grid-cols-[minmax(0,1fr)_32px] max-[600px]:pr-0 max-[600px]:pl-2";
 const projectRow = "grid min-w-[780px] grid-cols-[minmax(0,2fr)_minmax(0,1fr)_130px_130px_48px] items-start gap-3 border-b border-[var(--border)] px-4 text-sm text-[var(--text)]";
 const catalogState = "grid min-h-[73px] items-center border-b border-[var(--border)] px-4 text-sm text-[var(--muted)] [&_p]:m-0 [&_button]:mt-2 [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-0 [&_button]:py-1 [&_button]:text-[var(--red)]";
@@ -145,7 +145,7 @@ export function AdminCatalogPage<T extends { id: string; name: string }>({
       </button>
     </div>
 
-    <div className={`w-full ${layout === "projects" ? "overflow-x-auto" : ""}`} role="table" aria-label={plural} aria-busy={loadState === "loading"}>
+    <div className={`w-full ${layout === "compact" ? "" : "overflow-x-auto"}`} role="table" aria-label={plural} aria-busy={loadState === "loading"}>
       <div className={`${rowClass} h-[54px] font-medium`} role="row">
         {columns.map((column) => {
           const direction = sort?.field === column.key ? sort.direction : null;

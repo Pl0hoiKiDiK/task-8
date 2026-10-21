@@ -16,8 +16,8 @@ type Sort = { field: SortField; order: "ASC" | "DESC" } | null;
 const columns: { field: SortField; label: string; width?: string }[] = [
   { field: "first_name", label: "First Name" },
   { field: "last_name", label: "Last Name" },
-  { field: "department", label: "Department", width: "w-[14%] max-[900px]:w-[28%]" },
-  { field: "position", label: "Position", width: "w-[17%] max-[900px]:hidden" },
+  { field: "department", label: "Department", width: "w-[14%]" },
+  { field: "position", label: "Position", width: "w-[17%]" },
 ];
 const headerCell = "h-[52px] border-b border-[var(--border)] px-4 text-left text-sm font-medium leading-6 tracking-[.15px] whitespace-nowrap max-[600px]:px-2";
 const bodyCell = "h-[73px] overflow-hidden border-b border-[var(--border)] px-4 text-ellipsis whitespace-nowrap text-sm leading-5 tracking-[.15px] max-[600px]:px-2";
@@ -162,7 +162,7 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
   }
 
   const sortHeader = (column: (typeof columns)[number]) => <th key={column.field} scope="col" className={`${headerCell} ${column.width ?? ""}`} aria-sort={sort?.field === column.field ? sort.order === "ASC" ? "ascending" : "descending" : "none"}>
-    <button type="button" className="inline-flex items-center gap-1 hover:text-[var(--red)]" onClick={() => sortBy(column.field)}>
+    <button type="button" className="inline-flex items-center gap-1" onClick={() => sortBy(column.field)}>
       {column.label}<AppIcon name="sort" className={sort?.field === column.field && sort.order === "DESC" ? "rotate-180" : ""} />
     </button>
   </th>;
@@ -181,11 +181,11 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
     </div>
 
     <div className="w-full overflow-x-auto" aria-busy={loading}>
-      <table className="w-full table-fixed border-collapse" aria-label="Employees">
+      <table className="w-full table-fixed border-collapse max-[900px]:min-w-[980px]" aria-label="Employees">
         <thead><tr>
           <th scope="col" aria-label="Avatar" className={`${headerCell} w-20 max-[600px]:w-[52px]`} />
           {columns.slice(0, 2).map(sortHeader)}
-          <th scope="col" className={`${headerCell} w-[27%] max-[900px]:hidden`}>Email</th>
+          <th scope="col" className={`${headerCell} w-[27%]`}>Email</th>
           {columns.slice(2).map(sortHeader)}
           <th scope="col" aria-label="Actions" className={`${headerCell} w-14 text-right max-[600px]:w-10 max-[600px]:px-0!`} />
         </tr></thead>
@@ -200,9 +200,9 @@ export function EmployeesPreview({ admin = false }: { admin?: boolean }) {
                   <td className={bodyCell}><EmployeeAvatar employee={employee} /></td>
                   <td className={`${bodyCell} truncate`} title={employee.profile.first_name ?? ""}>{employee.profile.first_name || "—"}</td>
                   <td className={`${bodyCell} truncate`} title={employee.profile.last_name ?? ""}>{employee.profile.last_name || "—"}</td>
-                  <td className={`${bodyCell} truncate max-[900px]:hidden`} title={employee.email}>{employee.email}</td>
+                  <td className={`${bodyCell} truncate`} title={employee.email}>{employee.email}</td>
                   <td className={`${bodyCell} truncate`} title={employee.department?.name ?? ""}>{employee.department?.name || "—"}</td>
-                  <td className={`${bodyCell} truncate max-[900px]:hidden`} title={employee.position?.name ?? ""}>{employee.position?.name || "—"}</td>
+                  <td className={`${bodyCell} truncate`} title={employee.position?.name ?? ""}>{employee.position?.name || "—"}</td>
                   <td className={`${bodyCell} text-right max-[600px]:px-0!`}>
                     {admin ? <button type="button" className="inline-grid size-10 place-items-center text-[var(--muted)]" aria-label={`Actions for ${displayName(employee)}`}
                       aria-haspopup="menu" aria-expanded={openMenu?.employee.id === employee.id} onClick={(event) => openActions(employee, event.currentTarget)}><AppIcon name="more" /></button>

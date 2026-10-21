@@ -46,7 +46,7 @@ export function AdminLanguagesPage() {
     columns={[
       { key: "name", label: "Name", sortable: true, render: (item) => item.name },
       { key: "iso", label: "ISO", sortable: true, render: (item) => item.iso },
-      { key: "nativeName", label: "Native name", className: "max-[900px]:hidden", render: (item) => item.nativeName },
+      { key: "nativeName", label: "Native name", render: (item) => item.nativeName },
     ]}
     filterAndSort={sortLanguages}
     renderDialog={({ dialog, actions }) => {

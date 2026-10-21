@@ -70,7 +70,8 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
           </button>
         </div>
 
-        <div className="grid min-h-[58px] grid-cols-[35%_29%_minmax(0,1fr)_40px] items-center border-b border-[var(--border)] px-4 text-sm font-medium leading-6 tracking-[.15px] text-[var(--text)] max-[900px]:grid-cols-[48%_minmax(0,1fr)_32px] max-[600px]:grid-cols-[minmax(0,1fr)_minmax(0,.85fr)_28px]">
+        <div className="w-full overflow-x-auto"><div className="min-w-[720px]">
+        <div className="grid min-h-[58px] grid-cols-[35%_29%_minmax(0,1fr)_40px] items-center border-b border-[var(--border)] px-4 text-sm font-medium leading-6 tracking-[.15px] text-[var(--text)]">
           <button
             type="button"
             className="inline-flex items-center justify-self-start gap-1 border-0 bg-transparent p-0 text-inherit"
@@ -80,7 +81,7 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
             Name <AppIcon name="sort" className={direction === "desc" ? "ml-1.5 !size-[18px] align-middle rotate-180" : "ml-1.5 !size-[18px] align-middle"} />
           </button>
           <span>Education</span>
-          <span className="max-[900px]:hidden">Employee</span>
+          <span>Employee</span>
         </div>
 
         <div aria-busy={loadState === "loading"}>
@@ -90,10 +91,10 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
             <p className="m-0 px-4 py-14 text-center text-base leading-6 text-[var(--text)]" role="status">{search || view !== "employee" ? "No CVs found" : "You have no CVs yet"}</p>
           ) : visibleCvs.map((cv) => (
             <article className="border-b border-[var(--border)] px-4 pt-6 pb-4 [&>p]:mt-6 [&>p]:mb-0 [&>p]:text-base [&>p]:leading-6 [&>p]:tracking-[.15px] [&>p]:text-[var(--text)] [&>p]:opacity-50 max-[900px]:[&>p]:mt-4" key={cv.id} aria-label={cv.name}>
-              <div className="grid min-h-6 grid-cols-[35%_29%_minmax(0,1fr)_40px] items-start text-sm leading-5 tracking-[.15px] text-[var(--text)] max-[900px]:grid-cols-[48%_minmax(0,1fr)_32px] max-[600px]:grid-cols-[minmax(0,1fr)_minmax(0,.85fr)_28px] [&>h2]:m-0 [&>h2]:min-w-0 [&>h2]:max-w-80 [&>h2]:wrap-anywhere [&>h2]:pr-4 [&>h2]:font-[inherit] [&>span]:min-w-0 [&>span]:wrap-anywhere">
+              <div className="grid min-h-6 grid-cols-[35%_29%_minmax(0,1fr)_40px] items-start text-sm leading-5 tracking-[.15px] text-[var(--text)] [&>h2]:m-0 [&>h2]:min-w-0 [&>h2]:max-w-80 [&>h2]:wrap-anywhere [&>h2]:pr-4 [&>h2]:font-[inherit] [&>span]:min-w-0 [&>span]:wrap-anywhere">
                 <h2>{cv.name}</h2>
                 <span>{cv.education}</span>
-                <span className="max-[900px]:hidden">{cv.employee}</span>
+                <span>{cv.employee}</span>
                 <div className="relative justify-self-end" ref={openMenuId === cv.id ? menuRoot : undefined}>
                   <button
                     type="button"
@@ -132,6 +133,7 @@ export function ProfileCvsPreview({ view = "profile", ownerId }: { view?: CvView
             </article>
           ))}
         </div>
+        </div></div>
         {view !== "profile" && pageCount > 1 && (
           <nav className="flex justify-center gap-2 py-6 [&>button]:h-9 [&>button]:min-w-9 [&>button]:rounded [&>button]:border [&>button]:border-[var(--border)] [&>button]:bg-transparent [&>button]:text-[var(--text)] [&>button[aria-current=page]]:border-[var(--red)] [&>button[aria-current=page]]:bg-[var(--red)] [&>button[aria-current=page]]:text-[#f5f5f7] [&>button:disabled]:cursor-default [&>button:disabled]:opacity-40" aria-label="CV pages">
             <button type="button" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)} aria-label="Previous page">‹</button>
