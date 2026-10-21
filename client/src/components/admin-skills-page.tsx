@@ -41,7 +41,7 @@ export function AdminSkillsPage() {
     }}
     columns={[
       { key: "name", label: "Name", sortable: true, render: (item) => item.name },
-      { key: "type", label: "Type", className: "max-[900px]:hidden", render: (item) => item.categoryType ?? "" },
+      { key: "type", label: "Type", render: (item) => item.categoryType ?? "" },
       { key: "category", label: "Category", render: (item) => item.category },
     ]}
     filterAndSort={(items, search, sort) => filterAndSortSkills(items, search, sort?.direction ?? null)}
@@ -91,7 +91,9 @@ function AdminSkillFormDialog({ skill, skills, categories, onClose, onSave }: {
         <label htmlFor="admin-skill-name">Name</label>
         <input id="admin-skill-name" type="text" placeholder="Name" value={name} disabled={saving} aria-invalid={nameTouched && (!name.trim() || duplicate)}
           aria-describedby={nameTouched && (!name.trim() || duplicate) ? "admin-skill-name-error" : undefined}
-          onBlur={() => setNameTouched(true)} onChange={(event) => { setName(event.target.value); setSystemError(""); }} />
+          onBlur={(event) => {
+            if (event.relatedTarget instanceof Node && event.currentTarget.closest("dialog")?.contains(event.relatedTarget)) setNameTouched(true);
+          }} onChange={(event) => { setName(event.target.value); setSystemError(""); }} />
         {nameTouched && (!name.trim() || duplicate) && <span id="admin-skill-name-error" className="mt-1 block text-xs leading-4 text-[var(--red)]">{duplicate ? "Skill already exists" : "Skill is required"}</span>}
       </div>
       <div className="relative [&>label]:absolute [&>label]:-top-4 [&>label]:left-3 [&>label]:text-xs [&>label]:leading-4 [&>label]:text-[var(--muted)] [&>input]:block [&>input]:h-12 [&>input]:w-full [&>input]:rounded-none [&>input]:border [&>input]:border-[var(--border)] [&>input]:bg-transparent [&>input]:px-[11px] [&>input]:text-sm [&>input]:leading-6 [&>input]:tracking-[.15px] [&>input]:text-[var(--text)] [&>input]:placeholder:text-[var(--placeholder)] [&>select]:block [&>select]:h-12 [&>select]:w-full [&>select]:rounded-none [&>select]:border [&>select]:border-[var(--border)] [&>select]:bg-[var(--surface)] [&>select]:px-[11px] [&>select]:text-sm [&>select]:leading-6 [&>select]:tracking-[.15px] [&>select]:text-[var(--text)] [&>[aria-invalid=true]]:border-[var(--red)]">

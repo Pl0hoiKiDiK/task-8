@@ -11,6 +11,21 @@ beforeAll(() => {
 afterEach(cleanup);
 
 describe("admin skills API", () => {
+  it("shows the required name only after the user leaves the field inside the dialog", async () => {
+    const mocks = [
+      { request: { query: SKILL_CATEGORIES_QUERY }, result: { data: { skillCategories: [] } } },
+      { request: { query: SKILLS_QUERY, variables: { params: { page: 1, limit: 100 } } }, result: { data: { skills: { items: [], total_pages: 0 } } } },
+    ];
+    render(<MockedProvider mocks={mocks}><AdminSkillsPage /></MockedProvider>);
+    fireEvent.click(await screen.findByRole("button", { name: "Create skill" }));
+    const dialog = screen.getByRole("dialog", { name: "Create skill" });
+    const name = within(dialog).getByRole("textbox", { name: "Name" });
+    const category = within(dialog).getByRole("combobox", { name: "Category" });
+    expect(within(dialog).queryByText("Skill is required")).not.toBeInTheDocument();
+    fireEvent.blur(name, { relatedTarget: category });
+    expect(within(dialog).getByText("Skill is required")).toBeVisible();
+  });
+
   it("loads categories and sends their IDs when creating a skill", async () => {
     const category = { id: "cat-1", name: "Frontend", parent: { name: "Engineering" } };
     const mocks = [
